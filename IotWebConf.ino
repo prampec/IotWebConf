@@ -83,7 +83,7 @@ byte state = STATE_BOOT;
 
 // -- Access pont specific configuration
 // -- Thin will stay in AP mode for AP_MODE_TIMEOUT_MS on boot, and before retrying to connect to Wifi.
-#define AP_MODE_TIMEOUT_MS 10000
+#define AP_MODE_TIMEOUT_MS 30000
 unsigned long apStartTimeMs = 0;
 
 #define AP_CONNECTION_STATUS_NC 0
@@ -106,11 +106,12 @@ const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of th
 byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 WiFiUDP udp;
 // -- Do not ask for NTP data more frequently than NTP_ASK_INTERVAL_MS
-#define NTP_ASK_INTERVAL_MS 20000
+#define NTP_ASK_INTERVAL_MS 600000L
 unsigned long lastNtpAsked = 0;
 TM1637Display display(CLK, DIO);
 unsigned long epoch = 0;
 unsigned long millisAtNtpResponse;
+boolean hasFreshTime = false;
 
 void setup() 
 {
@@ -229,11 +230,12 @@ void initClient()
  */
 boolean beforeEnterClientMode()
 {
-  printDisplayActualTime();
-  return (lastNtpAsked + NTP_ASK_INTERVAL_MS) < millis();
+  displayActualTime();
+  // -- Should enter client mode, when no fresh time available, or some time already passed since last NTP.
+  return !hasFreshTime || ((lastNtpAsked + NTP_ASK_INTERVAL_MS) < millis());
 }
 
-void printDisplayActualTime()
+void displayActualTime()
 {
   if (epoch > 0)
   {
@@ -242,7 +244,8 @@ void printDisplayActualTime()
     time *= 100;
     time += (epoch2  % 3600) / 60;
     // -- Display double dot
-    display.showNumberDecEx(time, (epoch2 %= 2) ? 0 : (0x80 >> 1));
+//    display.showNumberDecEx(time, (epoch2 %= 2) ? 0 : (0x80 >> 1));
+    displayTime(time, epoch2 %= 2);
   }
 }
 
@@ -255,12 +258,37 @@ void delay2(unsigned long ms)
 
   while( start + ms > millis() ) // -- TODO: millis will overflow some times
   {
-    printDisplayActualTime();
+    displayActualTime();
+    delay(10);
   }
 }
 
 void clientLoop()
 {
+  hasFreshTime = false;
+  if (epoch == 0)
+  {
+    // -- Display IP on screen for the first time
+    uint8_t data[] = { 0, 0, 0, 0 };
+
+    IPAddress ip = WiFi.localIP();
+    display.showNumberDec(ip[0]);
+    delay(1400);
+    display.setSegments(data);
+    delay(100);
+    display.showNumberDec(ip[1]);
+    delay(1400);
+    display.setSegments(data);
+    delay(100);
+    display.showNumberDec(ip[2]);
+    delay(1400);
+    display.setSegments(data);
+    delay(100);
+    display.showNumberDec(ip[3]);
+    delay(1400);
+    uint8_t data2[] = { SEG_G, SEG_G, SEG_G, SEG_G };
+    display.setSegments(data2);
+  }
   int retryCount = 0;
   while (true)
   {
@@ -346,6 +374,7 @@ void clientLoop()
 
     // -- Add the GMT offset and the DST to the epoch.
     epoch += (config.gmtOffset + (config.dstOn ? 1:0)) * 3600L;
+    hasFreshTime = true;
 
     // print the hour, minute and second:
     Serial.print("The local time is ");       // UTC is the time at Greenwich Meridian (GMT)
@@ -465,13 +494,18 @@ void webServerLoop() {
     // -- Custom configuration section below
     s += "NTP server:<br/><input type='text' name='ntpServerName' value='";
     s += config.ntpServerName;
-    s += "'><br/>";
-    s += "GMT offset:<br/><input type='text' name='gmtOffset' value='";
+    s += "'><br/><hr/>";
+    s += "GMT offset:<br/><input type='number' name='gmtOffset' value='";
     s += config.gmtOffset;
-    s += "'><br/>";
-    s += "Day light saving (DST) [On/Off]:<br/><input type='text' name='dstOn' value='";
-    s += config.dstOn ? "On" : "Off";
-    s += "'><br/>";
+    s += "' min=-12 max=12><br/>";
+    s += "Day light saving (DST):<br/>";
+    s += "<select name='dstOn'><option value='On'";
+    s += config.dstOn ? " selected>" : ">";
+    s += "Summer time</option>";
+    s += "<option value='Off'";
+    s += config.dstOn ? ">" : " selected>";
+    s += "Off</option>";
+    s += "</select><br/>";
     s += "<input type='submit' value='Save'><br/>";
     s += "</form>";
   }
@@ -499,3 +533,30 @@ void initHardware()
   uint8_t data[] = { SEG_G, SEG_G, SEG_G, SEG_G };
   display.setSegments(data);
 }
+
+void displayTime(unsigned long number, boolean dot)
+{
+  uint8_t digits[] = { 0, 0, 0, 0 };
+  digits[3] = display.encodeDigit(number % 10);
+  number /= 10;
+  digits[2] = display.encodeDigit(number % 10);
+  number /= 10;
+  uint8_t d = display.encodeDigit(number % 10);
+  if (dot)
+  {
+    d = addDot(d);
+  }
+  digits[1] = d;
+  number /= 10;
+  int m = number % 10;
+  if (m > 0) {
+    digits[0] = display.encodeDigit(m);
+  }
+  display.setSegments(digits, 4, 0);
+}
+
+uint8_t addDot(uint8_t digit)
+{
+  return digit | 0x80;
+}
+
