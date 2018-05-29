@@ -24,17 +24,16 @@
 #define IOTWEBCONF_WORD_LEN 33
 
 // -- IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
-#define IOTWEBCONF_WIFI_CONNECTION_TIMEOUR_SECS 10
+#define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 10000
 
 // -- Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
-// -- This configuration will be available on the config portal to be changed by the user.
 #define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
 
 // -- mDNS should allow you to connect to this device with a hostname provided by the device. E.g. mything.local
 #define IOTWEBCONF_CONFIG_USE_MDNS
 
 // -- Logs progress information to Serial if enabled.
-//#define IOTWEBCONF_DEBUG_TO_SERIAL
+#define IOTWEBCONF_DEBUG_TO_SERIAL
 
 // -- Helper define for serial debug
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -262,7 +261,19 @@ class IotWebConf
     /**
      * Use this delay, to prevent blocking IotWebConf.
      */
-     void delay(unsigned long millis);
+    void delay(unsigned long millis);
+    
+    /**
+     * Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
+     * The default amount can be updated with this setter.
+     */
+    void setApTimeoutMs(unsigned long millis);
+
+    /**
+     * IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
+     * The default amount can be updated with this setter.
+     */
+    void setWifiConnectionTimeoutMs(unsigned long millis);
 
   private:
     const char* _initialApPassword = NULL;
@@ -284,7 +295,8 @@ class IotWebConf
     char _wifiSsid[IOTWEBCONF_WORD_LEN];
     char _wifiPassword[IOTWEBCONF_WORD_LEN];
     char _apTimeoutStr[IOTWEBCONF_WORD_LEN];
-    long _apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
+    unsigned long _apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
+    unsigned long _wifiConnectionTimeoutMs = IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS;
     byte _state = IOTWEBCONF_STATE_BOOT;
     unsigned long _apStartTimeMs = 0;
     byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
@@ -293,7 +305,6 @@ class IotWebConf
     boolean (*_formValidator)(void) = NULL;
     byte _blinkState = IOTWEBCONF_STATUS_ON;
     unsigned long _lastBlinkTime = 0;
-    byte _wifiConnectionRetryCount = 0;
     unsigned long _wifiConnectionStart = 0;
 
     void configInit();
