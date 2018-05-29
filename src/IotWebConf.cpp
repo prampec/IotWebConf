@@ -149,7 +149,7 @@ bool IotWebConf::addParameter(IotWebConfParameter *parameter)
 {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print("Adding parameter '");
-  Serial.print(parameter->_id);
+  Serial.print(parameter->id);
   Serial.println("'");
 #endif
   if (this->_firstParameter == NULL)
@@ -298,6 +298,16 @@ void IotWebConf::setConfigSavedCallback( void (*func)(void) )
 void IotWebConf::setFormValidator( boolean (*func)(void) )
 {
   this->_formValidator = func;
+}
+
+void IotWebConf::setApTimeoutMs(unsigned long millis)
+{
+  this->_apTimeoutMs = millis;
+}
+
+void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
+{
+  this->_wifiConnectionTimeoutMs = millis;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -781,7 +791,7 @@ boolean IotWebConf::checkWifiConnection()
 {
   this->blink();
   if (WiFi.status() != WL_CONNECTED) {
-    if (this->smallerCheckOverflow(this->_wifiConnectionStart, 1000L * IOTWEBCONF_WIFI_CONNECTION_TIMEOUR_SECS, millis()))
+    if (this->smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
     {
       // -- Wifi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
