@@ -17,20 +17,20 @@
 #include <DNSServer.h> // -- For captive portal
 #include <ESP8266HTTPUpdateServer.h>
 
-// -- We might want to place the config in the eeprom in an offset.
+// -- We might want to place the config in the EEPROM in an offset.
 #define IOTWEBCONF_CONFIG_START 0
 
-// -- Maximal length of any string used in iotWebConfig configuration (e.g. ssid, password)
+// -- Maximal length of any string used in IotWebConfig configuration (e.g. ssid, password).
 #define IOTWEBCONF_WORD_LEN 33
 
-// -- Should try to connect to the local network WIFI_RETRY_COUNT times before falling back to AP mode.
+// -- IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
 #define IOTWEBCONF_WIFI_CONNECTION_TIMEOUR_SECS 10
 
-// -- Thing will stay in AP mode for AP_MODE_TIMEOUT_MS on boot, before retrying to connect to a Wifi network.
+// -- Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
 // -- This configuration will be available on the config portal to be changed by the user.
 #define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
 
-// -- mDNS should allow you to connect to this device with a hostname provided by the device. E.g. myThing.local
+// -- mDNS should allow you to connect to this device with a hostname provided by the device. E.g. mything.local
 #define IOTWEBCONF_CONFIG_USE_MDNS
 
 // -- Logs progress information to Serial if enabled.
@@ -174,7 +174,7 @@ class IotWebConf
     /**
      * Provide an Arduino pin here, that has a button connected to it with the other end of the pin is connected to GND.
      * The button pin is queried at for input on boot time (init time).
-     * It the button was pressed, the thing will enter AP mode with the initail password.
+     * If the button was pressed, the thing will enter AP mode with the initail password.
      *   @configPin - An Arduino pin. Will be configured as INPUT_PULLUP!
      */
     void setConfigPin(int configPin);
