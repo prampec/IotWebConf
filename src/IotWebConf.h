@@ -127,7 +127,7 @@ class IotWebConfParameter {
     IotWebConfParameter();
 
     const char *label;
-    const char *id;
+    const char *id = 0;
     char       *valueBuffer;
     int         length;
     const char *type;
@@ -174,13 +174,19 @@ class IotWebConf
      * Provide an Arduino pin here, that has a button connected to it with the other end of the pin is connected to GND.
      * The button pin is queried at for input on boot time (init time).
      * If the button was pressed, the thing will enter AP mode with the initail password.
+     * Must be called before init()!
      *   @configPin - An Arduino pin. Will be configured as INPUT_PULLUP!
      */
     void setConfigPin(int configPin);
 
     /**
-     * Provide an Arduino pin for status indicator.
-     * At startup the input will be kept LOW, on Wifi connection it will blink, when connected to the Wifi it will be HIGH.
+     * Provide an Arduino pin for status indicator (LOW = on). Blink codes:
+     *   - Rapid blinks - The thing is in AP mode with default password.
+     *   - Rapid blinks, but mostly on - AP mode, waiting for confiuration changes.
+     *   - Normal blinks - Connecting to WiFi.
+     *   - Mostly off with rare rapid blinks - WiFi is connected performing normal operation.
+     * User can also apply custom blinks. See blink() method!
+     * Must be called before init()!
      *   @statusPin - An Arduin pin. Will be configured as OUTPUT!
      */
     void setStatusPin(int statusPin);
@@ -188,6 +194,7 @@ class IotWebConf
     /**
      * Add an UpdateServer instance to the system. The firmware update link will appear on the config portal.
      * The UpdateServer will be added to the WebServer with the path provided here.
+     * Should be called before init()!
      *   @updateServer - An uninitialized UpdateServer instance.
      *   @updatePath - The path to set up the UpdateServer with. Will be also used in the config portal.
      *   @updateUsername - The user name to set up the UpdateServer with.
@@ -231,17 +238,20 @@ class IotWebConf
 
     /**
      * Specify a callback method, that will be called upon wifi connection success.
+     * Should be called before init()!
      */
     void setWifiConnectionCallback( void (*func)(void) );
 
     /**
      * Specify a callback method, that will be called when settings have been changed.
+     * Should be called before init()!
      */
     void setConfigSavedCallback( void (*func)(void) );
 
     /**
      * Specify a callback method, that will be called when form validation is required.
      * If the method will return false, the configuration will not be saved.
+     * Should be called before init()!
      */
     void setFormValidator( boolean (*func)(void) );
     
@@ -250,6 +260,7 @@ class IotWebConf
      * The parameter will be saved to/loaded from EEPROM automatically, 
      * and will appear on the config portal.
      * Will return false, if adding was not successfull.
+     * Must be called before init()!
      */
     bool addParameter(IotWebConfParameter *parameter);
 
@@ -266,14 +277,25 @@ class IotWebConf
     /**
      * Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
      * The default amount can be updated with this setter.
+     * Should be called before init()!
      */
     void setApTimeoutMs(unsigned long millis);
 
     /**
      * IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
      * The default amount can be updated with this setter.
+     * Should be called before init()!
      */
     void setWifiConnectionTimeoutMs(unsigned long millis);
+
+    /**
+     * Interrupts internal blinking cycle and applies new values for
+     * blinking the status LED (if one configured with setStatusPin() prior init() ).
+     *   @repeatMs - Defines the the period of one on-off cycle in milliseconds.
+     *   @dutyCyclePercent - LED on/off percent. 100 means always on, 0 means always off.
+     * When called with repeatMs = 0, then internal blink cycle will be continued.
+     */
+    void blink(unsigned long repeatMs, byte dutyCyclePercent);
 
     /**
      * Helper method to check time elapse while checking number overflow.
@@ -308,6 +330,10 @@ class IotWebConf
     void (*_wifiConnectionCallback)(void) = NULL;
     void (*_configSavedCallback)(void) = NULL;
     boolean (*_formValidator)(void) = NULL;
+    unsigned long _internalBlinkOnMs = 500;
+    unsigned long _internalBlinkOffMs = 500;
+    unsigned long _blinkOnMs = 500;
+    unsigned long _blinkOffMs = 500;
     byte _blinkState = IOTWEBCONF_STATUS_ON;
     unsigned long _lastBlinkTime = 0;
     unsigned long _wifiConnectionStart = 0;
@@ -327,7 +353,8 @@ class IotWebConf
     void stateChanged(byte oldState, byte newState);
     boolean isIp(String str);
     String toStringIp(IPAddress ip);
-    boolean blink();
+    boolean doBlink();
+    void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
 
     void checkApTimeout();
     void checkConnection();
