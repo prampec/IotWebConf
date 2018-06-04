@@ -610,6 +610,7 @@ void IotWebConf::delay(unsigned long m)
 
 void IotWebConf::doLoop()
 {
+  doBlink();
   if (this->_state == IOTWEBCONF_STATE_BOOT)
   {
     // -- After boot, fall immediatelly to AP mode.
@@ -703,9 +704,13 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
   {
     case IOTWEBCONF_STATE_AP_MODE:
     case IOTWEBCONF_STATE_NOT_CONFIGURED:
-      if (IOTWEBCONF_STATUS_ENABLED)
+      if (newState == IOTWEBCONF_STATE_AP_MODE)
       {
-        digitalWrite(this->_statusPin, IOTWEBCONF_STATUS_ON);
+        this->blinkInternal(300, 90);
+      }
+      else
+      {
+        this->blinkInternal(300, 50);
       }
       setupAp();
       this->_server->begin();
@@ -713,6 +718,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->_apStartTimeMs = millis();
       break;
     case IOTWEBCONF_STATE_CONNECTING:
+      this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
       Serial.print(this->_wifiSsid);
@@ -722,11 +728,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       WiFi.begin(this->_wifiSsid, this->_wifiPassword);
       break;
     case IOTWEBCONF_STATE_ONLINE:
+      this->blinkInternal(5000, 5);
       stopAp();
-      if (IOTWEBCONF_STATUS_ENABLED)
-      {
-        digitalWrite(this->_statusPin, IOTWEBCONF_STATUS_OFF);
-      }
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
       this->_wifiConnectionCallback();
@@ -789,23 +792,8 @@ void IotWebConf::checkConnection()
   }
 }
 
-boolean IotWebConf::blink()
-{
-  if (IOTWEBCONF_STATUS_ENABLED)
-  {
-    unsigned long now = millis();
-    if (smallerCheckOverflow(this->_lastBlinkTime, 300, now))
-    {
-      this->_blinkState = 1 - this->_blinkState;
-      this->_lastBlinkTime = now;
-      digitalWrite(this->_statusPin, this->_blinkState);
-    }
-  }
-}
-
 boolean IotWebConf::checkWifiConnection()
 {
-  this->blink();
   if (WiFi.status() != WL_CONNECTED) {
     if (IotWebConf::smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
     {
@@ -869,3 +857,42 @@ void IotWebConf::stopAp()
   WiFi.mode(WIFI_STA);
 }
 
+////////////////////////////////////////////////////////////////////
+
+void IotWebConf::blink(unsigned long repeatMs, byte dutyCyclePercent)
+{
+  if (repeatMs == 0)
+  {
+    this->_blinkOnMs = this->_internalBlinkOnMs;
+    this->_blinkOffMs = this->_internalBlinkOffMs;
+  }
+  else
+  {
+    this->_blinkOnMs = repeatMs * dutyCyclePercent / 100;
+    this->_blinkOffMs = repeatMs * (100 - dutyCyclePercent) / 100;
+  }
+}
+
+void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
+{
+  this->blink(repeatMs, dutyCyclePercent);
+  this->_internalBlinkOnMs = this->_blinkOnMs;
+  this->_internalBlinkOffMs = this->_blinkOffMs;
+}
+
+boolean IotWebConf::doBlink()
+{
+  if (IOTWEBCONF_STATUS_ENABLED)
+  {
+    unsigned long now = millis();
+    unsigned long delayMs =
+     this->_blinkState == LOW ?
+      this->_blinkOnMs : this->_blinkOffMs;
+    if (smallerCheckOverflow(this->_lastBlinkTime, delayMs, now))
+    {
+      this->_blinkState = 1 - this->_blinkState;
+      this->_lastBlinkTime = now;
+      digitalWrite(this->_statusPin, this->_blinkState);
+    }
+  }
+}
