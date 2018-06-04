@@ -1,5 +1,5 @@
 /**
- * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
+ * IotWebConf04UpdateServer.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
  *   web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -96,7 +96,7 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 01 Update Server</title></head><body>Hello world!";
+  s += "<title>IotWebConf 04 Update Server</title></head><body>Hello world!";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
 

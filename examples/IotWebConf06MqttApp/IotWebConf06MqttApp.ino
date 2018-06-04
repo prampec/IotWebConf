@@ -1,5 +1,5 @@
 /**
- * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
+ * IotWebConf06MqttApp.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
  *   web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -10,7 +10,7 @@
  */
 
 /**
- * Example: Custom parameters
+ * Example: MQTT Demo Application
  * Description:
  *   All IotWebConf specific aspects of this example are described in
  *   previous examples, so please get familiar with IotWebConf before
@@ -173,7 +173,7 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 01 Custom Config</title></head><body>Hello world!";
+  s += "<title>IotWebConf 06 MQTT App</title></head><body>MQTT App demo";
   s += "<ul>";
   s += "<li>MQTT server: ";
   s += mqttServerValue;
