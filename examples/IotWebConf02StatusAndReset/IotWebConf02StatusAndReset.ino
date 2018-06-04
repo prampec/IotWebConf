@@ -1,5 +1,5 @@
 /**
- * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
+ * IotWebConf02StatusAndReset.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
  *   web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *

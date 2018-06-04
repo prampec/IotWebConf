@@ -4,7 +4,7 @@
  *   https://github.com/prampec/IotWebConf 
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
- *
+ *c
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
@@ -139,6 +139,7 @@ boolean IotWebConf::init()
   MDNS.begin(this->_thingName);
   MDNS.addService("http", "tcp", 80);
 #endif
+  WiFi.hostname(this->_thingName);
 
   return validConfig;
 }
@@ -550,12 +551,22 @@ void IotWebConf::handleNotFound() {
   this->_server->send ( 404, "text/plain", message );
 }
 
-/** Redirect to captive portal if we got a request for another domain.
-  Return true in that case so the page handler do not try to handle the request again.
-  */
+/**
+ * Redirect to captive portal if we got a request for another domain.
+ * Return true in that case so the page handler do not try to handle the request again.
+ * (Code from WifiManager project.)
+ */
 boolean IotWebConf::handleCaptivePortal() {
-  if (!isIp(this->_server->hostHeader()) ) {
-    IOTWEBCONF_DEBUG_LINE(F("Request redirected to captive portal"));
+  String host = this->_server->hostHeader();
+  String thingName = String(this->_thingName);
+  thingName.toLowerCase();
+  if (!isIp(host) && !host.startsWith(thingName)) {
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+    Serial.print("Request for ");
+    Serial.print(host);
+    Serial.print(" redirected to ");
+    Serial.println(this->_server->client().localIP());
+#endif
     this->_server->sendHeader("Location", String("http://") + toStringIp(this->_server->client().localIP()), true);
     this->_server->send ( 302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     this->_server->client().stop(); // Stop is needed because we sent no content length
@@ -590,7 +601,7 @@ String IotWebConf::toStringIp(IPAddress ip) {
 void IotWebConf::delay(unsigned long m)
 {
   unsigned long delayStart = millis();
-  while(!this->smallerCheckOverflow(delayStart, m, millis()))
+  while(!IotWebConf::smallerCheckOverflow(delayStart, m, millis()))
   {
     this->doLoop();
     delay(1);
@@ -627,6 +638,11 @@ void IotWebConf::doLoop()
   {
     // -- In server mode we provide web interface. And check whether it is time to run the client.
     this->_server->handleClient();
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      return;
+    }
   }
 }
 
@@ -740,7 +756,7 @@ void IotWebConf::checkApTimeout()
     if (
       (this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC)
        ||
-      (this->smallerCheckOverflow(this->_apStartTimeMs, this->_apTimeoutMs, millis())
+      (IotWebConf::smallerCheckOverflow(this->_apStartTimeMs, this->_apTimeoutMs, millis())
       && (this->_apConnectionStatus != IOTWEBCONF_AP_CONNECTION_STATE_C)))
     {
       this->changeState(IOTWEBCONF_STATE_CONNECTING);
@@ -791,7 +807,7 @@ boolean IotWebConf::checkWifiConnection()
 {
   this->blink();
   if (WiFi.status() != WL_CONNECTED) {
-    if (this->smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
+    if (IotWebConf::smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
     {
       // -- Wifi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
