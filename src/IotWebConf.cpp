@@ -123,7 +123,7 @@ boolean IotWebConf::init()
   boolean validConfig = this->configLoad();
   if (!validConfig)
   {
-    // No config
+    // -- No config
     this->_apPassword[0] != '\0';
     this->_wifiSsid[0] = '\0';
     this->_wifiPassword[0] = '\0';
@@ -134,7 +134,7 @@ boolean IotWebConf::init()
     this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
   }
 
-  // Setup mdns
+  // -- Setup mdns
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
   MDNS.begin(this->_thingName);
   MDNS.addService("http", "tcp", 80);
@@ -357,17 +357,17 @@ void IotWebConf::handleConfig()
           pitem.replace("{l}", parLength);
           if (strcmp("password", current->type) == 0)
           {
-            // Value of password is not rendered
+            // -- Value of password is not rendered
             pitem.replace("{v}", "");
           }
           else if (this->_server->hasArg(current->id))
           {
-            // Value from previous submit
+            // -- Value from previous submit
             pitem.replace("{v}", this->_server->arg(current->id));
           }
           else
           {
-            // Value from config
+            // -- Value from config
             pitem.replace("{v}", current->valueBuffer);
           }
           pitem.replace("{c}", current->customHtml);
@@ -462,7 +462,7 @@ void IotWebConf::handleConfig()
     }
     else if (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
     {
-      page += F("Please disconnect from Wifi AP to continue!");
+      page += F("Please disconnect from WiFi AP to continue!");
     }
     else
     {
@@ -489,7 +489,7 @@ void IotWebConf::readParamValue(const char* paramName, char* target, unsigned in
 
 boolean IotWebConf::validateForm()
 {
-  // Clean previous error messages.
+  // -- Clean previous error messages.
   IotWebConfParameter *current = this->_firstParameter;
   while(current != NULL)
   {
@@ -497,14 +497,14 @@ boolean IotWebConf::validateForm()
     current = current->_nextParameter;
   }
   
-  // TODO call external validator.
+  // -- Call external validator.
   boolean valid = true;
   if (this->_formValidator != NULL)
   {
     valid = this->_formValidator();
   }
 
-  // Internal validation.
+  // -- Internal validation.
   int l = this->_server->arg(this->_thingNameParameter.id).length();
   if (3 > l)
   {
@@ -613,7 +613,7 @@ void IotWebConf::doLoop()
   doBlink();
   if (this->_state == IOTWEBCONF_STATE_BOOT)
   {
-    // -- After boot, fall immediatelly to AP mode.
+    // -- After boot, fall immediately to AP mode.
     this->changeState(IOTWEBCONF_STATE_AP_MODE);
   }
   else if (
@@ -656,7 +656,7 @@ void IotWebConf::changeState(byte newState)
   {
     case IOTWEBCONF_STATE_AP_MODE:
     {
-      // -- In AP mode we must override the default AP password. Othervise we stay in STATE_NOT_CONFIGURED.
+      // -- In AP mode we must override the default AP password. Otherwise we stay in STATE_NOT_CONFIGURED.
       boolean forceDefaultPassword = false;
       if (this->_forceDefaultPassword || (this->_apPassword[0] == '\0'))
       {
@@ -728,7 +728,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       WiFi.begin(this->_wifiSsid, this->_wifiPassword);
       break;
     case IOTWEBCONF_STATE_ONLINE:
-      this->blinkInternal(5000, 5);
+      this->blinkInternal(8000, 2);
       stopAp();
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
@@ -755,7 +755,7 @@ void IotWebConf::checkApTimeout()
     && (this->_apPassword[0] != '\0')
     && (!this->_forceDefaultPassword))
   {
-    // -- Only move on, when we have a valid Wifi and AP configured.
+    // -- Only move on, when we have a valid WifF and AP configured.
     if (
       (this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC)
        ||
@@ -769,7 +769,7 @@ void IotWebConf::checkApTimeout()
 
 /**
  * Checks whether we have anyone joined to our AP. 
- * If so, we must not change state. But when our gest leaved, we can immediatelly move on.
+ * If so, we must not change state. But when our guest leaved, we can immediately move on.
  */
 void IotWebConf::checkConnection()
 {
@@ -797,7 +797,7 @@ boolean IotWebConf::checkWifiConnection()
   if (WiFi.status() != WL_CONNECTED) {
     if (IotWebConf::smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
     {
-      // -- Wifi not available, fall back to AP mode.
+      // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
       WiFi.disconnect();
       this->changeState(IOTWEBCONF_STATE_AP_MODE);
