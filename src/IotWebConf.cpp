@@ -732,7 +732,10 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       stopAp();
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
-      this->_wifiConnectionCallback();
+      if (this->_wifiConnectionCallback != NULL)
+      {
+        this->_wifiConnectionCallback();
+      }
       break;
     default:
       break;
