@@ -173,7 +173,7 @@ class IotWebConf
     /**
      * Provide an Arduino pin here, that has a button connected to it with the other end of the pin is connected to GND.
      * The button pin is queried at for input on boot time (init time).
-     * If the button was pressed, the thing will enter AP mode with the initail password.
+     * If the button was pressed, the thing will enter AP mode with the initial password.
      * Must be called before init()!
      *   @configPin - An Arduino pin. Will be configured as INPUT_PULLUP!
      */
@@ -182,12 +182,12 @@ class IotWebConf
     /**
      * Provide an Arduino pin for status indicator (LOW = on). Blink codes:
      *   - Rapid blinks - The thing is in AP mode with default password.
-     *   - Rapid blinks, but mostly on - AP mode, waiting for confiuration changes.
+     *   - Rapid blinks, but mostly on - AP mode, waiting for configuration changes.
      *   - Normal blinks - Connecting to WiFi.
      *   - Mostly off with rare rapid blinks - WiFi is connected performing normal operation.
      * User can also apply custom blinks. See blink() method!
      * Must be called before init()!
-     *   @statusPin - An Arduin pin. Will be configured as OUTPUT!
+     *   @statusPin - An Arduino pin. Will be configured as OUTPUT!
      */
     void setStatusPin(int statusPin);
 
@@ -216,12 +216,12 @@ class IotWebConf
     /**
      * IotWebConf is a non-blocking, state controlled system. Therefor it should be
      * regularly triggered from the user code.
-     * So call this metod any time you can.
+     * So call this method any time you can.
      */
     void doLoop();
 
     /**
-     * Eache WebServer URL handler method should start with calling this method.
+     * Each WebServer URL handler method should start with calling this method.
      * If this method return true, the request was already served by it.
      */
     boolean handleCaptivePortal();
@@ -237,7 +237,7 @@ class IotWebConf
     void handleNotFound();
 
     /**
-     * Specify a callback method, that will be called upon wifi connection success.
+     * Specify a callback method, that will be called upon WiFi connection success.
      * Should be called before init()!
      */
     void setWifiConnectionCallback( void (*func)(void) );
@@ -259,7 +259,7 @@ class IotWebConf
      * Add a custom parameter, that will be handled by the IotWebConf module.
      * The parameter will be saved to/loaded from EEPROM automatically, 
      * and will appear on the config portal.
-     * Will return false, if adding was not successfull.
+     * Will return false, if adding was not successful.
      * Must be called before init()!
      */
     bool addParameter(IotWebConfParameter *parameter);
