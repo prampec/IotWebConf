@@ -12,10 +12,10 @@ placeholder	KEYWORD3
 defaultValue	KEYWORD3
 customHtml	KEYWORD3
 
-IotWebConfSeparator    KEYWORD1
+IotWebConfSeparator	KEYWORD1
 
-IotWebConf    KEYWORD1
-setConfigPin    KEYWORD2
+IotWebConf	KEYWORD1
+setConfigPin	KEYWORD2
 setStatusPin	KEYWORD2
 setupUpdateServer	KEYWORD2
 init	KEYWORD2
@@ -28,4 +28,3 @@ setConfigSavedCallback	KEYWORD2
 setFormValidator	KEYWORD2
 addParameter	KEYWORD2
 getThingName	KEYWORD2
-
