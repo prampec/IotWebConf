@@ -98,9 +98,9 @@ void IotWebConf::setStatusPin(int statusPin)
   this->_statusPin = statusPin;
 }
 
-void IotWebConf::setupUpdateServer(ESP8266HTTPUpdateServer* updateServer, const char* updatePath, const char* updateUsername, const char* updatePassword)
+void IotWebConf::setupUpdateServer(ESP8266HTTPUpdateServer* updateServer, const char* updatePath)
 {
-  updateServer->setup(this->_server, updatePath, updateUsername, updatePassword);
+  this->_updateServer = updateServer;
   this->_updatePath = updatePath;
 }
 
@@ -315,6 +315,17 @@ void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
 
 void IotWebConf::handleConfig()
 {
+  if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  {
+    // -- Authenticate
+    if(!this->_server->authenticate(IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword))
+    {
+      IOTWEBCONF_DEBUG_LINE(F("Requesting authentication."));
+      this->_server->requestAuthentication();
+      return;
+    }
+  }
+
   if (!this->_server->hasArg("iotSave") || !this->validateForm())
   {
     // -- Display config portal
@@ -532,6 +543,14 @@ void IotWebConf::handleNotFound() {
   if (this->handleCaptivePortal()) { // If captive portal redirect instead of displaying the error page.
     return;
   }
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print("Requested non-existing page '");
+  Serial.print(this->_server->uri());
+  Serial.print("' arguments(");
+  Serial.print(this->_server->method() == HTTP_GET ? "GET" : "POST");
+  Serial.print("):");
+  Serial.println(this->_server->args());
+#endif
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += this->_server->uri();
@@ -713,6 +732,13 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
         this->blinkInternal(300, 50);
       }
       setupAp();
+      if (this->_updateServer != NULL)
+      {
+        // TODO: ESP8266WebServer does not allow to re-register request handlers
+        //   so we need to set up UpdateServer with password, what is stupid.
+//        this->_updateServer->setup(this->_server, this->_updatePath);
+        this->_updateServer->setup(this->_server, this->_updatePath, IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
+      }
       this->_server->begin();
       this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
       this->_apStartTimeMs = millis();
@@ -730,6 +756,11 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
       stopAp();
+      // TODO: ESP8266WebServer does not allow to re-register request handlers.
+//      if (this->_updateServer != NULL)
+//      {
+//        this->_updateServer->setup(this->_server, this->_updatePath, IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
+//      }
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
       if (this->_wifiConnectionCallback != NULL)

@@ -77,6 +77,9 @@ const char IOTWEBCONF_HTTP_UPDATE[] PROGMEM       = "<div style='padding-top:25p
 #define IOTWEBCONF_STATUS_ON LOW
 #define IOTWEBCONF_STATUS_OFF HIGH
 
+// -- User name on login.
+#define IOTWEBCONF_ADMIN_USER_NAME "admin"
+
 /**
  *   IotWebConfParameters is a configuration item of the config portal.
  *   The parameter will have its input field on the configuration page,
@@ -193,18 +196,16 @@ class IotWebConf
 
     /**
      * Add an UpdateServer instance to the system. The firmware update link will appear on the config portal.
-     * The UpdateServer will be added to the WebServer with the path provided here.
+     * The UpdateServer will be added to the WebServer with the path provided here (or with "firmware",
+     * if none was provided).
+     * Login user will be IOTWEBCONF_ADMIN_USER_NAME, password is the password provided in the config portal.
      * Should be called before init()!
      *   @updateServer - An uninitialized UpdateServer instance.
-     *   @updatePath - The path to set up the UpdateServer with. Will be also used in the config portal.
-     *   @updateUsername - The user name to set up the UpdateServer with.
-     *   @updatePassword - The password to set up the UpdateServer with.
+     *   @updatePath - (Optional) The path to set up the UpdateServer with. Will be also used in the config portal.
      */
     void setupUpdateServer(
       ESP8266HTTPUpdateServer* updateServer,
-      const char* updatePath,
-      const char* updateUsername,
-      const char* updatePassword);
+      const char* updatePath = "/firmware");
 
     /**
      * Start up the IotWebConf module.
@@ -307,6 +308,7 @@ class IotWebConf
     const char *_configVersion;
     DNSServer* _dnsServer;
     ESP8266WebServer* _server;
+    ESP8266HTTPUpdateServer* _updateServer = NULL;
     int _configPin = -1;
     int _statusPin = -1;
     const char* _updatePath = NULL;
