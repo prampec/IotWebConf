@@ -35,10 +35,6 @@ const char thingName[] = "testThing";
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
 const char wifiInitialApPassword[] = "smrtTHNG8266";
 
-const char* updatePath = "/firmware";
-const char* updateUsername = "admin";
-const char* updatePassword = "admin";
-
 // -- Configuration specific key. The value should be modified if config structure was changed.
 #define CONFIG_VERSION "dem1"
 
@@ -65,7 +61,7 @@ void setup()
 
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-  iotWebConf.setupUpdateServer(&httpUpdater, updatePath, updateUsername, updatePassword);
+  iotWebConf.setupUpdateServer(&httpUpdater);
 
   // -- Initializing the configuration.
   iotWebConf.init();
