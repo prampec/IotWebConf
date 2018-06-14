@@ -38,6 +38,12 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - With WiFiManager you cannot use both startup and on-demand configuration. With IotWebConf the config portal remains available via the connected local WiFi.
   - IotWebConf is fitted for more advanced users. You can keep control of the web server setup, configuration item input field behavior, and validation.
 
+## Security aspects
+  - The inital system password must be modified by the user, so there is no build-in password.
+  - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
+  - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
+  - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
+  
 ## TODO
   - We might want to add a "verify password" field.
   - Firmware update ask for password when connected in AP mode.
