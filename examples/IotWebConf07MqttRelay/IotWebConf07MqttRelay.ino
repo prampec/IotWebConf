@@ -22,12 +22,12 @@
  *   This example starts an MQTT client with the configured
  *   connection settings.
  *   Will receives messages appears in channel "/devices/[thingName]/action"
- *   with payload 0/1, and reports current state in channel
+ *   with payload ON/OFF, and reports current state in channel
  *   "/devices/[thingName]/status" (ON/OFF). Where the thingName can be
  *   configured in the portal. A relay will be switched on/off
  *   corresponding to the received action. The relay can be also controlled
  *   by the push button.
- *   The thing will delay actions arriving within 10 seconds.
+ *   The thing will delay actions arriving within 7 seconds.
  *   
  *   This example also provides the firmware update option.
  *   (See previous examples for more details!)
@@ -74,7 +74,8 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 #define MQTT_TOPIC_PREFIX "/devices/"
 
-#define ACTION_FEQ_LIMIT 10000
+// -- Ignore/limit status changes more frequent than the value below (milliseconds).
+#define ACTION_FEQ_LIMIT 7000
 #define NO_ACTION -1
 
 // -- Callback method declarations.
@@ -191,6 +192,7 @@ void loop()
       iotWebConf.blink(0, 0); // No blink
     }
     mqttClient.publish(mqttStatusTopic, state == HIGH ? "ON" : "OFF", true, 1);
+    mqttClient.publish(mqttActionTopic, state == HIGH ? "ON" : "OFF", true, 1);
     Serial.print("Switched ");
     Serial.println(state == HIGH ? "ON" : "OFF");
     needAction = NO_ACTION;
@@ -265,6 +267,7 @@ boolean connectMqtt() {
 
   mqttClient.subscribe(mqttActionTopic);
   mqttClient.publish(mqttStatusTopic, state == HIGH ? "ON" : "OFF", true, 1);
+  mqttClient.publish(mqttActionTopic, state == HIGH ? "ON" : "OFF", true, 1);
 
   return true;
 }
@@ -275,7 +278,7 @@ void mqttMessageReceived(String &topic, String &payload)
   
   if (topic.endsWith("action"))
   {
-    needAction = payload.equals("1") ? HIGH : LOW;
+    needAction = payload.equals("ON") ? HIGH : LOW;
     if (needAction == state)
     {
       needAction = NO_ACTION;
