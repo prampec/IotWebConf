@@ -734,8 +734,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       setupAp();
       if (this->_updateServer != NULL)
       {
-        // TODO: ESP8266WebServer does not allow to re-register request handlers
-        //   so we need to set up UpdateServer with password, what is stupid.
+        // TODO: Later version of ESP8266WebServer will allow to change user name and password.
+        //   Until that, we need to set up UpdateServer with password, what is stupid.
 //        this->_updateServer->setup(this->_server, this->_updatePath);
         this->_updateServer->setup(this->_server, this->_updatePath, IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
       }
@@ -756,10 +756,10 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
       stopAp();
-      // TODO: ESP8266WebServer does not allow to re-register request handlers.
+      // TODO: Later version of ESP8266WebServer will allow to change user name and password.
 //      if (this->_updateServer != NULL)
 //      {
-//        this->_updateServer->setup(this->_server, this->_updatePath, IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
+//        this->_updateServer->updateCredentials(IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
 //      }
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
