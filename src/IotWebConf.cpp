@@ -81,6 +81,7 @@ IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, ESP82
   this->addParameter(&this->_apPasswordParameter);
   this->addParameter(&this->_wifiSsidParameter);
   this->addParameter(&this->_wifiPasswordParameter);
+  this->addParameter(&this->_apTimeoutParameter);
 }
 
 char* IotWebConf::getThingName()
@@ -299,11 +300,6 @@ void IotWebConf::setConfigSavedCallback( void (*func)(void) )
 void IotWebConf::setFormValidator( boolean (*func)(void) )
 {
   this->_formValidator = func;
-}
-
-void IotWebConf::setApTimeoutMs(unsigned long millis)
-{
-  this->_apTimeoutMs = millis;
 }
 
 void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)

@@ -276,13 +276,6 @@ class IotWebConf
     void delay(unsigned long millis);
     
     /**
-     * Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
-     * The default amount can be updated with this setter.
-     * Should be called before init()!
-     */
-    void setApTimeoutMs(unsigned long millis);
-
-    /**
      * IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
      * The default amount can be updated with this setter.
      * Should be called before init()!
