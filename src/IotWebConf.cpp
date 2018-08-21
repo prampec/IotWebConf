@@ -392,6 +392,7 @@ void IotWebConf::handleConfig()
     }
 
     page += FPSTR(IOTWEBCONF_HTTP_FORM_END);
+
     if (this->_updatePath != NULL)
     {
       String pitem = FPSTR(IOTWEBCONF_HTTP_UPDATE);
@@ -399,6 +400,13 @@ void IotWebConf::handleConfig()
       page += pitem;
     }
   
+    // -- Fill config version string;
+    {
+      String pitem = FPSTR(IOTWEBCONF_HTTP_CONFIG_VER);
+      pitem.replace("{v}", this->_configVersion);
+      page += pitem;
+    }
+
     page += FPSTR(IOTWEBCONF_HTTP_END);
   
     this->_server->sendHeader("Content-Length", String(page.length()));
@@ -730,20 +738,23 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       setupAp();
       if (this->_updateServer != NULL)
       {
-        // TODO: Later version of ESP8266WebServer will allow to change user name and password.
-        //   Until that, we need to set up UpdateServer with password, what is stupid.
-//        this->_updateServer->setup(this->_server, this->_updatePath);
-        this->_updateServer->setup(this->_server, this->_updatePath, IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
+        this->_updateServer->setup(this->_server, this->_updatePath);
       }
       this->_server->begin();
       this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
       this->_apStartTimeMs = millis();
       break;
     case IOTWEBCONF_STATE_CONNECTING:
+      if ((oldState == IOTWEBCONF_STATE_AP_MODE) || (oldState == IOTWEBCONF_STATE_NOT_CONFIGURED))
+      {
+        stopAp();
+      }
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
       Serial.print(this->_wifiSsid);
+      Serial.print("] with password [");
+      Serial.print(this->_wifiPassword);
       Serial.println("]");
 #endif
       this->_wifiConnectionStart = millis();
@@ -751,12 +762,10 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       break;
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
-      stopAp();
-      // TODO: Later version of ESP8266WebServer will allow to change user name and password.
-//      if (this->_updateServer != NULL)
-//      {
-//        this->_updateServer->updateCredentials(IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
-//      }
+      if (this->_updateServer != NULL)
+      {
+        this->_updateServer->updateCredentials(IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
+      }
       this->_server->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
       if (this->_wifiConnectionCallback != NULL)
@@ -829,7 +838,7 @@ boolean IotWebConf::checkWifiConnection()
     {
       // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
-      WiFi.disconnect();
+      WiFi.disconnect(true);
       this->changeState(IOTWEBCONF_STATE_AP_MODE);
     }
     return false;
@@ -883,7 +892,7 @@ void IotWebConf::setupAp()
 
 void IotWebConf::stopAp()
 {
-  WiFi.softAPdisconnect();
+  WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
 }
 
