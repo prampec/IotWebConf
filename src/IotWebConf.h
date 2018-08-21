@@ -24,7 +24,7 @@
 #define IOTWEBCONF_WORD_LEN 33
 
 // -- IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
-#define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 10000
+#define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 30000
 
 // -- Thing will stay in AP mode for an amount of time on boot, before retrying to connect to a WiFi network.
 #define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
@@ -57,6 +57,7 @@ const char IOTWEBCONF_HTTP_FORM_END[] PROGMEM     = "</fieldset><button type='su
 const char IOTWEBCONF_HTTP_SAVED[] PROGMEM        = "<div>Condiguration saved<br />Return to <a href='/'>home page</a>.</div>";
 const char IOTWEBCONF_HTTP_END[] PROGMEM          = "</div></body></html>";
 const char IOTWEBCONF_HTTP_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>";
+const char IOTWEBCONF_HTTP_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>";
 
 // -- State of the Thing
 #define IOTWEBCONF_STATE_BOOT             0
