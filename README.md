@@ -1,5 +1,6 @@
 ## Summary
 IotWebConf is an Arduino library for ESP8266 to provide a non-blocking standalone WiFi/AP web configuration portal.
+**Requires the esp8266 board package version 2.4.1!**
 
 ## Highlights
   - Manages WiFi connection settings,
@@ -31,7 +32,7 @@ IotWebConf saves configuration in the EEPROM. You can extend the config portal w
   1. **You want to change the configuration before the Thing connects to the Internet** - Fine! The Thing always starts up in AP mode and provides you a time frame to connect to it and make any modification to the configuration. Any time one is connected to the AP (provided by the device) the AP will stay on until the connection is closed. So take your time for the changes, the Thing will wait for you while you are connected to it.
   1. **You want to change the configuration at runtime** - No problem. IotWebConf keeps the config portal up and running even after the WiFi connection is finished. In this scenario you must enter username "admin" and password (already configured) to enter the config portal. Note, that the password provided for the authentication is not hidden from devices connected to the same WiFi network. You might want to force rebooting of the Thing to apply your changes.
 
-## IotWebConf vs. WifiManager
+## IotWebConf vs. WiFiManager
 tzapu's WiFiManager is a great library. The features of IotWebConf may appear very similar to WiFiManager. However, IotWebConf tries to be different.
   - WiFiManager does not manages your custom properties. IotWebConf stores your configuration in EEPROM.
   - WiFiManager does not do validation. IotWebConf allow you to validate your property changes made in the config portal.
@@ -46,7 +47,6 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   
 ## TODO
   - We might want to add a "verify password" field.
-  - Firmware update ask for password when connected in AP mode.
 
 ## Credits
 Although IotWebConf started without being influenced by any other solutions, in the final code you can find some segments borrowed from the WiFiManager library.
