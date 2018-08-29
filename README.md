@@ -45,7 +45,9 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
   
-## TODO
+## TODO / Feature requests
+  - Possibility to hide a config field from the user. (E.g. AP timeout field)
+  - Support ESP32
   - We might want to add a "verify password" field.
 
 ## Credits
