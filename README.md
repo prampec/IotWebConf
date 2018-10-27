@@ -1,14 +1,14 @@
 ## Summary
 IotWebConf is an Arduino library for ESP8266 to provide a non-blocking standalone WiFi/AP web configuration portal.
-**Requires the esp8266 board package version 2.4.1!**
+**Requires the esp8266 board package version 2.4.2 or later!**
 
 ## Highlights
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
-  - You can extend the configuration with your own property items,
+  - You can extend the configuration with your own property items, that are stored automatically,
   - Validation support for the configuration property items,
   - User code will be notified of status changes with callback methods,
-  - Stores configuration in the EEPROM,
+  - Configuration (including your custom items) stored in the EEPROM,
   - Firmware OTA update support,
   - Config portal remains available even after WiFi is connected,
   - Automatic "Sign in to network" pop up in your browser (captive portal),
@@ -45,7 +45,9 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
   
-## TODO
+## TODO / Feature requests
+  - Possibility to hide a config field from the user. (E.g. AP timeout field)
+  - Support ESP32
   - We might want to add a "verify password" field.
 
 ## Credits
