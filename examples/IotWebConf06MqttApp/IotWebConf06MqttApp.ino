@@ -138,6 +138,11 @@ void loop()
       needMqttConnect = false;
     }
   }
+  else if ((iotWebConf.getState() == IOTWEBCONF_STATE_ONLINE) && (!mqttClient.connected()))
+  {
+    Serial.println("MQTT reconnect");
+    connectMqtt();
+  }
 
   if (needReset)
   {

@@ -292,6 +292,8 @@ class IotWebConf
      */
     void blink(unsigned long repeatMs, byte dutyCyclePercent);
 
+    byte getState() { return this->_state; };
+
     /**
      * Helper method to check time elapse while checking number overflow.
      * Will return true while the sum of the two numbers are smaller than the third one.
