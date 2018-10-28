@@ -50,6 +50,9 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - Support ESP32
   - We might want to add a "verify password" field.
 
+## Known issues
+  - It is reported, that there might be unstable working with different lwIP variants. If you experiment serious problems, try to select another lwIP varian for your board in the Tools menu! (Tested with "v2 Lower Memory" version.)
+  
 ## Credits
 Although IotWebConf started without being influenced by any other solutions, in the final code you can find some segments borrowed from the WiFiManager library.
   - https://github.com/tzapu/WiFiManager
