@@ -1,7 +1,7 @@
 /**
- * IotWebConf.h -- IotWebConf is an ESP8266 non blocking WiFi/AP 
+ * IotWebConf.h -- IotWebConf is an ESP8266 non blocking WiFi/AP
  *   web configuration library for Arduino.
- *   https://github.com/prampec/IotWebConf 
+ *   https://github.com/prampec/IotWebConf
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
  *
@@ -90,7 +90,7 @@ class IotWebConfParameter {
   public:
     /**
      * Create a parameter for the config portal.
-     * 
+     *
      *   @label - Displayable label at the config portal.
      *   @id - Identifier used for HTTP queries and as configuration key. Must not contain spaces nor other special characters.
      *   @valueBuffer - Configuration value will be loaded to this buffer from the EEPROM.
@@ -256,10 +256,10 @@ class IotWebConf
      * Should be called before init()!
      */
     void setFormValidator( boolean (*func)(void) );
-    
+
     /**
      * Add a custom parameter, that will be handled by the IotWebConf module.
-     * The parameter will be saved to/loaded from EEPROM automatically, 
+     * The parameter will be saved to/loaded from EEPROM automatically,
      * and will appear on the config portal.
      * Will return false, if adding was not successful.
      * Must be called before init()!
@@ -275,7 +275,7 @@ class IotWebConf
      * Use this delay, to prevent blocking IotWebConf.
      */
     void delay(unsigned long millis);
-    
+
     /**
      * IotWebConf tries to connect to the local network for an amount of time before falling back to AP mode.
      * The default amount can be updated with this setter.
@@ -351,7 +351,7 @@ class IotWebConf
     void stateChanged(byte oldState, byte newState);
     boolean isIp(String str);
     String toStringIp(IPAddress ip);
-    boolean doBlink();
+    void doBlink();
     void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
 
     void checkApTimeout();
