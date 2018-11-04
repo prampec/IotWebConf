@@ -111,7 +111,8 @@ class IotWebConfParameter {
       const char *type = "text",
       const char *placeholder = NULL,
       const char *defaultValue = NULL,
-      const char *customHtml = NULL);
+      const char *customHtml = NULL,
+      boolean visible = true);
 
     /**
      * Same as normal constructor, but config portal does not render a default input field
@@ -131,16 +132,22 @@ class IotWebConfParameter {
     IotWebConfParameter();
 
     const char *label;
-    const char *id = 0;
     char       *valueBuffer;
-    int         length;
     const char *type;
     const char *placeholder;
     const char *customHtml;
+    boolean visible;
     const char *errorMessage;
 
     // -- For internal use only
     IotWebConfParameter* _nextParameter = NULL;
+
+    const char* getId() { return this->_id; }
+    int getLength() { return this->_length; }
+
+  private:
+    const char *_id = 0;
+    int         _length;
 };
 
 /**
@@ -292,7 +299,40 @@ class IotWebConf
      */
     void blink(unsigned long repeatMs, byte dutyCyclePercent);
 
+    /**
+     * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
+     */
     byte getState() { return this->_state; };
+
+    /**
+     * This method can be used to set the AP timeout directly without modifying the apTimeoutParameter.
+     * Note, that apTimeoutMs value will be reset to the value of apTimeoutParameter on init and on config save.
+     */
+    void setApTimeoutMs(unsigned long apTimeoutMs) { this->_apTimeoutMs = apTimeoutMs; };
+
+    /**
+     * Returns the actual value of the AP timeout in use.
+     */
+    unsigned long getApTimeoutMs() { return this->_apTimeoutMs; };
+
+    /**
+     * Get internal parameters, for manual handling.
+     * Normally you don't need to access these parameters directly.
+     * Note, that changing valueBuffer of these parameters should be followed by configSave()!
+     */
+    IotWebConfParameter* getThingNameParameter() { return &this->_thingNameParameter; };
+    IotWebConfParameter* getApPasswordParameter() { return &this->_apPasswordParameter; };
+    IotWebConfParameter* getWifiSsidParameter() { return &this->_wifiSsidParameter; };
+    IotWebConfParameter* getWifiPasswordParameter() { return &this->_wifiPasswordParameter; };
+    IotWebConfParameter* getApTimeoutParameter() { return &this->_apTimeoutParameter; };
+
+    /**
+     * If config parameters are modified directly, the new values can be saved by this method.
+     * Note, that init() must pretend configSave()!
+     * Also note, that configSave writes to EEPROM, and EEPROM can be written only some thousand times
+     *  in the lifetime of an ESP8266 module.
+     */
+    void configSave();
 
     /**
      * Helper method to check time elapse while checking number overflow.
@@ -338,7 +378,6 @@ class IotWebConf
 
     void configInit();
     boolean configLoad();
-    void configSave();
     boolean configTestVersion();
     void configSaveConfigVersion();
     void readEepromValue(int start, char* valueBuffer, int length);

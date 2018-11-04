@@ -30,15 +30,17 @@ IotWebConfParameter::IotWebConfParameter(
   const char *type,
   const char *placeholder,
   const char *defaultValue,
-  const char *customHtml)
+  const char *customHtml,
+  boolean visible)
 {
   this->label = label;
-  this->id = id;
+  this->_id = id;
   this->valueBuffer = valueBuffer;
-  this->length = length;
+  this->_length = length;
   this->type = type;
   this->placeholder = placeholder;
   this->customHtml = customHtml;
+  this->visible = visible;
 }
 IotWebConfParameter::IotWebConfParameter(
   const char *id,
@@ -48,14 +50,15 @@ IotWebConfParameter::IotWebConfParameter(
   const char *type)
 {
   this->label = NULL;
-  this->id = id;
+  this->_id = id;
   this->valueBuffer = valueBuffer;
-  this->length = length;
+  this->_length = length;
   this->type = type;
   this->customHtml = customHtml;
+  this->visible = true;
 }
 
-IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL)
+IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, true)
 {
 }
 
@@ -76,7 +79,7 @@ IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, ESP82
   this->_apPasswordParameter = IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_WORD_LEN, "password");
   this->_wifiSsidParameter = IotWebConfParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
   this->_wifiPasswordParameter = IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_WORD_LEN, "password");
-  this->_apTimeoutParameter = IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, "min='1' max='600'");
+  this->_apTimeoutParameter = IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, "min='1' max='600'", false);
   this->addParameter(&this->_thingNameParameter);
   this->addParameter(&this->_apPasswordParameter);
   this->addParameter(&this->_wifiSsidParameter);
@@ -151,7 +154,7 @@ bool IotWebConf::addParameter(IotWebConfParameter *parameter)
 {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print("Adding parameter '");
-  Serial.print(parameter->id);
+  Serial.print(parameter->getId());
   Serial.println("'");
 #endif
   if (this->_firstParameter == NULL)
@@ -176,7 +179,7 @@ void IotWebConf::configInit()
   IotWebConfParameter *current = this->_firstParameter;
   while(current != NULL)
   {
-    size += current->length;
+    size += current->getLength();
     current = current->_nextParameter;
   }
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -198,18 +201,18 @@ boolean IotWebConf::configLoad()
     int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VESION_LENGTH;
     while(current != NULL)
     {
-      if (current->id != NULL)
+      if (current->getId() != NULL)
       {
-        this->readEepromValue(start, current->valueBuffer, current->length);
+        this->readEepromValue(start, current->valueBuffer, current->getLength());
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.print("Loaded config '");
-        Serial.print(current->id);
+        Serial.print(current->getId());
         Serial.print("'= '");
         Serial.print(current->valueBuffer);
         Serial.println("'");
 #endif
   
-        start += current->length;
+        start += current->getLength();
       }
       current = current->_nextParameter;
     }
@@ -229,22 +232,24 @@ void IotWebConf::configSave()
   int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VESION_LENGTH;
   while(current != NULL)
   {
-    if (current->id != NULL)
+    if (current->getId() != NULL)
     {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Saving config '");
-      Serial.print(current->id);
+      Serial.print(current->getId());
       Serial.print("'= '");
       Serial.print(current->valueBuffer);
       Serial.println("'");
 #endif
   
-      this->writeEepromValue(start, current->valueBuffer, current->length);
-      start += current->length;
+      this->writeEepromValue(start, current->valueBuffer, current->getLength());
+      start += current->getLength();
     }
     current = current->_nextParameter;
   }
   EEPROM.commit();
+
+  this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
   if (this->_configSavedCallback != NULL)
   {
@@ -338,18 +343,18 @@ void IotWebConf::handleConfig()
     IotWebConfParameter *current = this->_firstParameter;
     while(current != NULL)
     {
-      if (current->id == NULL)
+      if (current->getId() == NULL)
       {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.println("Rendering separator");
 #endif
         page += "</fieldset><fieldset>";
       }
-      else
+      else if (current->visible)
       {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.print("Rendering '");
-        Serial.print(current->id);
+        Serial.print(current->getId());
         Serial.print("' with value: ");
         Serial.println(current->valueBuffer);
 #endif
@@ -358,19 +363,19 @@ void IotWebConf::handleConfig()
         if (current->label != NULL) {
           pitem.replace("{b}", current->label);
           pitem.replace("{t}", current->type);
-          pitem.replace("{i}", current->id);
+          pitem.replace("{i}", current->getId());
           pitem.replace("{p}", current->placeholder);
-          snprintf(parLength, 5, "%d", current->length);
+          snprintf(parLength, 5, "%d", current->getLength());
           pitem.replace("{l}", parLength);
           if (strcmp("password", current->type) == 0)
           {
             // -- Value of password is not rendered
             pitem.replace("{v}", "");
           }
-          else if (this->_server->hasArg(current->id))
+          else if (this->_server->hasArg(current->getId()))
           {
             // -- Value from previous submit
-            pitem.replace("{v}", this->_server->arg(current->id));
+            pitem.replace("{v}", this->_server->arg(current->getId()));
           }
           else
           {
@@ -421,34 +426,34 @@ void IotWebConf::handleConfig()
     IotWebConfParameter *current = this->_firstParameter;
     while(current != NULL)
     {
-      if (current->id != NULL)
+      if ((current->getId() != NULL) && (current->visible))
       {
-        if ((strcmp("password", current->type) == 0) && (current->length <= IOTWEBCONF_WORD_LEN))
+        if ((strcmp("password", current->type) == 0) && (current->getLength() <= IOTWEBCONF_WORD_LEN))
         {
           // TODO: Passwords longer than IOTWEBCONF_WORD_LEN not supported.
-          this->readParamValue(current->id, temp, current->length);
+          this->readParamValue(current->getId(), temp, current->getLength());
           if (temp[0] != '\0')
           {
             // -- Value was set.
-            strncpy(current->valueBuffer, temp, current->length);
+            strncpy(current->valueBuffer, temp, current->getLength());
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-            Serial.print(current->id);
+            Serial.print(current->getId());
             Serial.println(" was set");
 #endif
           }
           else
           {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-            Serial.print(current->id);
+            Serial.print(current->getId());
             Serial.println(" was not changed");
 #endif
           }
         }
         else
         {
-          this->readParamValue(current->id, current->valueBuffer, current->length);
+          this->readParamValue(current->getId(), current->valueBuffer, current->getLength());
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-          Serial.print(current->id);
+          Serial.print(current->getId());
           Serial.print("='");
           Serial.print(current->valueBuffer);
           Serial.println("'");
@@ -520,19 +525,19 @@ boolean IotWebConf::validateForm()
   }
 
   // -- Internal validation.
-  int l = this->_server->arg(this->_thingNameParameter.id).length();
+  int l = this->_server->arg(this->_thingNameParameter.getId()).length();
   if (3 > l)
   {
     this->_thingNameParameter.errorMessage = "Give a name with at least 3 characters.";
     valid = false;
   }
-  l = this->_server->arg(this->_apPasswordParameter.id).length();
+  l = this->_server->arg(this->_apPasswordParameter.getId()).length();
   if ((0 < l) && (l < 8))
   {
     this->_apPasswordParameter.errorMessage = "Password length must be at least 8 characters.";
     valid = false;
   }
-  l = this->_server->arg(this->_wifiPasswordParameter.id).length();
+  l = this->_server->arg(this->_wifiPasswordParameter.getId()).length();
   if ((0 < l) && (l < 8))
   {
     this->_wifiPasswordParameter.errorMessage = "Password length must be at least 8 characters.";
