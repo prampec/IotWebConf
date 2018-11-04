@@ -81,6 +81,7 @@ void setup()
   iotWebConf.addParameter(&floatParam);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
+  iotWebConf.getApTimeoutParameter()->visible = true;
 
   // -- Initializing the configuration.
   iotWebConf.init();
@@ -136,7 +137,7 @@ boolean formValidator()
   Serial.println("Validating form.");
   boolean valid = true;
 
-  int l = server.arg(stringParam.id).length();
+  int l = server.arg(stringParam.getId()).length();
   if (l < 3)
   {
     stringParam.errorMessage = "Please provide at least 3 characters for this test!";
