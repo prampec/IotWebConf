@@ -246,7 +246,7 @@ boolean formValidator()
   Serial.println("Validating form.");
   boolean valid = true;
 
-  int l = server.arg(mqttServerParam.id).length();
+  int l = server.arg(mqttServerParam.getId()).length();
   if (l < 3)
   {
     mqttServerParam.errorMessage = "Please provide at least 3 characters!";
