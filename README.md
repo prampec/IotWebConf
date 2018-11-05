@@ -46,7 +46,6 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
   
 ## TODO / Feature requests
-  - Possibility to hide a config field from the user. (E.g. AP timeout field)
   - Support ESP32
   - We might want to add a "verify password" field.
 
