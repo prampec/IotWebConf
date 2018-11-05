@@ -132,7 +132,7 @@ boolean formValidator()
   Serial.println("Validating form.");
   boolean valid = true;
 
-  int l = server.arg(stringParam.id).length();
+  int l = server.arg(stringParam.getId()).length();
   if (l < 3)
   {
     stringParam.errorMessage = "Please provide at least 3 characters for this test!";
