@@ -1,7 +1,7 @@
 /**
- * IotWebConf.cpp -- IotWebConf is an ESP8266 non blocking WiFi/AP 
+ * IotWebConf.cpp -- IotWebConf is an ESP8266 non blocking WiFi/AP
  *   web configuration library for Arduino.
- *   https://github.com/prampec/IotWebConf 
+ *   https://github.com/prampec/IotWebConf
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
  *
@@ -128,7 +128,7 @@ boolean IotWebConf::init()
   if (!validConfig)
   {
     // -- No config
-    this->_apPassword[0] != '\0';
+    this->_apPassword[0] = '\0';
     this->_wifiSsid[0] = '\0';
     this->_wifiPassword[0] = '\0';
     this->_apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
@@ -211,7 +211,7 @@ boolean IotWebConf::configLoad()
         Serial.print(current->valueBuffer);
         Serial.println("'");
 #endif
-  
+
         start += current->getLength();
       }
       current = current->_nextParameter;
@@ -241,7 +241,7 @@ void IotWebConf::configSave()
       Serial.print(current->valueBuffer);
       Serial.println("'");
 #endif
-  
+
       this->writeEepromValue(start, current->valueBuffer, current->getLength());
       start += current->getLength();
     }
@@ -259,14 +259,14 @@ void IotWebConf::configSave()
 
 void IotWebConf::readEepromValue(int start, char* valueBuffer, int length)
 {
-    for (unsigned int t=0; t<length; t++)
+    for (int t=0; t<length; t++)
     {
       *((char*)valueBuffer + t) = EEPROM.read(start + t);
     }
 }
 void IotWebConf::writeEepromValue(int start, char* valueBuffer, int length)
 {
-    for (unsigned int t=0; t<length; t++)
+    for (int t=0; t<length; t++)
     {
       EEPROM.write(start+t, *((char*)valueBuffer + t));
     }
@@ -358,7 +358,7 @@ void IotWebConf::handleConfig()
         Serial.print("' with value: ");
         Serial.println(current->valueBuffer);
 #endif
-  
+
         String pitem = FPSTR(IOTWEBCONF_HTTP_FORM_PARAM);
         if (current->label != NULL) {
           pitem.replace("{b}", current->label);
@@ -390,7 +390,7 @@ void IotWebConf::handleConfig()
         {
           pitem = current->customHtml;
         }
-    
+
         page += pitem;
       }
       current = current->_nextParameter;
@@ -404,7 +404,7 @@ void IotWebConf::handleConfig()
       pitem.replace("{u}", this->_updatePath);
       page += pitem;
     }
-  
+
     // -- Fill config version string;
     {
       String pitem = FPSTR(IOTWEBCONF_HTTP_CONFIG_VER);
@@ -413,7 +413,7 @@ void IotWebConf::handleConfig()
     }
 
     page += FPSTR(IOTWEBCONF_HTTP_END);
-  
+
     this->_server->sendHeader("Content-Length", String(page.length()));
     this->_server->send(200, "text/html", page);
   }
@@ -422,7 +422,7 @@ void IotWebConf::handleConfig()
     // -- Save config
     IOTWEBCONF_DEBUG_LINE(F("Updating configuration"));
     char temp[IOTWEBCONF_WORD_LEN];
-  
+
     IotWebConfParameter *current = this->_firstParameter;
     while(current != NULL)
     {
@@ -464,7 +464,7 @@ void IotWebConf::handleConfig()
     }
 
     this->configSave();
-  
+
     String page = FPSTR(IOTWEBCONF_HTTP_HEAD);
     page.replace("{v}", "Config ESP");
     page += FPSTR(IOTWEBCONF_HTTP_SCRIPT);
@@ -516,7 +516,7 @@ boolean IotWebConf::validateForm()
     current->errorMessage = NULL;
     current = current->_nextParameter;
   }
-  
+
   // -- Call external validator.
   boolean valid = true;
   if (this->_formValidator != NULL)
@@ -543,7 +543,7 @@ boolean IotWebConf::validateForm()
     this->_wifiPasswordParameter.errorMessage = "Password length must be at least 8 characters.";
     valid = false;
   }
-  
+
   return valid;
 }
 
@@ -685,7 +685,6 @@ void IotWebConf::changeState(byte newState)
     case IOTWEBCONF_STATE_AP_MODE:
     {
       // -- In AP mode we must override the default AP password. Otherwise we stay in STATE_NOT_CONFIGURED.
-      boolean forceDefaultPassword = false;
       if (this->_forceDefaultPassword || (this->_apPassword[0] == '\0'))
       {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -812,7 +811,7 @@ void IotWebConf::checkApTimeout()
 }
 
 /**
- * Checks whether we have anyone joined to our AP. 
+ * Checks whether we have anyone joined to our AP.
  * If so, we must not change state. But when our guest leaved, we can immediately move on.
  */
 void IotWebConf::checkConnection()
@@ -924,7 +923,7 @@ void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
   this->_internalBlinkOffMs = this->_blinkOffMs;
 }
 
-boolean IotWebConf::doBlink()
+void IotWebConf::doBlink()
 {
   if (IOTWEBCONF_STATUS_ENABLED)
   {
