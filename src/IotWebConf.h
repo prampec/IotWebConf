@@ -249,20 +249,20 @@ class IotWebConf
      * Specify a callback method, that will be called upon WiFi connection success.
      * Should be called before init()!
      */
-    void setWifiConnectionCallback( void (*func)(void) );
+    void setWifiConnectionCallback( std::function<void()> func );
 
     /**
      * Specify a callback method, that will be called when settings have been changed.
      * Should be called before init()!
      */
-    void setConfigSavedCallback( void (*func)(void) );
+    void setConfigSavedCallback( std::function<void()> func );
 
     /**
      * Specify a callback method, that will be called when form validation is required.
      * If the method will return false, the configuration will not be saved.
      * Should be called before init()!
      */
-    void setFormValidator( boolean (*func)(void) );
+    void setFormValidator( std::function<boolean()> func );
 
     /**
      * Add a custom parameter, that will be handled by the IotWebConf module.
@@ -365,9 +365,9 @@ class IotWebConf
     byte _state = IOTWEBCONF_STATE_BOOT;
     unsigned long _apStartTimeMs = 0;
     byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
-    void (*_wifiConnectionCallback)(void) = NULL;
-    void (*_configSavedCallback)(void) = NULL;
-    boolean (*_formValidator)(void) = NULL;
+    std::function<void()> _wifiConnectionCallback = NULL;
+    std::function<void()> _configSavedCallback = NULL;
+    std::function<boolean()> _formValidator = NULL;
     unsigned long _internalBlinkOnMs = 500;
     unsigned long _internalBlinkOffMs = 500;
     unsigned long _blinkOnMs = 500;
