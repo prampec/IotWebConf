@@ -292,17 +292,17 @@ void IotWebConf::configSaveConfigVersion()
   }
 }
 
-void IotWebConf::setWifiConnectionCallback( void (*func)(void) )
+void IotWebConf::setWifiConnectionCallback( std::function<void()> func )
 {
   this->_wifiConnectionCallback = func;
 }
 
-void IotWebConf::setConfigSavedCallback( void (*func)(void) )
+void IotWebConf::setConfigSavedCallback( std::function<void()> func )
 {
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setFormValidator( boolean (*func)(void) )
+void IotWebConf::setFormValidator( std::function<boolean()> func )
 {
   this->_formValidator = func;
 }

@@ -3,6 +3,7 @@ IotWebConf is an Arduino library for ESP8266 to provide a non-blocking standalon
 **Requires the esp8266 board package version 2.4.2 or later!**
 
 ## Highlights
+
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
   - You can extend the configuration with your own property items, that are stored automatically,
@@ -15,6 +16,8 @@ IotWebConf is an Arduino library for ESP8266 to provide a non-blocking standalon
   - Non-blocking - Your custom code will not be blocked in the whole process.
   - Well documented header file, and examples from simple to complex levels.
 
+![Screenshot](https://sharedinventions.com/wp-content/uploads/2018/11/Screenshot_20181105-191748a.png)
+  
 ## How it works
 The idea is that the Thing will provide a web interface to allow modifying its configuration. E.g. for connecting to a local WiFi network, it needs the SSID and the password.
 
