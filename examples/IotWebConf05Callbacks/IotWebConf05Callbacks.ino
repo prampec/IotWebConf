@@ -77,7 +77,7 @@ void setup()
   boolean validConfig = iotWebConf.init();
   if (!validConfig)
   {
-    stringParamValue[0] != '\0';
+    stringParamValue[0] = '\0';
   }
 
   // -- Set up required URL handlers on the web server.

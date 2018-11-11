@@ -124,7 +124,7 @@ void setup()
   boolean validConfig = iotWebConf.init();
   if (!validConfig)
   {
-    mqttServerValue[0] != '\0';
+    mqttServerValue[0] = '\0';
   }
 
   // -- Set up required URL handlers on the web server.
