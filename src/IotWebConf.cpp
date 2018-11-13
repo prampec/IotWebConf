@@ -152,15 +152,17 @@ boolean IotWebConf::init()
 
 bool IotWebConf::addParameter(IotWebConfParameter *parameter)
 {
+/*
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print("Adding parameter '");
   Serial.print(parameter->getId());
   Serial.println("'");
 #endif
+*/
   if (this->_firstParameter == NULL)
   {
     this->_firstParameter = parameter;
-    IOTWEBCONF_DEBUG_LINE(F("Adding as first"));
+//    IOTWEBCONF_DEBUG_LINE(F("Adding as first"));
     return true;
   }
   IotWebConfParameter *current = this->_firstParameter;
@@ -849,9 +851,11 @@ boolean IotWebConf::checkWifiConnection()
   }
 
   // -- Connected
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.println("WiFi connected");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
+#endif
 
   return true;
 }
