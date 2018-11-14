@@ -37,10 +37,19 @@
  *   https://github.com/256dpi/arduino-mqtt
  * 
  * Hardware setup for this example:
- *   - A Relay is attached to the D1 pin (On=HIGH)
+ *   - A Relay is attached to the D5 pin (On=HIGH). Note on relay pin!
  *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
  *   - A push button is attached to pin D2, the other leg of the
  *     button should be attached to GND.
+ *
+ * Note on relay pin
+ *   Some people might want to use Wemos Relay Shield to test this example.
+ *   Now Wemos Relay Shield connects the relay to pin D1.
+ *   However, when using D1 as output, Serial communication will be blocked.
+ *   So you will either keep on using D1 and miss the Serial monitor
+ *   feedback, or connect your relay to another digital pin (e.g. D5).
+ *   (You can modify your Wemos Relay Shield for that, as I show it in this
+ *   video: https://youtu.be/GykA_7QmoXE)
  */
 
 #include <ESP8266WiFi.h>
@@ -69,8 +78,8 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
-// -- Connected ouput pin.
-#define RELAY_PIN D1
+// -- Connected ouput pin. See "Note on relay pin"!
+#define RELAY_PIN D5
 
 #define MQTT_TOPIC_PREFIX "/devices/"
 
@@ -106,7 +115,7 @@ char mqttStatusTopic[STRING_LEN];
 
 void setup() 
 {
-  Serial.begin(115200);
+  Serial.begin(115200); // See "Note on relay pin"!
   Serial.println();
   Serial.println("Starting up...");
 
