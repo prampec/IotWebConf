@@ -334,11 +334,6 @@ class IotWebConf
      */
     void configSave();
 
-    /**
-     * Helper method to check time elapse while checking number overflow.
-     * Will return true while the sum of the two numbers are smaller than the third one.
-     */
-    static boolean smallerCheckOverflow(unsigned long prevMillis, unsigned long diff, unsigned long currentMillis);
   private:
     const char* _initialApPassword = NULL;
     const char *_configVersion;
