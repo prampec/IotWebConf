@@ -118,7 +118,7 @@ void loop()
 
   // -- Check for button push
   if ((digitalRead(BUTTON_PIN) == LOW)
-    && IotWebConf::smallerCheckOverflow(lastAction, ACTION_FEQ_LIMIT, now))
+    && (ACTION_FEQ_LIMIT < now - lastAction))
   {
     needAction = 1 - state; // -- Invert the state
   }
@@ -129,7 +129,7 @@ void loop()
 void applyAction(unsigned long now)
 {
   if ((needAction != NO_ACTION)
-    && IotWebConf::smallerCheckOverflow(lastAction, ACTION_FEQ_LIMIT, now))
+    && (ACTION_FEQ_LIMIT < now - lastAction))
   {
     state = needAction;
     digitalWrite(RELAY_PIN, state);

@@ -187,13 +187,13 @@ void loop()
 
   // -- Check for button push
   if ((digitalRead(BUTTON_PIN) == LOW)
-    && IotWebConf::smallerCheckOverflow(lastAction, ACTION_FEQ_LIMIT, now))
+    && ( ACTION_FEQ_LIMIT < now - lastAction))
   {
     needAction = 1 - state; // -- Invert the state
   }
   
   if ((needAction != NO_ACTION)
-    && IotWebConf::smallerCheckOverflow(lastAction, ACTION_FEQ_LIMIT, now))
+    && ( ACTION_FEQ_LIMIT < now - lastAction))
   {
     state = needAction;
     digitalWrite(RELAY_PIN, state);
@@ -267,7 +267,7 @@ boolean formValidator()
 
 boolean connectMqtt() {
   unsigned long now = millis();
-  if (!IotWebConf::smallerCheckOverflow(lastMqttConnectionAttempt, 1000, now))
+  if (1000 > now - lastMqttConnectionAttempt)
   {
     // Do not repeat within 1 sec.
     return false;
