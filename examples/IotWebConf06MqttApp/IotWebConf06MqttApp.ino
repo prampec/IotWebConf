@@ -152,7 +152,7 @@ void loop()
   }
 
   unsigned long now = millis();
-  if (((lastReport + 500) < now) && (pinState != digitalRead(CONFIG_PIN)))
+  if ((500 < now - lastReport) && (pinState != digitalRead(CONFIG_PIN)))
   {
     pinState = 1 - pinState; // invert pin state as it is changed
     lastReport = now;
@@ -213,7 +213,7 @@ boolean formValidator()
 
 boolean connectMqtt() {
   unsigned long now = millis();
-  if ((lastMqttConnectionAttempt + 1000) > now)
+  if (1000 > now - lastMqttConnectionAttempt)
   {
     // Do not repeat within 1 sec.
     return false;

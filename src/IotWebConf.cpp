@@ -631,7 +631,7 @@ String IotWebConf::toStringIp(IPAddress ip) {
 void IotWebConf::delay(unsigned long m)
 {
   unsigned long delayStart = millis();
-  while(!IotWebConf::smallerCheckOverflow(delayStart, m, millis()))
+  while(m > millis() - delayStart)
   {
     this->doLoop();
     delay(1);
@@ -784,16 +784,6 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
   }
 }
 
-boolean IotWebConf::smallerCheckOverflow(unsigned long prevMillis, unsigned long diff, unsigned long currentMillis)
-{
-  if ((prevMillis < currentMillis) && ((prevMillis + diff) < prevMillis))
-  // -- current does not overflows, but pref+diff does
-  {
-    return false;
-  }
-  return prevMillis + diff < currentMillis;
-}
-
 void IotWebConf::checkApTimeout()
 {
   if ((this->_wifiSsid[0] != '\0')
@@ -804,7 +794,7 @@ void IotWebConf::checkApTimeout()
     if (
       (this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC)
        ||
-      (IotWebConf::smallerCheckOverflow(this->_apStartTimeMs, this->_apTimeoutMs, millis())
+      ((this->_apTimeoutMs < millis() - this->_apStartTimeMs)
       && (this->_apConnectionStatus != IOTWEBCONF_AP_CONNECTION_STATE_C)))
     {
       this->changeState(IOTWEBCONF_STATE_CONNECTING);
@@ -840,7 +830,7 @@ void IotWebConf::checkConnection()
 boolean IotWebConf::checkWifiConnection()
 {
   if (WiFi.status() != WL_CONNECTED) {
-    if (IotWebConf::smallerCheckOverflow(this->_wifiConnectionStart, this->_wifiConnectionTimeoutMs, millis()))
+    if (this->_wifiConnectionTimeoutMs < millis() - this->_wifiConnectionStart)
     {
       // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
@@ -935,7 +925,7 @@ void IotWebConf::doBlink()
     unsigned long delayMs =
      this->_blinkState == LOW ?
       this->_blinkOnMs : this->_blinkOffMs;
-    if (smallerCheckOverflow(this->_lastBlinkTime, delayMs, now))
+    if (delayMs < now - this->_lastBlinkTime)
     {
       this->_blinkState = 1 - this->_blinkState;
       this->_lastBlinkTime = now;
