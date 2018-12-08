@@ -1,6 +1,6 @@
 /**
- * IotWebConf04UpdateServer.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
- *   web configuration library for Arduino.
+ * IotWebConf04UpdateServer.ino -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -16,6 +16,7 @@
  *   config portal.
  *   (See ESP8266 ESP8266HTTPUpdateServer examples 
  *   to understand UpdateServer!)
+ *   (ESP32: HTTPUpdateServer library is ported for ESP32 in this project.)
  *   (See previous examples for more details!)
  * 
  * Hardware setup for this example:
@@ -24,9 +25,6 @@
  *     button should be attached to GND.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
@@ -48,8 +46,8 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define STATUS_PIN LED_BUILTIN
 
 DNSServer dnsServer;
-ESP8266WebServer server(80);
-ESP8266HTTPUpdateServer httpUpdater;
+WebServer server(80);
+HTTPUpdateServer httpUpdater;
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 

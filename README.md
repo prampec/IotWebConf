@@ -1,6 +1,6 @@
 ## Summary
-IotWebConf is an Arduino library for ESP8266 to provide a non-blocking standalone WiFi/AP web configuration portal.
-**Requires the esp8266 board package version 2.4.2 or later!**
+IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking standalone WiFi/AP web configuration portal.
+**For ESP8266, IotWebConf requires the esp8266 board package version 2.4.2 or later!**
 
 ## Highlights
 
@@ -40,6 +40,7 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - WiFiManager does not manages your custom properties. IotWebConf stores your configuration in EEPROM.
   - WiFiManager does not do validation. IotWebConf allow you to validate your property changes made in the config portal.
   - With WiFiManager you cannot use both startup and on-demand configuration. With IotWebConf the config portal remains available via the connected local WiFi.
+  - WiFiManager provides list of available networks and also an information page, while these features are cool, IotWebConf tries to keep the code simple. So these features are not (yet) provided by IotWebConf.
   - IotWebConf is fitted for more advanced users. You can keep control of the web server setup, configuration item input field behavior, and validation.
 
 ## Security aspects
@@ -47,9 +48,14 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
+
+## Compatibility
+IotWebConf is primary built for ESP8266. But meanwhile it was discovered, that the code can be adopted
+to ESP32. There are two major problems.
+  - ESP8266 uses specific naming for it's classes (e.g. ESP8266WebServer). However ESP32 uses a more generic naming (e.g. WebServer). The idea here is to use the generic naming hoping that ESP8266 will adopt these "standards" sooner or later.
+  - ESP32 does not provides an HTTPUpdateServer implementation. So in this project we have implemented one. Whenever ESP32 provides an official HTTPUpdateServer, this local implementation will be removed.
   
 ## TODO / Feature requests
-  - Support ESP32
   - We might want to add a "verify password" field.
 
 ## Known issues

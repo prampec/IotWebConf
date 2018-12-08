@@ -1,6 +1,6 @@
 /**
- * IotWebConf05Callbacks.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
- *   web configuration library for Arduino.
+ * IotWebConf05Callbacks.ino -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -12,7 +12,7 @@
 /**
  * Example: Callbacks
  * Description:
- *   This example shows, what callbacks IotWebCond provides.
+ *   This example shows, what callbacks IotWebConf provides.
  *   (See previous examples for more details!)
  * 
  * Hardware setup for this example:
@@ -21,8 +21,6 @@
  *     button should be attached to GND.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
@@ -52,8 +50,8 @@ boolean formValidator();
 void messageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
-ESP8266WebServer server(80);
-ESP8266HTTPUpdateServer httpUpdater;
+WebServer server(80);
+HTTPUpdateServer httpUpdater;
 
 char stringParamValue[STRING_LEN];
 

@@ -1,6 +1,6 @@
 /**
- * IotWebConf03CustomParameters.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
- *   web configuration library for Arduino.
+ * IotWebConf03CustomParameters.ino -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -25,8 +25,6 @@
  *     button should be attached to GND.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
@@ -55,7 +53,7 @@ void configSaved();
 boolean formValidator();
 
 DNSServer dnsServer;
-ESP8266WebServer server(80);
+WebServer server(80);
 
 char stringParamValue[STRING_LEN];
 char intParamValue[NUMBER_LEN];
