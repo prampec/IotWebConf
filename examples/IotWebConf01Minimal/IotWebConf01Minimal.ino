@@ -1,6 +1,6 @@
 /**
- * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266 non blocking WiFi/AP 
- *   web configuration library for Arduino.
+ * IotWebConf01Minimal.ino -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -25,8 +25,6 @@
  *   with connecting to configured WiFi.
  */
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <DNSServer.h>
 #include <IotWebConf.h>
 
@@ -37,7 +35,7 @@ const char thingName[] = "testThing";
 const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 DNSServer dnsServer;
-ESP8266WebServer server(80);
+WebServer server(80);
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword);
 

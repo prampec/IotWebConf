@@ -1,6 +1,6 @@
 /**
- * IotWebConf.cpp -- IotWebConf is an ESP8266 non blocking WiFi/AP
- *   web configuration library for Arduino.
+ * IotWebConf.cpp -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -14,7 +14,11 @@
 #include "IotWebConf.h"
 
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
-# include <ESP8266mDNS.h>
+# ifdef ESP8266
+#  include <ESP8266mDNS.h>
+# else defined(ESP32)
+#  include <ESPmDNS.h>
+# endif
 #endif
 
 #define IOTWEBCONF_STATUS_ENABLED (this->_statusPin >= 0)
@@ -64,7 +68,7 @@ IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NU
 
 ////////////////////////////////////////////////////////////////
 
-IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, ESP8266WebServer* server,
+IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
   const char *initialApPassword,
   const char* configVersion)
 {
@@ -102,7 +106,7 @@ void IotWebConf::setStatusPin(int statusPin)
   this->_statusPin = statusPin;
 }
 
-void IotWebConf::setupUpdateServer(ESP8266HTTPUpdateServer* updateServer, const char* updatePath)
+void IotWebConf::setupUpdateServer(HTTPUpdateServer* updateServer, const char* updatePath)
 {
   this->_updateServer = updateServer;
   this->_updatePath = updatePath;
@@ -139,11 +143,15 @@ boolean IotWebConf::init()
   }
 
   // -- Setup mdns
+#ifdef ESP8266
+  WiFi.hostname(this->_thingName);
+#else defined(ESP32)
+  WiFi.setHostname(this->_thingName);
+#endif
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
   MDNS.begin(this->_thingName);
   MDNS.addService("http", "tcp", 80);
 #endif
-  WiFi.hostname(this->_thingName);
 
   return validConfig;
 }

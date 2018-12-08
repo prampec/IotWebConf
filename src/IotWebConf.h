@@ -1,6 +1,6 @@
 /**
- * IotWebConf.h -- IotWebConf is an ESP8266 non blocking WiFi/AP
- *   web configuration library for Arduino.
+ * IotWebConf.h -- IotWebConf is an ESP8266/ESP32
+ *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
  * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
@@ -12,10 +12,17 @@
 #ifndef IotWebConf_h
 #define IotWebConf_h
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <IotWebConfCompatibility.h>
 #include <DNSServer.h> // -- For captive portal
-#include <ESP8266HTTPUpdateServer.h>
+
+#ifdef ESP8266
+# include <ESP8266WiFi.h>
+# include <ESP8266WebServer.h>
+# include <ESP8266HTTPUpdateServer.h>
+#else defined(ESP32)
+# include <WiFi.h>
+# include <WebServer.h>
+#endif
 
 // -- We might want to place the config in the EEPROM in an offset.
 #define IOTWEBCONF_CONFIG_START 0
@@ -177,7 +184,7 @@ class IotWebConf
     IotWebConf(
       const char* thingName,
       DNSServer* dnsServer,
-      ESP8266WebServer* server,
+      WebServer* server,
       const char *initialApPassword,
       const char* configVersion = "init");
 
@@ -212,7 +219,7 @@ class IotWebConf
      *   @updatePath - (Optional) The path to set up the UpdateServer with. Will be also used in the config portal.
      */
     void setupUpdateServer(
-      ESP8266HTTPUpdateServer* updateServer,
+      HTTPUpdateServer* updateServer,
       const char* updatePath = "/firmware");
 
     /**
@@ -338,8 +345,8 @@ class IotWebConf
     const char* _initialApPassword = NULL;
     const char *_configVersion;
     DNSServer* _dnsServer;
-    ESP8266WebServer* _server;
-    ESP8266HTTPUpdateServer* _updateServer = NULL;
+    WebServer* _server;
+    HTTPUpdateServer* _updateServer = NULL;
     int _configPin = -1;
     int _statusPin = -1;
     const char* _updatePath = NULL;
