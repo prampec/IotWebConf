@@ -16,7 +16,7 @@
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
 # ifdef ESP8266
 #  include <ESP8266mDNS.h>
-# else defined(ESP32)
+# elif defined(ESP32)
 #  include <ESPmDNS.h>
 # endif
 #endif
@@ -145,7 +145,7 @@ boolean IotWebConf::init()
   // -- Setup mdns
 #ifdef ESP8266
   WiFi.hostname(this->_thingName);
-#else defined(ESP32)
+#elif defined(ESP32)
   WiFi.setHostname(this->_thingName);
 #endif
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
