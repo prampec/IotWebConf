@@ -88,12 +88,19 @@ const char IOTWEBCONF_HTTP_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em
 // -- User name on login.
 #define IOTWEBCONF_ADMIN_USER_NAME "admin"
 
+typedef struct IotWebConfWifiAuthInfo
+{
+  const char* ssid;
+  const char* password;
+} IotWebConfWifiAuthInfo;
+
 /**
  *   IotWebConfParameters is a configuration item of the config portal.
  *   The parameter will have its input field on the configuration page,
  *   and the provided value will be saved to the EEPROM.
  */
-class IotWebConfParameter {
+class IotWebConfParameter
+{
   public:
     /**
      * Create a parameter for the config portal.
@@ -272,6 +279,38 @@ class IotWebConf
     void setFormValidator( std::function<boolean()> func );
 
     /**
+     * Specify your custom Access Point connection handler. Please use IotWebConf::connectAp() as
+     * reference when implementing your custom solution.
+     */
+    void setApConnectionHandler( std::function<boolean(const char* apName, const char* password)> func )
+    {
+      _apConnectionHandler = func;
+    }
+
+    /**
+     * Specify your custom WiFi connection handler. Please use IotWebConf::connectWifi() as
+     * reference when implementing your custom solution.
+     */
+    void setWifiConnectionHandler( std::function<void(const char* ssid, const char* password)> func )
+    {
+      _wifiConnectionHandler = func;
+    }
+
+    /**
+     * With this method you can specify your custom WiFi timeout handler.
+     * This hander can manage what should happen, when WiFi connection timed out.
+     * By default the handler implementation returns with NULL, as seen on reference implementation
+     * IotWebConf::handleConnectWifiFailure(). This means we need to fall back to AP mode.
+     * If it method returns with a (new) WiFi settings, it is used as a next try.
+     * Note, that this feature is provided because of a possible future option of providing multiply
+     * WiFi settings.
+     */
+    void setWifiConnectionFailedHandler( std::function<IotWebConfWifiAuthInfo*()> func )
+    {
+      _wifiConnectionFailureHandler = func;
+    }
+
+    /**
      * Add a custom parameter, that will be handled by the IotWebConf module.
      * The parameter will be saved to/loaded from EEPROM automatically,
      * and will appear on the config portal.
@@ -323,6 +362,11 @@ class IotWebConf
     unsigned long getApTimeoutMs() { return this->_apTimeoutMs; };
 
     /**
+     * Resets the authentication credentials for WiFi connection to the .
+     */
+    void resetWifiAuthInfo() { _wifiAuthInfo = { _wifiSsid, _wifiPassword }; };
+
+    /**
      * Get internal parameters, for manual handling.
      * Normally you don't need to access these parameters directly.
      * Note, that changing valueBuffer of these parameters should be followed by configSave()!
@@ -370,6 +414,9 @@ class IotWebConf
     std::function<void()> _wifiConnectionCallback = NULL;
     std::function<void()> _configSavedCallback = NULL;
     std::function<boolean()> _formValidator = NULL;
+    std::function<void(const char*, const char*)> _apConnectionHandler = &(IotWebConf::connectAp);
+    std::function<void(const char*, const char*)> _wifiConnectionHandler = &(IotWebConf::connectWifi);
+    std::function<IotWebConfWifiAuthInfo*()> _wifiConnectionFailureHandler = &(IotWebConf::handleConnectWifiFailure);
     unsigned long _internalBlinkOnMs = 500;
     unsigned long _internalBlinkOffMs = 500;
     unsigned long _blinkOnMs = 500;
@@ -377,6 +424,7 @@ class IotWebConf
     byte _blinkState = IOTWEBCONF_STATUS_ON;
     unsigned long _lastBlinkTime = 0;
     unsigned long _wifiConnectionStart = 0;
+    IotWebConfWifiAuthInfo _wifiAuthInfo = { _wifiSsid, _wifiPassword };
 
     void configInit();
     boolean configLoad();
@@ -401,6 +449,9 @@ class IotWebConf
     void setupAp();
     void stopAp();
 
+    static boolean connectAp(const char* apName, const char* password);
+    static void connectWifi(const char* ssid, const char* password);
+    static IotWebConfWifiAuthInfo* handleConnectWifiFailure();
 };
 
 #endif
