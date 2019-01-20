@@ -679,6 +679,7 @@ void IotWebConf::doLoop()
     this->_server->handleClient();
     if (WiFi.status() != WL_CONNECTED)
     {
+      IOTWEBCONF_DEBUG_LINE(F("Not connected. Try reconnect..."));
       this->changeState(IOTWEBCONF_STATE_CONNECTING);
       return;
     }
@@ -766,13 +767,13 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
-      Serial.print(this->_wifiSsid);
+      Serial.print(this->_wifiAuthInfo.ssid);
       Serial.print("] with password [");
-      Serial.print(this->_wifiPassword);
+      Serial.print(this->_wifiAuthInfo.password);
       Serial.println("]");
 #endif
       this->_wifiConnectionStart = millis();
-      WiFi.begin(this->_wifiSsid, this->_wifiPassword);
+      this->_wifiConnectionHandler(this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
@@ -843,7 +844,18 @@ boolean IotWebConf::checkWifiConnection()
       // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
       WiFi.disconnect(true);
-      this->changeState(IOTWEBCONF_STATE_AP_MODE);
+      IotWebConfWifiAuthInfo* newWifiAuthInfo = _wifiConnectionFailureHandler();
+      if (newWifiAuthInfo != NULL)
+      {
+        // -- Try connecting with another connection info.
+        this->_wifiAuthInfo.ssid = newWifiAuthInfo->ssid;
+        this->_wifiAuthInfo.password = newWifiAuthInfo->password;
+        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      }
+      else
+      {
+        this->changeState(IOTWEBCONF_STATE_AP_MODE);
+      }
     }
     return false;
   }
@@ -872,7 +884,7 @@ void IotWebConf::setupAp()
     Serial.print("With default password: ");
     Serial.println(this->_initialApPassword);
 #endif
-    WiFi.softAP(this->_thingName, this->_initialApPassword);
+    this->_apConnectionHandler(this->_thingName, this->_initialApPassword);
   }
   else
   {
@@ -880,7 +892,7 @@ void IotWebConf::setupAp()
     Serial.print("Use password: ");
     Serial.println(this->_apPassword);
 #endif
-    WiFi.softAP(this->_thingName, this->_apPassword);
+    this->_apConnectionHandler(this->_thingName, this->_apPassword);
   }
 
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -940,4 +952,17 @@ void IotWebConf::doBlink()
       digitalWrite(this->_statusPin, this->_blinkState);
     }
   }
+}
+
+boolean IotWebConf::connectAp(const char* apName, const char* password)
+{
+  return WiFi.softAP(apName, password);
+}
+void IotWebConf::connectWifi(const char* ssid, const char* password)
+{
+  WiFi.begin(ssid, password);
+}
+IotWebConfWifiAuthInfo* IotWebConf::handleConnectWifiFailure()
+{
+  return NULL;
 }
