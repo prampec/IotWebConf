@@ -23,6 +23,10 @@
  *   
  *   You have to leave the access point before to let the Thing continue operation
  *   with connecting to configured WiFi.
+ *
+ *   Note that you can find detailed debug information in the serial console depending
+ *   on the settings IOTWEBCONF_DEBUG_TO_SERIAL, IOTWEBCONF_DEBUG_PWD_TO_SERIAL set
+ *   in the IotWebConf.h .
  */
 
 #include <DNSServer.h>

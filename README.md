@@ -48,6 +48,9 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
+  - However IotWebConf has a detailed debug output, passwords are not shown in this log by default. You have
+  to enable password visibility manually in the IotWebConf.h with the IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+  if it is needed.
 
 ## Compatibility
 IotWebConf is primary built for ESP8266. But meanwhile it was discovered, that the code can be adopted

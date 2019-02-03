@@ -217,9 +217,23 @@ boolean IotWebConf::configLoad()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.print("Loaded config '");
         Serial.print(current->getId());
-        Serial.print("'= '");
+        Serial.print("'= ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+        Serial.print("'");
         Serial.print(current->valueBuffer);
         Serial.println("'");
+# else
+        if (strcmp("password", current->type) == 0)
+        {
+          Serial.println(F("<hidden>"));
+        }
+        else
+        {
+          Serial.print("'");
+          Serial.print(current->valueBuffer);
+          Serial.println("'");
+        }
+# endif 
 #endif
 
         start += current->getLength();
@@ -247,9 +261,23 @@ void IotWebConf::configSave()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Saving config '");
       Serial.print(current->getId());
-      Serial.print("'= '");
+      Serial.print("'= ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+      Serial.print("'");
       Serial.print(current->valueBuffer);
       Serial.println("'");
+# else
+      if (strcmp("password", current->type) == 0)
+      {
+        Serial.print(F("<hidden>"));
+      }
+      else
+      {
+        Serial.print("'");
+        Serial.print(current->valueBuffer);
+        Serial.println("'");
+      }
+# endif 
 #endif
 
       this->writeEepromValue(start, current->valueBuffer, current->getLength());
@@ -366,7 +394,18 @@ void IotWebConf::handleConfig()
         Serial.print("Rendering '");
         Serial.print(current->getId());
         Serial.print("' with value: ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
         Serial.println(current->valueBuffer);
+# else
+        if (strcmp("password", current->type) == 0)
+        {
+          Serial.println(F("<hidden>"));
+        }
+        else
+        {
+          Serial.println(current->valueBuffer);
+        }
+# endif 
 #endif
 
         String pitem = FPSTR(IOTWEBCONF_HTTP_FORM_PARAM);
@@ -465,6 +504,18 @@ void IotWebConf::handleConfig()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
           Serial.print(current->getId());
           Serial.print("='");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+          Serial.print(current->valueBuffer);
+# else
+          if (strcmp("password", current->type) == 0)
+          {
+            Serial.print(F("<hidden>"));
+          }
+          else
+          {
+            Serial.print(current->valueBuffer);
+          }
+# endif 
           Serial.print(current->valueBuffer);
           Serial.println("'");
 #endif
@@ -768,9 +819,13 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
       Serial.print(this->_wifiAuthInfo.ssid);
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
       Serial.print("] with password [");
       Serial.print(this->_wifiAuthInfo.password);
       Serial.println("]");
+# else
+      Serial.println(F("] (password is hidden)"));
+# endif 
 #endif
       this->_wifiConnectionStart = millis();
       this->_wifiConnectionHandler(this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
@@ -882,7 +937,11 @@ void IotWebConf::setupAp()
   {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.print("With default password: ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
     Serial.println(this->_initialApPassword);
+# else
+    Serial.println(F("<hidden>"));
+# endif 
 #endif
     this->_apConnectionHandler(this->_thingName, this->_initialApPassword);
   }
@@ -890,7 +949,11 @@ void IotWebConf::setupAp()
   {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.print("Use password: ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
     Serial.println(this->_apPassword);
+# else
+    Serial.println(F("<hidden>"));
+# endif 
 #endif
     this->_apConnectionHandler(this->_thingName, this->_apPassword);
   }
