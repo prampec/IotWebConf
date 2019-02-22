@@ -387,6 +387,11 @@ void IotWebConf::handleConfig()
         Serial.println("Rendering separator");
 #endif
         page += "</fieldset><fieldset>";
+		if(current->label != NULL){
+            page += "<legend>";
+            page += current->label;
+            page += "</legend>";
+        }
       }
       else if (current->visible)
       {
