@@ -66,6 +66,10 @@ IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NU
 {
 }
 
+IotWebConfSeparator::IotWebConfSeparator(const char *label)  : IotWebConfParameter(label, NULL, NULL, 0, NULL, NULL, NULL, NULL, true)
+{
+}
+
 ////////////////////////////////////////////////////////////////
 
 IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
