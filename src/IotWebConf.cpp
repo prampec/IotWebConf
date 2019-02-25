@@ -66,6 +66,10 @@ IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NU
 {
 }
 
+IotWebConfSeparator::IotWebConfSeparator(const char *label)  : IotWebConfParameter(label, NULL, NULL, 0, NULL, NULL, NULL, NULL, true)
+{
+}
+
 ////////////////////////////////////////////////////////////////
 
 IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
@@ -387,6 +391,11 @@ void IotWebConf::handleConfig()
         Serial.println("Rendering separator");
 #endif
         page += "</fieldset><fieldset>";
+          if(current->label != NULL){
+            page += "<legend>";
+            page += current->label;
+            page += "</legend>";
+          }
       }
       else if (current->visible)
       {
