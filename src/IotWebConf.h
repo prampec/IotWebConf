@@ -174,6 +174,11 @@ class IotWebConfSeparator : public IotWebConfParameter
 {
   public:
     IotWebConfSeparator();
+
+    /**
+     * Create a seperator with a label (legend tag)
+     */
+    IotWebConfSeparator(const char *label);
 };
 
 /**
