@@ -13,7 +13,6 @@
 #define IotWebConf_h
 
 #include <IotWebConfCompatibility.h>
-#include <DNSServer.h> // -- For captive portal
 
 #ifdef ESP8266
 # include <ESP8266WiFi.h>
@@ -23,6 +22,7 @@
 # include <WiFi.h>
 # include <WebServer.h>
 #endif
+#include <DNSServer.h> // -- For captive portal
 
 // -- We might want to place the config in the EEPROM in an offset.
 #define IOTWEBCONF_CONFIG_START 0

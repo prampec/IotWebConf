@@ -28,7 +28,6 @@
  *     button should be attached to GND.
  */
 
-#include <DNSServer.h>
 #include <IotWebConf.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
