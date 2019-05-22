@@ -43,6 +43,7 @@ IotWebConfParameter::IotWebConfParameter(
   this->_length = length;
   this->type = type;
   this->placeholder = placeholder;
+  this->defaultValue = defaultValue;
   this->customHtml = customHtml;
   this->visible = visible;
 }
@@ -60,6 +61,7 @@ IotWebConfParameter::IotWebConfParameter(
   this->type = type;
   this->customHtml = customHtml;
   this->visible = true;
+  this->errorMessage = NULL;
 }
 
 IotWebConfSeparator::IotWebConfSeparator()  : IotWebConfParameter(NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, true)
@@ -87,7 +89,7 @@ IotWebConf::IotWebConf(const char* defaultThingName, DNSServer* dnsServer, WebSe
   this->_apPasswordParameter = IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_WORD_LEN, "password");
   this->_wifiSsidParameter = IotWebConfParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
   this->_wifiPasswordParameter = IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_WORD_LEN, "password");
-  this->_apTimeoutParameter = IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, "min='1' max='600'", NULL, false);
+  this->_apTimeoutParameter = IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, NULL, "min='1' max='600'", false);
   this->addParameter(&this->_thingNameParameter);
   this->addParameter(&this->_apPasswordParameter);
   this->addParameter(&this->_wifiSsidParameter);
@@ -219,23 +221,36 @@ boolean IotWebConf::configLoad()
       {
         this->readEepromValue(start, current->valueBuffer, current->getLength());
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+        const char* defaultMarker = "";
+#endif
+        if ((strlen(current->valueBuffer) == 0) && (current->defaultValue != NULL))
+        {
+          strncpy(current->valueBuffer, current->defaultValue, current->getLength());
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+          defaultMarker = " (using default)";
+#endif
+        }
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.print("Loaded config '");
         Serial.print(current->getId());
         Serial.print("'= ");
 # ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
         Serial.print("'");
         Serial.print(current->valueBuffer);
-        Serial.println("'");
+        Serial.print("'");
+        Serial.println(defaultMarker);
 # else
         if (strcmp("password", current->type) == 0)
         {
-          Serial.println(F("<hidden>"));
+          Serial.print(F("<hidden>"));
+          Serial.println(defaultMarker);
         }
         else
         {
           Serial.print("'");
           Serial.print(current->valueBuffer);
-          Serial.println("'");
+          Serial.print("'");
+          Serial.println(defaultMarker);
         }
 # endif 
 #endif
@@ -423,7 +438,7 @@ void IotWebConf::handleConfig()
           pitem.replace("{b}", current->label);
           pitem.replace("{t}", current->type);
           pitem.replace("{i}", current->getId());
-          pitem.replace("{p}", current->placeholder);
+          pitem.replace("{p}", current->placeholder == NULL ? "" : current->placeholder);
           snprintf(parLength, 5, "%d", current->getLength());
           pitem.replace("{l}", parLength);
           if (strcmp("password", current->type) == 0)
@@ -441,8 +456,8 @@ void IotWebConf::handleConfig()
             // -- Value from config
             pitem.replace("{v}", current->valueBuffer);
           }
-          pitem.replace("{c}", current->customHtml);
-          pitem.replace("{e}", current->errorMessage);
+          pitem.replace("{c}", current->customHtml == NULL ? "" : current->customHtml);
+          pitem.replace("{e}", current->errorMessage == NULL ? "" : current->errorMessage);
           pitem.replace("{s}", current->errorMessage == NULL ? "" : "de"); // Div style class.
         }
         else

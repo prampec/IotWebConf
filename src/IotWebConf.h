@@ -152,6 +152,7 @@ class IotWebConfParameter
     char       *valueBuffer;
     const char *type;
     const char *placeholder;
+    const char *defaultValue;
     const char *customHtml;
     boolean visible;
     const char *errorMessage;
