@@ -928,9 +928,7 @@ boolean IotWebConf::checkWifiConnection()
       if (newWifiAuthInfo != NULL)
       {
         // -- Try connecting with another connection info.
-        this->_wifiAuthInfo.ssid = newWifiAuthInfo->ssid;
-        this->_wifiAuthInfo.password = newWifiAuthInfo->password;
-        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+        this->updateWiFiAuthInfo(newWifiAuthInfo->ssid, newWifiAuthInfo->password);
       }
       else
       {
@@ -1000,6 +998,12 @@ void IotWebConf::stopAp()
 {
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
+}
+
+void IotWebConf::updateWiFiAuthInfo(const char* ssid, const char* password) {
+  this->_wifiAuthInfo.ssid = ssid;
+  this->_wifiAuthInfo.password = password;
+  this->changeState(IOTWEBCONF_STATE_CONNECTING);  
 }
 
 ////////////////////////////////////////////////////////////////////

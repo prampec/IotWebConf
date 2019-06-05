@@ -394,6 +394,10 @@ class IotWebConf
      */
     void configSave();
 
+    /**
+     * Can be used to forcibly connect to a WiFi (debugging purposes)
+     */
+    void updateWiFiAuthInfo(const char* ssid, const char* password);
   private:
     const char* _initialApPassword = NULL;
     const char *_configVersion;
