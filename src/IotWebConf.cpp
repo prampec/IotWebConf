@@ -252,7 +252,7 @@ boolean IotWebConf::configLoad()
           Serial.print("'");
           Serial.println(defaultMarker);
         }
-# endif 
+# endif
 #endif
 
         start += current->getLength();
@@ -296,7 +296,7 @@ void IotWebConf::configSave()
         Serial.print(current->valueBuffer);
         Serial.println("'");
       }
-# endif 
+# endif
 #endif
 
       this->writeEepromValue(start, current->valueBuffer, current->getLength());
@@ -430,7 +430,7 @@ void IotWebConf::handleConfig()
         {
           Serial.println(current->valueBuffer);
         }
-# endif 
+# endif
 #endif
 
         String pitem = FPSTR(IOTWEBCONF_HTTP_FORM_PARAM);
@@ -540,7 +540,7 @@ void IotWebConf::handleConfig()
           {
             Serial.print(current->valueBuffer);
           }
-# endif 
+# endif
           Serial.print(current->valueBuffer);
           Serial.println("'");
 #endif
@@ -850,7 +850,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       Serial.println("]");
 # else
       Serial.println(F("] (password is hidden)"));
-# endif 
+# endif
 #endif
       this->_wifiConnectionStart = millis();
       this->_wifiConnectionHandler(this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
@@ -964,7 +964,7 @@ void IotWebConf::setupAp()
     Serial.println(this->_initialApPassword);
 # else
     Serial.println(F("<hidden>"));
-# endif 
+# endif
 #endif
     this->_apConnectionHandler(this->_thingName, this->_initialApPassword);
   }
@@ -976,7 +976,7 @@ void IotWebConf::setupAp()
     Serial.println(this->_apPassword);
 # else
     Serial.println(F("<hidden>"));
-# endif 
+# endif
 #endif
     this->_apConnectionHandler(this->_thingName, this->_apPassword);
   }
@@ -1003,7 +1003,7 @@ void IotWebConf::stopAp()
 void IotWebConf::updateWiFiAuthInfo(const char* ssid, const char* password) {
   this->_wifiAuthInfo.ssid = ssid;
   this->_wifiAuthInfo.password = password;
-  this->changeState(IOTWEBCONF_STATE_CONNECTING);  
+  this->changeState(IOTWEBCONF_STATE_CONNECTING);
 }
 
 ////////////////////////////////////////////////////////////////////
