@@ -856,7 +856,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->_wifiConnectionHandler(this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
     case IOTWEBCONF_STATE_ONLINE:
-      this->blinkInternal(8000, 2);
+      this->blinkInternalmicrosec(5000, 5);
       if (this->_updateServer != NULL)
       {
         this->_updateServer->updateCredentials(IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
@@ -1018,9 +1018,30 @@ void IotWebConf::blink(unsigned long repeatMs, byte dutyCyclePercent)
   }
 }
 
+void IotWebConf::blinkmicrosec (uint64_t repeatMs, uint64_t dutyCyclePerMillion)
+{
+  if (repeatMs == 0)
+  {
+    this->_blinkOnMs = this->_internalBlinkOnMs;
+    this->_blinkOffMs = this->_internalBlinkOffMs;
+  }
+  else
+  {
+    this->_blinkOnMs = (repeatMs * dutyCyclePerMillion) / 1000000LL;
+    this->_blinkOffMs = (repeatMs * (1000000LL - dutyCyclePerMillion))	/ 1000000LL;
+  }
+}
+
 void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
 {
   this->blink(repeatMs, dutyCyclePercent);
+  this->_internalBlinkOnMs = this->_blinkOnMs;
+  this->_internalBlinkOffMs = this->_blinkOffMs;
+}
+
+void IotWebConf::blinkInternalmicrosec (unsigned long repeatMs, uint64_t dutyCyclePerMillion)
+{
+  this->blinkmicrosec(repeatMs, dutyCyclePerMillion);
   this->_internalBlinkOnMs = this->_blinkOnMs;
   this->_internalBlinkOffMs = this->_blinkOffMs;
 }
