@@ -67,7 +67,6 @@ to ESP32. There are two major problems.
   - We might want to add a "verify password" field.
   - Possibility to organize blocks of config items to lists. (E.g. provide more SSIDs with passwords as a connection option.)
   - Option the configure multiply WiFi connections. Try next when the last used one is just not available.
-  - Option to skip AP mode at startup, so connect directly to WiFi network (if avalable). This option must not effect the "configPin" functionality.
   - Option to inject custom JS/CSS code to the admin web GUI.
 
 ## Known issues
