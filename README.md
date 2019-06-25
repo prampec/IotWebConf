@@ -4,6 +4,8 @@
 IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking standalone WiFi/AP web configuration portal.
 **For ESP8266, IotWebConf requires the esp8266 board package version 2.4.2 or later!**
 
+Please subscribe to the [discussion forum](https://groups.google.com/forum/#!forum/iotwebconf), if you want to be informed on the latest news.
+
 ## Highlights
 
   - Manages WiFi connection settings,

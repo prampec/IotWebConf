@@ -728,10 +728,24 @@ void IotWebConf::doLoop()
   if (this->_state == IOTWEBCONF_STATE_BOOT)
   {
     // -- After boot, fall immediately to AP mode.
-    this->changeState(IOTWEBCONF_STATE_AP_MODE);
+    byte startupState = IOTWEBCONF_STATE_AP_MODE;
+    if (this->_skipApStartup)
+    {
+      if (isWifiModePossible())
+      {
+        IOTWEBCONF_DEBUG_LINE(F("SkipApStartup is requested, but either no WiFi was set up, or configButton was pressed."));
+      }
+      else
+      {
+        // -- Startup state can be WiFi, if it is requested and also possible.
+        IOTWEBCONF_DEBUG_LINE(F("SkipApStartup mode was applied"));
+        startupState = IOTWEBCONF_STATE_CONNECTING;
+      }
+    }
+    this->changeState(startupState);
   }
   else if (
-    (this->_state ==IOTWEBCONF_STATE_NOT_CONFIGURED)
+    (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
     || (this->_state == IOTWEBCONF_STATE_AP_MODE))
   {
     // -- We must only leave the AP mode, when no slaves are connected.
@@ -772,7 +786,7 @@ void IotWebConf::changeState(byte newState)
     case IOTWEBCONF_STATE_AP_MODE:
     {
       // -- In AP mode we must override the default AP password. Otherwise we stay in STATE_NOT_CONFIGURED.
-      if (this->_forceDefaultPassword || (this->_apPassword[0] == '\0'))
+      if (isWifiModePossible())
       {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         if (this->_forceDefaultPassword)

@@ -371,9 +371,19 @@ class IotWebConf
     unsigned long getApTimeoutMs() { return this->_apTimeoutMs; };
 
     /**
-     * Resets the authentication credentials for WiFi connection to the .
+     * Resets the authentication credentials for WiFi connection to the configured one.
+     * With the return value of setWifiConnectionFailedHandler() one can provide alternative connection settings,
+     * that can be reset with resetWifiAuthInfo().
      */
-    void resetWifiAuthInfo() { _wifiAuthInfo = { _wifiSsid, _wifiPassword }; };
+    void resetWifiAuthInfo() { _wifiAuthInfo = { this->_wifiSsid, this->_wifiPassword }; };
+
+    /**
+     * By default IotWebConf starts up in AP mode. Calling this method before the init will force IotWebConf
+     * to connect immediatelly to the configured WiFi network.
+     * Note, this method only takes effect, when WiFi mode is enabled, thus when a valid WiFi connection is
+     * set up, and AP mode is not forced by ConfigPin (see setConfigPin() for details).
+     */
+    void skipApStartup() { this->_skipApStartup = true; }
 
     /**
      * Get internal parameters, for manual handling.
@@ -404,6 +414,7 @@ class IotWebConf
     int _statusPin = -1;
     const char* _updatePath = NULL;
     boolean _forceDefaultPassword = false;
+    boolean _skipApStartup = false;
     IotWebConfParameter* _firstParameter = NULL;
     IotWebConfParameter _thingNameParameter;
     IotWebConfParameter _apPasswordParameter;
@@ -447,6 +458,7 @@ class IotWebConf
 
     void changeState(byte newState);
     void stateChanged(byte oldState, byte newState);
+    boolean isWifiModePossible() { return this->_forceDefaultPassword || (this->_apPassword[0] == '\0'); }
     boolean isIp(String str);
     String toStringIp(IPAddress ip);
     void doBlink();
