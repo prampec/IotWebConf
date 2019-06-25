@@ -353,6 +353,15 @@ class IotWebConf
      * When called with repeatMs = 0, then internal blink cycle will be continued.
      */
     void blink(unsigned long repeatMs, byte dutyCyclePercent);
+  
+   /**
+     * Interrupts internal blinking cycle and applies new values for
+     * blinking the status LED (if one configured with setStatusPin() prior init() ).
+     *   @repeatMs - Defines the the period of one on-off cycle in milliseconds.
+     *   @dutyCyclePerMillion - LED on/off permillion. 1000000 means always on, 0 means always off.
+     * When called with repeatMs = 0, then internal blink cycle will be continued.
+     */
+    void blinkmicrosec (uint64_t repeatMs, uint64_t dutyCyclePerMillion);
 
     /**
      * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
@@ -451,6 +460,7 @@ class IotWebConf
     String toStringIp(IPAddress ip);
     void doBlink();
     void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
+    void blinkInternalmicrosec(unsigned long repeatMs, uint64_t dutyCyclePerMillion);
 
     void checkApTimeout();
     void checkConnection();
