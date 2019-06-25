@@ -719,12 +719,14 @@ void IotWebConf::delay(unsigned long m)
   {
     this->doLoop();
     delay(1);
+    yield();
   }
 }
 
 void IotWebConf::doLoop()
 {
   doBlink();
+  yield();
   if (this->_state == IOTWEBCONF_STATE_BOOT)
   {
     // -- After boot, fall immediately to AP mode.
