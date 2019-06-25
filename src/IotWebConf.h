@@ -460,6 +460,7 @@ class IotWebConf
     String toStringIp(IPAddress ip);
     void doBlink();
     void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
+  
     void blinkInternalmicrosec(unsigned long repeatMs, uint64_t dutyCyclePerMillion);
 
     void checkApTimeout();
