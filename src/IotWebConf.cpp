@@ -718,13 +718,14 @@ void IotWebConf::delay(unsigned long m)
   while(m > millis() - delayStart)
   {
     this->doLoop();
-    delay(1);
+    delay(1); // -- Note: 1ms might not be enough to perform a full yield. So 'yeild' in 'doLoop' is eventually a good idea.
   }
 }
 
 void IotWebConf::doLoop()
 {
   doBlink();
+  yield(); // -- Yield should not be necessary, but cannot hurt eather.
   if (this->_state == IOTWEBCONF_STATE_BOOT)
   {
     // -- After boot, fall immediately to AP mode.
