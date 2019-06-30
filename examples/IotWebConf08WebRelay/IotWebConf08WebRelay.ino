@@ -136,7 +136,7 @@ void applyAction(unsigned long now)
     }
     else
     {
-      iotWebConf.blink(0, 0); // No blink
+      iotWebConf.stopCustomBlink();
     }
     Serial.print("Switched ");
     Serial.println(state == HIGH ? "ON" : "OFF");

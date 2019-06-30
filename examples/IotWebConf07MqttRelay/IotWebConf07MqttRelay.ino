@@ -200,7 +200,7 @@ void loop()
     }
     else
     {
-      iotWebConf.blink(0, 0); // No blink
+      iotWebConf.stopCustomBlink();
     }
     mqttClient.publish(mqttStatusTopic, state == HIGH ? "ON" : "OFF", true, 1);
     mqttClient.publish(mqttActionTopic, state == HIGH ? "ON" : "OFF", true, 1);

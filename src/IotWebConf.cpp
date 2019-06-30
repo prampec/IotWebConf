@@ -1023,14 +1023,25 @@ void IotWebConf::blink(unsigned long repeatMs, byte dutyCyclePercent)
 {
   if (repeatMs == 0)
   {
-    this->_blinkOnMs = this->_internalBlinkOnMs;
-    this->_blinkOffMs = this->_internalBlinkOffMs;
+    this->stopCustomBlink();
   }
   else
   {
     this->_blinkOnMs = repeatMs * dutyCyclePercent / 100;
     this->_blinkOffMs = repeatMs * (100 - dutyCyclePercent) / 100;
   }
+}
+
+void IotWebConf::fineBlink(unsigned long onMs, unsigned long offMs)
+{
+  this->_blinkOnMs = onMs;
+  this->_blinkOffMs = offMs;
+}
+
+void IotWebConf::stopCustomBlink()
+{
+  this->_blinkOnMs = this->_internalBlinkOnMs;
+  this->_blinkOffMs = this->_internalBlinkOffMs;
 }
 
 void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)

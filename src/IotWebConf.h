@@ -355,6 +355,18 @@ class IotWebConf
     void blink(unsigned long repeatMs, byte dutyCyclePercent);
 
     /**
+     * Similar to blink, but here we define exact on and off times for more precise timings.
+     *   @onMs - Milliseconds for the LED tudned on.
+     *   @offMs -  Milliseconds for the LED tudned off.
+     */
+    void fineBlink(unsigned long onMs, unsigned long offMs);
+
+    /**
+     * Stop custom blinking defined by blink() or fineBlink() and continues with the internal blink cycle.
+     */
+    void stopCustomBlink();
+
+    /**
      * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
      */
     byte getState() { return this->_state; };
