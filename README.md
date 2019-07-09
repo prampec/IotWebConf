@@ -11,6 +11,7 @@ Please subscribe to the [discussion forum](https://groups.google.com/forum/#!for
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
   - You can extend the configuration with your own property items, that are stored automatically,
+  - HTML customization,
   - Validation support for the configuration property items,
   - User code will be notified of status changes with callback methods,
   - Configuration (including your custom items) stored in the EEPROM,
@@ -67,7 +68,6 @@ to ESP32. There are two major problems.
   - We might want to add a "verify password" field.
   - Possibility to organize blocks of config items to lists. (E.g. provide more SSIDs with passwords as a connection option.)
   - Option the configure multiply WiFi connections. Try next when the last used one is just not available.
-  - Option to inject custom JS/CSS code to the admin web GUI.
 
 ## Known issues
   - It is reported, that there might be unstable working with different lwIP variants. If you experiment serious problems, try to select another lwIP variant for your board in the Tools menu! (Tested with "v2 Lower Memory" version.)
