@@ -384,13 +384,14 @@ void IotWebConf::handleConfig()
   {
     // -- Display config portal
     IOTWEBCONF_DEBUG_LINE(F("Configuration page requested."));
-    String page = FPSTR(IOTWEBCONF_HTTP_HEAD);
+    String page = htmlFormatProvider->getHead();
     page.replace("{v}", "Config ESP");
-    page += FPSTR(IOTWEBCONF_HTTP_SCRIPT);
-    page += FPSTR(IOTWEBCONF_HTTP_STYLE);
-    page += FPSTR(IOTWEBCONF_HTTP_HEAD_END);
+    page += htmlFormatProvider->getScript();
+    page += htmlFormatProvider->getStyle();
+    page += htmlFormatProvider->getHeadExtension();
+    page += htmlFormatProvider->getHeadEnd();
 
-    page += FPSTR(IOTWEBCONF_HTTP_FORM_START);
+    page += htmlFormatProvider->getFormStart();
     char parLength[5];
     // -- Add parameters to the form
     IotWebConfParameter* current = this->_firstParameter;
@@ -429,9 +430,10 @@ void IotWebConf::handleConfig()
 # endif
 #endif
 
-        String pitem = FPSTR(IOTWEBCONF_HTTP_FORM_PARAM);
+        String pitem;
         if (current->label != NULL)
         {
+          pitem = htmlFormatProvider->getFormParam(current->type);
           pitem.replace("{b}", current->label);
           pitem.replace("{t}", current->type);
           pitem.replace("{i}", current->getId());
@@ -472,26 +474,26 @@ void IotWebConf::handleConfig()
       current = current->_nextParameter;
     }
 
-    page += FPSTR(IOTWEBCONF_HTTP_FORM_END);
+    page += htmlFormatProvider->getFormEnd();
 
     if (this->_updatePath != NULL)
     {
-      String pitem = FPSTR(IOTWEBCONF_HTTP_UPDATE);
+      String pitem = htmlFormatProvider->getUpdate();
       pitem.replace("{u}", this->_updatePath);
       page += pitem;
     }
 
     // -- Fill config version string;
     {
-      String pitem = FPSTR(IOTWEBCONF_HTTP_CONFIG_VER);
+      String pitem = htmlFormatProvider->getConfigVer();
       pitem.replace("{v}", this->_configVersion);
       page += pitem;
     }
 
-    page += FPSTR(IOTWEBCONF_HTTP_END);
+    page += htmlFormatProvider->getEnd();
 
     this->_server->sendHeader("Content-Length", String(page.length()));
-    this->_server->send(200, "text/html", page);
+    this->_server->send(200, "text/html; charset=UTF-8", page);
   }
   else
   {
@@ -555,12 +557,13 @@ void IotWebConf::handleConfig()
 
     this->configSave();
 
-    String page = FPSTR(IOTWEBCONF_HTTP_HEAD);
+    String page = htmlFormatProvider->getHead();
     page.replace("{v}", "Config ESP");
-    page += FPSTR(IOTWEBCONF_HTTP_SCRIPT);
-    page += FPSTR(IOTWEBCONF_HTTP_STYLE);
+    page += htmlFormatProvider->getScript();
+    page += htmlFormatProvider->getStyle();
 //    page += _customHeadElement;
-    page += FPSTR(IOTWEBCONF_HTTP_HEAD_END);
+    page += htmlFormatProvider->getHeadExtension();
+    page += htmlFormatProvider->getHeadEnd();
     page += "Configuration saved. ";
     if (this->_apPassword[0] == '\0')
     {
@@ -580,10 +583,10 @@ void IotWebConf::handleConfig()
     {
       page += F("Return to <a href='/'>home page</a>.");
     }
-    page += FPSTR(IOTWEBCONF_HTTP_END);
+    page += htmlFormatProvider->getHeadEnd();
 
     this->_server->sendHeader("Content-Length", String(page.length()));
-    this->_server->send(200, "text/html", page);
+    this->_server->send(200, "text/html; charset=UTF-8", page);
   }
 }
 

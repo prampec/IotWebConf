@@ -10,7 +10,7 @@
  */
 
 /**
- * Example: Custom parameters
+ * Example: Custom connection
  * Description:
  *   This example is for advanced users only!
  *   In this example custom connection handler methods are defined

@@ -61,17 +61,18 @@
 #define IOTWEBCONF_DNS_PORT 53
 
 // -- HTML page fragments
-const char IOTWEBCONF_HTTP_HEAD[] PROGMEM         = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
-const char IOTWEBCONF_HTTP_STYLE[] PROGMEM        = "<style>.de{background-color:#ffaaaa;} .em{font-size:0.8em;color:#bb0000;padding-bottom:0px;} .c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#16A1E7;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} fieldset{border-radius:0.3rem;margin: 0px;}</style>";
-const char IOTWEBCONF_HTTP_SCRIPT[] PROGMEM       = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
-const char IOTWEBCONF_HTTP_HEAD_END[] PROGMEM     = "</head><body><div style='text-align:left;display:inline-block;min-width:260px;'>";
-const char IOTWEBCONF_HTTP_FORM_START[] PROGMEM   = "<form action='' method='post'><fieldset><input type='hidden' name='iotSave' value='true'>";
-const char IOTWEBCONF_HTTP_FORM_PARAM[] PROGMEM   = "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/><div class='em'>{e}</div></div>";
-const char IOTWEBCONF_HTTP_FORM_END[] PROGMEM     = "</fieldset><button type='submit'>Apply</button></form>";
-const char IOTWEBCONF_HTTP_SAVED[] PROGMEM        = "<div>Condiguration saved<br />Return to <a href='/'>home page</a>.</div>";
-const char IOTWEBCONF_HTTP_END[] PROGMEM          = "</div></body></html>";
-const char IOTWEBCONF_HTTP_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>";
-const char IOTWEBCONF_HTTP_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>";
+const char IOTWEBCONF_HTML_HEAD[] PROGMEM         = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
+const char IOTWEBCONF_HTML_STYLE_INNER[] PROGMEM  = ".de{background-color:#ffaaaa;} .em{font-size:0.8em;color:#bb0000;padding-bottom:0px;} .c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#16A1E7;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} fieldset{border-radius:0.3rem;margin: 0px;}";
+const char IOTWEBCONF_HTML_SCRIPT_INNER[] PROGMEM = "function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}";
+const char IOTWEBCONF_HTML_HEAD_END[] PROGMEM     = "</head><body>";
+const char IOTWEBCONF_HTML_BODY_INNER[] PROGMEM   = "<div style='text-align:left;display:inline-block;min-width:260px;'>";
+const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><fieldset><input type='hidden' name='iotSave' value='true'>";
+const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM   = "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/><div class='em'>{e}</div></div>";
+const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "</fieldset><button type='submit'>Apply</button></form>";
+const char IOTWEBCONF_HTML_SAVED[] PROGMEM        = "<div>Condiguration saved<br />Return to <a href='/'>home page</a>.</div>";
+const char IOTWEBCONF_HTML_END[] PROGMEM          = "</div></body></html>";
+const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>";
+const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>";
 
 // -- State of the Thing
 #define IOTWEBCONF_STATE_BOOT 0
@@ -176,6 +177,30 @@ public:
    * Create a seperator with a label (legend tag)
    */
   IotWebConfSeparator(const char* label);
+};
+
+/**
+ * Class for providing HTML format segments.
+ */
+class IotWebConfHtmlFormatProvider
+{
+public:
+  virtual String getHead() { return FPSTR(IOTWEBCONF_HTML_HEAD); }
+  virtual String getStyle() { return "<style>" + getStyleInner() + "</style>"; }
+  virtual String getScript() { return "<script>" + getScriptInner() + "</script>"; }
+  virtual String getHeadExtension() { return ""; }
+  virtual String getHeadEnd() { return String(FPSTR(IOTWEBCONF_HTML_HEAD_END)) + getBodyInner(); }
+  virtual String getFormStart() { return FPSTR(IOTWEBCONF_HTML_FORM_START); }
+  virtual String getFormParam(const char* type) { return FPSTR(IOTWEBCONF_HTML_FORM_PARAM); }
+  virtual String getFormEnd() { return FPSTR(IOTWEBCONF_HTML_FORM_END); }
+  virtual String getFormSaved() { return FPSTR(IOTWEBCONF_HTML_SAVED); }
+  virtual String getEnd() { return FPSTR(IOTWEBCONF_HTML_END); }
+  virtual String getUpdate() { return FPSTR(IOTWEBCONF_HTML_UPDATE); }
+  virtual String getConfigVer() { return FPSTR(IOTWEBCONF_HTML_CONFIG_VER); }
+protected:
+  virtual String getStyleInner() { return FPSTR(IOTWEBCONF_HTML_STYLE_INNER); }
+  virtual String getScriptInner() { return FPSTR(IOTWEBCONF_HTML_SCRIPT_INNER); }
+  virtual String getBodyInner() { return FPSTR(IOTWEBCONF_HTML_BODY_INNER); }
 };
 
 /**
@@ -435,6 +460,20 @@ public:
    */
   void configSave();
 
+  /**
+   * With this method you can override the default HTML format provider to
+   * provide custom HTML segments.
+   */
+  void
+  setHtmlFormatProvider(IotWebConfHtmlFormatProvider* customHtmlFormatProvider)
+  {
+    this->htmlFormatProvider = customHtmlFormatProvider;
+  }
+  IotWebConfHtmlFormatProvider* getHtmlFormatProvider()
+  {
+    return this->htmlFormatProvider;
+  }
+
 private:
   const char* _initialApPassword = NULL;
   const char* _configVersion;
@@ -480,6 +519,8 @@ private:
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
   IotWebConfWifiAuthInfo _wifiAuthInfo = {_wifiSsid, _wifiPassword};
+  IotWebConfHtmlFormatProvider htmlFormatProviderInstance;
+  IotWebConfHtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   void configInit();
   boolean configLoad();

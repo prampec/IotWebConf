@@ -172,7 +172,7 @@ void handleRoot()
   }
   
   String s = F("<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>");
-  s += FPSTR(IOTWEBCONF_HTTP_STYLE);
+  s += iotWebConf.getHtmlFormatProvider()->getStyle();
   s += "<title>IotWebConf 08 Web Relay</title></head><body>";
   s += iotWebConf.getThingName();
   s += "<div>State: ";
