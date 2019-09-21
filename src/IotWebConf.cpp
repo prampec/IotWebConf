@@ -746,6 +746,8 @@ void IotWebConf::delay(unsigned long m)
     this->doLoop();
     delay(1); // -- Note: 1ms might not be enough to perform a full yield. So
               // 'yeild' in 'doLoop' is eventually a good idea.
+              // MichGraf: delay(1) breaks with a ESP32 -> new: using:
+    delayMicroseconds(1000); //this works stable
   }
 }
 
@@ -908,6 +910,9 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->blinkInternal(8000, 2);
       if (this->_updateServer != NULL)
       {
+        this->_updateServer->setup(this->_server, this->_updatePath);  
+          // added the setup, works for me stable. Update now works even in skipApStartup-Mode.
+          // check if the upper setup is necessary - now it runs double but without problems
         this->_updateServer->updateCredentials(
             IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
       }
