@@ -12,7 +12,7 @@
 /**
  * Example: Status and Reset
  * Description:
- *   This example is very similar to the "mininal" example.
+ *   This example is very similar to the "minimal" example.
  *   But here we provide a status indicator LED, to get feedback
  *   of the thing state.
  *   Further more we set up a push button. If push button is detected
@@ -37,7 +37,7 @@ const char thingName[] = "testThing";
 const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
-//      password to buld an AP. (E.g. in case of lost password)
+//      password to build an AP. (E.g. in case of lost password)
 #define CONFIG_PIN D2
 
 // -- Status indicator pin.
