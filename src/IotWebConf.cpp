@@ -283,7 +283,7 @@ void IotWebConf::configSave()
 # else
       if (strcmp("password", current->type) == 0)
       {
-        Serial.print(F("<hidden>"));
+        Serial.println(F("<hidden>"));
       }
       else
       {
@@ -547,7 +547,6 @@ void IotWebConf::handleConfig()
             Serial.print(current->valueBuffer);
           }
 # endif
-          Serial.print(current->valueBuffer);
           Serial.println("'");
 #endif
         }
