@@ -743,8 +743,12 @@ void IotWebConf::delay(unsigned long m)
   while (m > millis() - delayStart)
   {
     this->doLoop();
+#ifdef ESP8266
     delay(1); // -- Note: 1ms might not be enough to perform a full yield. So
               // 'yeild' in 'doLoop' is eventually a good idea.
+#else
+    delayMicroseconds(1000);
+#endif
   }
 }
 
