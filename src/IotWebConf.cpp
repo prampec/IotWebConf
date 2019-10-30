@@ -283,7 +283,7 @@ void IotWebConf::configSave()
 # else
       if (strcmp("password", current->type) == 0)
       {
-        Serial.print(F("<hidden>"));
+        Serial.println(F("<hidden>"));
       }
       else
       {
@@ -547,7 +547,6 @@ void IotWebConf::handleConfig()
             Serial.print(current->valueBuffer);
           }
 # endif
-          Serial.print(current->valueBuffer);
           Serial.println("'");
 #endif
         }
@@ -744,8 +743,12 @@ void IotWebConf::delay(unsigned long m)
   while (m > millis() - delayStart)
   {
     this->doLoop();
+#ifdef ESP8266
     delay(1); // -- Note: 1ms might not be enough to perform a full yield. So
               // 'yeild' in 'doLoop' is eventually a good idea.
+#else
+    delayMicroseconds(1000);
+#endif
   }
 }
 
