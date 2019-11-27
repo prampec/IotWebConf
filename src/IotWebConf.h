@@ -244,6 +244,14 @@ public:
   void setStatusPin(int statusPin);
 
   /**
+   * A method that when called will force the device into AP mode.
+   * It will disconnect the device from whatever wifi it was connected to.
+   * NOTE: All values will be returned to the web client including password. This
+   * can be a security risk.
+   */
+  void forceApMode();
+
+  /**
    * Add an UpdateServer instance to the system. The firmware update link will appear on the config portal.
    * The UpdateServer will be added to the WebServer with the path provided here (or with "firmware",
    * if none was provided).
@@ -484,6 +492,7 @@ private:
   int _statusPin = -1;
   const char* _updatePath = NULL;
   boolean _forceDefaultPassword = false;
+  boolean _forceApMode = false;
   boolean _skipApStartup = false;
   IotWebConfParameter* _firstParameter = NULL;
   IotWebConfParameter _thingNameParameter;
