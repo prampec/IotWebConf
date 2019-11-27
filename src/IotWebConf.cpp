@@ -450,7 +450,14 @@ void IotWebConf::handleConfig()
           if (strcmp("password", current->type) == 0)
           {
             // -- Value of password is not rendered
-            pitem.replace("{v}", "");
+            if (this->_forceApMode)
+            {
+              pitem.replace("{v}", current->valueBuffer);
+            } else
+            {
+              pitem.replace("{v}", "");
+
+            }
           }
           else if (this->_server->hasArg(current->getId()))
           {
