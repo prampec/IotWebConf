@@ -51,6 +51,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Callback method declarations.
 void configSaved();
 boolean formValidator();
+void handleRoot();
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -58,14 +59,21 @@ WebServer server(80);
 char stringParamValue[STRING_LEN];
 char intParamValue[NUMBER_LEN];
 char floatParamValue[NUMBER_LEN];
+char checkboxParamValue[STRING_LEN];
+char chooserParamValue[STRING_LEN];
+
+static char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
+static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-IotWebConfParameter stringParam = IotWebConfParameter("String param", "stringParam", stringParamValue, STRING_LEN);
+IotWebConfTextParameter stringParam = IotWebConfTextParameter("String param", "stringParam", stringParamValue, STRING_LEN);
 IotWebConfSeparator separator1 = IotWebConfSeparator();
-IotWebConfParameter intParam = IotWebConfParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "number", "1..100", NULL, "min='1' max='100' step='1'");
+IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, true, "20", "1..100", "min='1' max='100' step='1'");
 // -- We can add a legend to the separator
 IotWebConfSeparator separator2 = IotWebConfSeparator("Calibration factor");
-IotWebConfParameter floatParam = IotWebConfParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN, "number", "e.g. 23.4", NULL, "step='0.1'");
+IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN, true, NULL, "e.g. 23.4", "step='0.1'");
+IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN, true, true);
+IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
 
 void setup() 
 {
@@ -80,6 +88,8 @@ void setup()
   iotWebConf.addParameter(&intParam);
   iotWebConf.addParameter(&separator2);
   iotWebConf.addParameter(&floatParam);
+  iotWebConf.addParameter(&checkboxParam);
+  iotWebConf.addParameter(&chooserParam);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.getApTimeoutParameter()->visible = true;
@@ -121,6 +131,10 @@ void handleRoot()
   s += atoi(intParamValue);
   s += "<li>Float param value: ";
   s += atof(floatParamValue);
+  s += "<li>CheckBox selected: ";
+  s += checkboxParam.isChecked();
+  s += "<li>Option selected: ";
+  s += chooserParamValue;
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";

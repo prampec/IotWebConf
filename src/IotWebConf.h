@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2019 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -14,6 +14,8 @@
 
 #include <Arduino.h>
 #include <IotWebConfCompatibility.h>
+#include <IotWebConfParameter.h>
+#include <IotWebConfSettings.h>
 
 #ifdef ESP8266
 # include <ESP8266WiFi.h>
@@ -25,76 +27,18 @@
 #endif
 #include <DNSServer.h> // -- For captive portal
 
-// -- We might want to place the config in the EEPROM in an offset.
-#ifndef IOTWEBCONF_CONFIG_START
-# define IOTWEBCONF_CONFIG_START 0
-#endif
-
-// -- Maximal length of any string used in IotWebConfig configuration (e.g.
-// ssid).
-#ifndef IOTWEBCONF_WORD_LEN
-# define IOTWEBCONF_WORD_LEN 33
-#endif
-// -- Maximal length of password used in IotWebConfig configuration.
-#ifndef IOTWEBCONF_PASSWORD_LEN
-# define IOTWEBCONF_PASSWORD_LEN 33
-#endif
-
-// -- IotWebConf tries to connect to the local network for an amount of time
-// before falling back to AP mode.
-#ifndef IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS
-# define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 30000
-#endif
-
-// -- Thing will stay in AP mode for an amount of time on boot, before retrying
-// to connect to a WiFi network.
-#ifndef IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS
-# define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
-#endif
-
-// -- mDNS should allow you to connect to this device with a hostname provided
-// by the device. E.g. mything.local
-#ifndef IOTWEBCONF_CONFIG_DONT_USE_MDNS
-# define IOTWEBCONF_CONFIG_USE_MDNS
-#endif
-
-// -- Logs progress information to Serial if enabled.
-#ifndef IOTWEBCONF_DEBUG_DISABLED
-# define IOTWEBCONF_DEBUG_TO_SERIAL
-#endif
-
-// -- Logs passwords to Serial if enabled.
-//#define IOTWEBCONF_DEBUG_PWD_TO_SERIAL
-
-// -- Helper define for serial debug
-#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-# define IOTWEBCONF_DEBUG_LINE(MSG) Serial.println(MSG)
-#else
-# define IOTWEBCONF_DEBUG_LINE(MSG)
-#endif
-
-// -- EEPROM config starts with a special prefix of length defined here.
-#ifndef IOTWEBCONF_CONFIG_VERSION_LENGTH
-# define IOTWEBCONF_CONFIG_VERSION_LENGTH 4
-#endif
-
-#ifndef IOTWEBCONF_DNS_PORT
-# define IOTWEBCONF_DNS_PORT 53
-#endif
-
 // -- HTML page fragments
-const char IOTWEBCONF_HTML_HEAD[] PROGMEM         = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>";
-const char IOTWEBCONF_HTML_STYLE_INNER[] PROGMEM  = ".de{background-color:#ffaaaa;} .em{font-size:0.8em;color:#bb0000;padding-bottom:0px;} .c{text-align: center;} div,input{padding:5px;font-size:1em;} input{width:95%;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#16A1E7;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} fieldset{border-radius:0.3rem;margin: 0px;}";
-const char IOTWEBCONF_HTML_SCRIPT_INNER[] PROGMEM = "function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}";
+const char IOTWEBCONF_HTML_HEAD[] PROGMEM         = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>\n";
+const char IOTWEBCONF_HTML_STYLE_INNER[] PROGMEM  = ".de{background-color:#ffaaaa;} .em{font-size:0.8em;color:#bb0000;padding-bottom:0px;} .c{text-align: center;} div,input,select{padding:5px;font-size:1em;} input{width:95%;} select{width:100%} input[type=checkbox]{width:auto;scale:1.5;margin:10px;} body{text-align: center;font-family:verdana;} button{border:0;border-radius:0.3rem;background-color:#16A1E7;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} fieldset{border-radius:0.3rem;margin: 0px;}\n";
+const char IOTWEBCONF_HTML_SCRIPT_INNER[] PROGMEM = "function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}; function pw(id) { var x=document.getElementById(id); if(x.type==='password') {x.type='text';} else {x.type='password';} };";
 const char IOTWEBCONF_HTML_HEAD_END[] PROGMEM     = "</head><body>";
-const char IOTWEBCONF_HTML_BODY_INNER[] PROGMEM   = "<div style='text-align:left;display:inline-block;min-width:260px;'>";
-const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><fieldset><input type='hidden' name='iotSave' value='true'>";
-const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM   = "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/><div class='em'>{e}</div></div>";
-const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "</fieldset><button type='submit'>Apply</button></form>";
-const char IOTWEBCONF_HTML_SAVED[] PROGMEM        = "<div>Configuration saved<br />Return to <a href='/'>home page</a>.</div>";
+const char IOTWEBCONF_HTML_BODY_INNER[] PROGMEM   = "<div style='text-align:left;display:inline-block;min-width:260px;'>\n";
+const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><fieldset><input type='hidden' name='iotSave' value='true'>\n";
+const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "</fieldset><button type='submit'>Apply</button></form>\n";
+const char IOTWEBCONF_HTML_SAVED[] PROGMEM        = "<div>Configuration saved<br />Return to <a href='/'>home page</a>.</div>\n";
 const char IOTWEBCONF_HTML_END[] PROGMEM          = "</div></body></html>";
-const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>";
-const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>";
+const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>\n";
+const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>\n";
 
 // -- State of the Thing
 #define IOTWEBCONF_STATE_BOOT 0
@@ -121,83 +65,6 @@ typedef struct IotWebConfWifiAuthInfo
 } IotWebConfWifiAuthInfo;
 
 /**
- *   IotWebConfParameters is a configuration item of the config portal.
- *   The parameter will have its input field on the configuration page,
- *   and the provided value will be saved to the EEPROM.
- */
-class IotWebConfParameter
-{
-public:
-  /**
-   * Create a parameter for the config portal.
-   *
-   *   @label - Displayable label at the config portal.
-   *   @id - Identifier used for HTTP queries and as configuration key. Must not contain spaces nor other special characters.
-   *   @valueBuffer - Configuration value will be loaded to this buffer from the EEPROM.
-   *   @length - The buffer should have a length provided here.
-   *   @type (optional, default="text") - The type of the html input field.
-   *       The type="password" has a special handling, as the value will be overwritten in the EEPROM
-   *       only if value was provided on the config portal. Because of this logic, "password" type field with
-   *       length more then IOTWEBCONF_PASSWORD_LEN characters are not supported.
-   *   @placeholder (optional) - Text appear in an empty input box.
-   *   @defaultValue (optional) - Value should be pre-filled if none was specified before.
-   *   @customHtml (optional) - The text of this parameter will be added into the HTML INPUT field.
-   */
-  IotWebConfParameter(
-    const char* label, const char* id, char* valueBuffer, int length,
-    const char* type = "text", const char* placeholder = NULL,
-    const char* defaultValue = NULL, const char* customHtml = NULL,
-    boolean visible = true);
-
-  /**
-   * Same as normal constructor, but config portal does not render a default
-   * input field for the item, instead uses the customHtml provided. Note the
-   * @type parameter description above!
-   */
-  IotWebConfParameter(
-      const char* id, char* valueBuffer, int length, const char* customHtml,
-      const char* type = "text");
-
-  /**
-   * For internal use only.
-   */
-  IotWebConfParameter();
-
-  const char* label;
-  char* valueBuffer;
-  const char* type;
-  const char* placeholder;
-  const char* defaultValue;
-  const char* customHtml;
-  boolean visible;
-  const char* errorMessage;
-
-  // -- For internal use only
-  IotWebConfParameter* _nextParameter = NULL;
-
-  const char* getId() { return this->_id; }
-  int getLength() { return this->_length; }
-
-private:
-  const char* _id = 0;
-  int _length;
-};
-
-/**
- * A separator for separating field sets.
- */
-class IotWebConfSeparator : public IotWebConfParameter
-{
-public:
-  IotWebConfSeparator();
-
-  /**
-   * Create a seperator with a label (legend tag)
-   */
-  IotWebConfSeparator(const char* label);
-};
-
-/**
  * Class for providing HTML format segments.
  */
 class IotWebConfHtmlFormatProvider
@@ -209,7 +76,6 @@ public:
   virtual String getHeadExtension() { return ""; }
   virtual String getHeadEnd() { return String(FPSTR(IOTWEBCONF_HTML_HEAD_END)) + getBodyInner(); }
   virtual String getFormStart() { return FPSTR(IOTWEBCONF_HTML_FORM_START); }
-  virtual String getFormParam(const char* type) { return FPSTR(IOTWEBCONF_HTML_FORM_PARAM); }
   virtual String getFormEnd() { return FPSTR(IOTWEBCONF_HTML_FORM_END); }
   virtual String getFormSaved() { return FPSTR(IOTWEBCONF_HTML_SAVED); }
   virtual String getEnd() { return FPSTR(IOTWEBCONF_HTML_END); }
@@ -472,7 +338,7 @@ public:
   /**
    * By default IotWebConf will continue startup in WiFi mode, when no configuration request arrived
    * in AP mode. With this method holding the AP mode can be forced.
-   * Further more, instant AP mode can forced even when we are currently in WiFi mode. 
+   * Further more, instant AP mode can forced even when we are currently in WiFi mode.
    *   @value - When parameter is TRUE AP mode is forced/entered.
    *     When value is FALSE normal operation will continue.
    */
@@ -540,16 +406,11 @@ private:
   boolean _skipApStartup = false;
   boolean _forceApMode = false;
   IotWebConfParameter* _firstParameter = NULL;
-  IotWebConfParameter _thingNameParameter =
-    IotWebConfParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
-  IotWebConfParameter _apPasswordParameter =
-    IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN, "password");
-  IotWebConfParameter _wifiSsidParameter =
-    IotWebConfParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
-  IotWebConfParameter _wifiPasswordParameter =
-    IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN, "password");
-  IotWebConfParameter _apTimeoutParameter =
-    IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, NULL, "min='1' max='600'", false);
+  IotWebConfTextParameter _thingNameParameter;
+  IotWebConfPasswordParameter _apPasswordParameter;
+  IotWebConfTextParameter _wifiSsidParameter;
+  IotWebConfPasswordParameter _wifiPasswordParameter;
+  IotWebConfNumberParameter _apTimeoutParameter;
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
   char _wifiSsid[IOTWEBCONF_WORD_LEN];
@@ -587,10 +448,9 @@ private:
   boolean configLoad();
   boolean configTestVersion();
   void configSaveConfigVersion();
-  void readEepromValue(int start, char* valueBuffer, int length);
-  void writeEepromValue(int start, char* valueBuffer, int length);
+  void readEepromValue(int start, byte* valueBuffer, int length);
+  void writeEepromValue(int start, byte* valueBuffer, int length);
 
-  void readParamValue(const char* paramName, char* target, unsigned int len);
   boolean validateForm();
 
   void changeState(byte newState);
