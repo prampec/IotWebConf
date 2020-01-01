@@ -507,7 +507,7 @@ void IotWebConf::handleConfig()
       {
         if (strcmp("password", current->type) == 0)
         {
-          char temp[current->getLength() + 1];
+          char temp[current->getLength()];
           this->readParamValue(current->getId(), temp, current->getLength());
           if (temp[0] != '\0')
           {
