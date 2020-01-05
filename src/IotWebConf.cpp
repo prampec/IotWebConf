@@ -438,7 +438,7 @@ void IotWebConf::handleConfig()
           pitem.replace("{t}", current->type);
           pitem.replace("{i}", current->getId());
           pitem.replace("{p}", current->placeholder == NULL ? "" : current->placeholder);
-          snprintf(parLength, 5, "%d", current->getLength());
+          snprintf(parLength, 5, "%d", current->getLength()-1);
           pitem.replace("{l}", parLength);
           if (strcmp("password", current->type) == 0)
           {
