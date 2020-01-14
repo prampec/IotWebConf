@@ -79,9 +79,9 @@ IotWebConf::IotWebConf(
   itoa(this->_apTimeoutMs / 1000, this->_apTimeoutStr, 10);
 
   this->_thingNameParameter = IotWebConfParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
-  this->_apPasswordParameter = IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_WORD_LEN, "password");
+  this->_apPasswordParameter = IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN, "password");
   this->_wifiSsidParameter = IotWebConfParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
-  this->_wifiPasswordParameter = IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_WORD_LEN, "password");
+  this->_wifiPasswordParameter = IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN, "password");
   this->_apTimeoutParameter = IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, NULL, "min='1' max='600'", false);
   this->addParameter(&this->_thingNameParameter);
   this->addParameter(&this->_apPasswordParameter);
@@ -499,7 +499,7 @@ void IotWebConf::handleConfig()
   {
     // -- Save config
     IOTWEBCONF_DEBUG_LINE(F("Updating configuration"));
-    char temp[IOTWEBCONF_WORD_LEN];
+    static char temp[IOTWEBCONF_PASSWORD_LEN];
 
     IotWebConfParameter* current = this->_firstParameter;
     while (current != NULL)
@@ -507,9 +507,9 @@ void IotWebConf::handleConfig()
       if ((current->getId() != NULL) && (current->visible))
       {
         if ((strcmp("password", current->type) == 0) &&
-            (current->getLength() <= IOTWEBCONF_WORD_LEN))
+            (current->getLength() <= IOTWEBCONF_PASSWORD_LEN))
         {
-          // TODO: Passwords longer than IOTWEBCONF_WORD_LEN not supported.
+          // TODO: Passwords longer than IOTWEBCONF_PASSWORD_LEN not supported.
           this->readParamValue(current->getId(), temp, current->getLength());
           if (temp[0] != '\0')
           {
