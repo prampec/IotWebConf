@@ -6,6 +6,8 @@ IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking sta
 
 Please subscribe to the [discussion forum](https://groups.google.com/forum/#!forum/iotwebconf), if you want to be informed on the latest news.
 
+**HELP WANTED!** If you are testing any GIT branches, please give me feedback to provide stable releases for the public.
+
 ## Highlights
 
   - Manages WiFi connection settings,
