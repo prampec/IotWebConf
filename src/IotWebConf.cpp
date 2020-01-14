@@ -198,7 +198,7 @@ void IotWebConf::configInit()
 #endif
 
   EEPROM.begin(
-      IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VESION_LENGTH + size);
+      IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
 }
 
 /**
@@ -209,7 +209,7 @@ boolean IotWebConf::configLoad()
   if (this->configTestVersion())
   {
     IotWebConfParameter* current = this->_firstParameter;
-    int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VESION_LENGTH;
+    int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
     while (current != NULL)
     {
       if (current->getId() != NULL)
@@ -267,7 +267,7 @@ void IotWebConf::configSave()
 {
   this->configSaveConfigVersion();
   IotWebConfParameter* current = this->_firstParameter;
-  int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VESION_LENGTH;
+  int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
   while (current != NULL)
   {
     if (current->getId() != NULL)
@@ -326,7 +326,7 @@ void IotWebConf::writeEepromValue(int start, char* valueBuffer, int length)
 
 boolean IotWebConf::configTestVersion()
 {
-  for (byte t = 0; t < IOTWEBCONF_CONFIG_VESION_LENGTH; t++)
+  for (byte t = 0; t < IOTWEBCONF_CONFIG_VERSION_LENGTH; t++)
   {
     if (EEPROM.read(IOTWEBCONF_CONFIG_START + t) != this->_configVersion[t])
     {
@@ -338,7 +338,7 @@ boolean IotWebConf::configTestVersion()
 
 void IotWebConf::configSaveConfigVersion()
 {
-  for (byte t = 0; t < IOTWEBCONF_CONFIG_VESION_LENGTH; t++)
+  for (byte t = 0; t < IOTWEBCONF_CONFIG_VERSION_LENGTH; t++)
   {
     EEPROM.write(IOTWEBCONF_CONFIG_START + t, this->_configVersion[t]);
   }
@@ -743,12 +743,9 @@ void IotWebConf::delay(unsigned long m)
   while (m > millis() - delayStart)
   {
     this->doLoop();
-#ifdef ESP8266
-    delay(1); // -- Note: 1ms might not be enough to perform a full yield. So
-              // 'yeild' in 'doLoop' is eventually a good idea.
-#else
+    // -- Note: 1ms might not be enough to perform a full yield. So
+    // 'yeild' in 'doLoop' is eventually a good idea.
     delayMicroseconds(1000);
-#endif
   }
 }
 
@@ -762,7 +759,7 @@ void IotWebConf::doLoop()
     byte startupState = IOTWEBCONF_STATE_AP_MODE;
     if (this->_skipApStartup)
     {
-      if (isWifiModePossible())
+      if (mustStayInApMode())
       {
         IOTWEBCONF_DEBUG_LINE(
             F("SkipApStartup is requested, but either no WiFi was set up, or "
@@ -822,7 +819,7 @@ void IotWebConf::changeState(byte newState)
     {
       // -- In AP mode we must override the default AP password. Otherwise we stay
       // in STATE_NOT_CONFIGURED.
-      if (isWifiModePossible())
+      if (mustUseDefaultPassword())
       {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         if (this->_forceDefaultPassword)
@@ -928,8 +925,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
 
 void IotWebConf::checkApTimeout()
 {
-  if ((this->_wifiSsid[0] != '\0') && (this->_apPassword[0] != '\0') &&
-      (!this->_forceDefaultPassword))
+  if ( !mustStayInApMode() )
   {
     // -- Only move on, when we have a valid WifF and AP configured.
     if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC) ||
@@ -1101,6 +1097,42 @@ void IotWebConf::doBlink()
       this->_blinkState = 1 - this->_blinkState;
       this->_lastBlinkTime = now;
       digitalWrite(this->_statusPin, this->_blinkState);
+    }
+  }
+}
+
+void IotWebConf::forceApMode(boolean doForce)
+{
+  if (this->_forceApMode == doForce)
+  {
+     // Already in the requested mode;
+    return;
+  }
+
+  this->_forceApMode = doForce;
+  if (doForce)
+  {
+    if (this->_state != IOTWEBCONF_STATE_AP_MODE)
+    {
+      IOTWEBCONF_DEBUG_LINE(F("Start forcing AP mode"));
+      WiFi.disconnect(true);
+      this->changeState(IOTWEBCONF_STATE_AP_MODE);
+    }
+  }
+  else
+  {
+    if (this->_state == IOTWEBCONF_STATE_AP_MODE)
+    {
+      if (this->mustStayInApMode())
+      {
+        IOTWEBCONF_DEBUG_LINE(F("Requested stopping to force AP mode, but we cannot leave the AP mode now."));
+      }
+      else
+      {
+        IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
+        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      }
+      
     }
   }
 }
