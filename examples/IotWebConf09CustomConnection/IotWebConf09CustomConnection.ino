@@ -50,8 +50,8 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 // -- Callback method declarations.
 void configSaved();
-boolean formValidator();
-boolean connectAp(const char* apName, const char* password);
+bool formValidator();
+bool connectAp(const char* apName, const char* password);
 void connectWifi(const char* ssid, const char* password);
 
 DNSServer dnsServer;
@@ -87,7 +87,7 @@ void setup()
   iotWebConf.setWifiConnectionHandler(&connectWifi);
 
   // -- Initializing the configuration.
-  boolean validConfig = iotWebConf.init();
+  bool validConfig = iotWebConf.init();
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);
@@ -131,10 +131,10 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   if (!ipAddress.fromString(server.arg(ipAddressParam.getId())))
   {
@@ -155,7 +155,7 @@ boolean formValidator()
   return valid;
 }
 
-boolean connectAp(const char* apName, const char* password)
+bool connectAp(const char* apName, const char* password)
 {
   // -- Custom AP settings
   return WiFi.softAP(apName, password, 4);

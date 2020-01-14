@@ -50,7 +50,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 // -- Callback method declarations.
 void configSaved();
-boolean formValidator();
+bool formValidator();
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -133,10 +133,10 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   int l = server.arg(stringParam.getId()).length();
   if (l < 3)

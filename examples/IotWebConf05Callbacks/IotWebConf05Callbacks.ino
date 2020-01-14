@@ -46,7 +46,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Callback method declarations.
 void wifiConnected();
 void configSaved();
-boolean formValidator();
+bool formValidator();
 void messageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
@@ -72,7 +72,7 @@ void setup()
   iotWebConf.setWifiConnectionCallback(&wifiConnected);
 
   // -- Initializing the configuration.
-  boolean validConfig = iotWebConf.init();
+  bool validConfig = iotWebConf.init();
   if (!validConfig)
   {
     stringParamValue[0] = '\0';
@@ -125,10 +125,10 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   int l = server.arg(stringParam.getId()).length();
   if (l < 3)

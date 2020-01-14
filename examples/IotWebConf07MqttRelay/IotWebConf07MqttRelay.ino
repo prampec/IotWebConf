@@ -87,7 +87,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Callback method declarations.
 void wifiConnected();
 void configSaved();
-boolean formValidator();
+bool formValidator();
 void mqttMessageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
@@ -101,8 +101,8 @@ char mqttServerValue[STRING_LEN];
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 IotWebConfParameter mqttServerParam = IotWebConfParameter("MQTT server", "mqttServer", mqttServerValue, STRING_LEN);
 
-boolean needMqttConnect = false;
-boolean needReset = false;
+bool needMqttConnect = false;
+bool needReset = false;
 unsigned long lastMqttConnectionAttempt = 0;
 int needAction = NO_ACTION;
 int state = LOW;
@@ -127,7 +127,7 @@ void setup()
   iotWebConf.setupUpdateServer(&httpUpdater);
 
   // -- Initializing the configuration.
-  boolean validConfig = iotWebConf.init();
+  bool validConfig = iotWebConf.init();
   if (!validConfig)
   {
     mqttServerValue[0] = '\0';
@@ -247,10 +247,10 @@ void configSaved()
   needReset = true;
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   int l = server.arg(mqttServerParam.getId()).length();
   if (l < 3)
@@ -262,7 +262,7 @@ boolean formValidator()
   return valid;
 }
 
-boolean connectMqtt() {
+bool connectMqtt() {
   unsigned long now = millis();
   if (1000 > now - lastMqttConnectionAttempt)
   {

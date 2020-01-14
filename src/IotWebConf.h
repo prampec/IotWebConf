@@ -129,7 +129,7 @@ public:
     const char* label, const char* id, char* valueBuffer, int length,
     const char* type = "text", const char* placeholder = NULL,
     const char* defaultValue = NULL, const char* customHtml = NULL,
-    boolean visible = true);
+    bool visible = true);
 
   /**
    * Same as normal constructor, but config portal does not render a default
@@ -151,7 +151,7 @@ public:
   const char* placeholder;
   const char* defaultValue;
   const char* customHtml;
-  boolean visible;
+  bool visible;
   const char* errorMessage;
 
   // -- For internal use only
@@ -260,7 +260,7 @@ public:
    * Loads all configuration from the EEPROM, and initialize the system.
    * Will return false, if no configuration (with specified config version) was found in the EEPROM.
    */
-  boolean init();
+  bool init();
 
   /**
    * IotWebConf is a non-blocking, state controlled system. Therefor it should be
@@ -273,7 +273,7 @@ public:
    * Each WebServer URL handler method should start with calling this method.
    * If this method return true, the request was already served by it.
    */
-  boolean handleCaptivePortal();
+  bool handleCaptivePortal();
 
   /**
    * Config URL web request handler. Call this method to handle config request.
@@ -302,14 +302,14 @@ public:
    * If the method will return false, the configuration will not be saved.
    * Should be called before init()!
    */
-  void setFormValidator(std::function<boolean()> func);
+  void setFormValidator(std::function<bool()> func);
 
   /**
    * Specify your custom Access Point connection handler. Please use IotWebConf::connectAp() as
    * reference when implementing your custom solution.
    */
   void setApConnectionHandler(
-      std::function<boolean(const char* apName, const char* password)> func)
+      std::function<bool(const char* apName, const char* password)> func)
   {
     _apConnectionHandler = func;
   }
@@ -483,8 +483,8 @@ private:
   int _configPin = -1;
   int _statusPin = -1;
   const char* _updatePath = NULL;
-  boolean _forceDefaultPassword = false;
-  boolean _skipApStartup = false;
+  bool _forceDefaultPassword = false;
+  bool _skipApStartup = false;
   IotWebConfParameter* _firstParameter = NULL;
   IotWebConfParameter _thingNameParameter;
   IotWebConfParameter _apPasswordParameter;
@@ -504,7 +504,7 @@ private:
   byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
   std::function<void()> _wifiConnectionCallback = NULL;
   std::function<void()> _configSavedCallback = NULL;
-  std::function<boolean()> _formValidator = NULL;
+  std::function<bool()> _formValidator = NULL;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =
@@ -523,33 +523,33 @@ private:
   IotWebConfHtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   void configInit();
-  boolean configLoad();
-  boolean configTestVersion();
+  bool configLoad();
+  bool configTestVersion();
   void configSaveConfigVersion();
   void readEepromValue(int start, char* valueBuffer, int length);
   void writeEepromValue(int start, char* valueBuffer, int length);
 
   void readParamValue(const char* paramName, char* target, unsigned int len);
-  boolean validateForm();
+  bool validateForm();
 
   void changeState(byte newState);
   void stateChanged(byte oldState, byte newState);
-  boolean isWifiModePossible()
+  bool isWifiModePossible()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0');
   }
-  boolean isIp(String str);
+  bool isIp(String str);
   String toStringIp(IPAddress ip);
   void doBlink();
   void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
 
   void checkApTimeout();
   void checkConnection();
-  boolean checkWifiConnection();
+  bool checkWifiConnection();
   void setupAp();
   void stopAp();
 
-  static boolean connectAp(const char* apName, const char* password);
+  static bool connectAp(const char* apName, const char* password);
   static void connectWifi(const char* ssid, const char* password);
   static IotWebConfWifiAuthInfo* handleConnectWifiFailure();
 };
