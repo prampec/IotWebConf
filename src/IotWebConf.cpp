@@ -40,6 +40,7 @@ IotWebConfParameter::IotWebConfParameter(
   this->defaultValue = defaultValue;
   this->customHtml = customHtml;
   this->visible = visible;
+  this->errorMessage = NULL;
 }
 IotWebConfParameter::IotWebConfParameter(
     const char* id, char* valueBuffer, int length, const char* customHtml,
