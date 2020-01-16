@@ -891,9 +891,9 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         stopAp();
       }
-      if (oldState == IOTWEBCONF_STATE_BOOT && this->_updateServer != NULL)
+      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServer != NULL))
       {
-        // We skiped AP mode so update server was never setup yet
+        // We've skipped AP mode, so update server needs to be set up now.
         this->_updateServer->setup(this->_server, this->_updatePath);
       }
       this->blinkInternal(1000, 50);
