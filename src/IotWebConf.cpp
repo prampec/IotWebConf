@@ -583,7 +583,7 @@ void IotWebConf::handleConfig()
     {
       page += F("Return to <a href='/'>home page</a>.");
     }
-    page += htmlFormatProvider->getHeadEnd();
+    page += htmlFormatProvider->getEnd();
 
     this->_server->sendHeader("Content-Length", String(page.length()));
     this->_server->send(200, "text/html; charset=UTF-8", page);
