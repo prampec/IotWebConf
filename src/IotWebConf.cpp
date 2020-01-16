@@ -889,6 +889,11 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         stopAp();
       }
+      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServer != NULL))
+      {
+        // We've skipped AP mode, so update server needs to be set up now.
+        this->_updateServer->setup(this->_server, this->_updatePath);
+      }
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
