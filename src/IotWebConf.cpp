@@ -106,6 +106,11 @@ void IotWebConf::setStatusPin(int statusPin)
   this->_statusPin = statusPin;
 }
 
+void IotWebConf::setStatusOn(int statusOn)
+{
+  this->_STATUS_ON = statusOn;
+}
+
 void IotWebConf::setupUpdateServer(
     HTTPUpdateServer* updateServer, const char* updatePath)
 {
@@ -1097,7 +1102,7 @@ void IotWebConf::doBlink()
   {
     unsigned long now = millis();
     unsigned long delayMs =
-        this->_blinkState == LOW ? this->_blinkOnMs : this->_blinkOffMs;
+        this->_blinkState == this->_STATUS_ON ? this->_blinkOnMs : this->_blinkOffMs;
     if (delayMs < now - this->_lastBlinkTime)
     {
       this->_blinkState = 1 - this->_blinkState;

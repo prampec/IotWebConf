@@ -106,7 +106,7 @@ const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em
 
 // -- Status indicator output logical levels.
 #define IOTWEBCONF_STATUS_ON LOW
-#define IOTWEBCONF_STATUS_OFF HIGH
+// #define IOTWEBCONF_STATUS_OFF HIGH // Not used
 
 // -- User name on login.
 #define IOTWEBCONF_ADMIN_USER_NAME "admin"
@@ -257,6 +257,13 @@ public:
    *   @statusPin - An Arduino pin. Will be configured as OUTPUT!
    */
   void setStatusPin(int statusPin);
+
+  /**
+   * Allows to set different value for an On state of the status indicator. Default is LOW (see IOTWEBCONF_STATUS_ON)
+   * Must be called before init()!
+   *   @statusOn - LOW or HIGH
+   */
+  void setStatusOn(int statusOn);
 
   /**
    * Add an UpdateServer instance to the system. The firmware update link will appear on the config portal.
@@ -506,6 +513,7 @@ private:
   HTTPUpdateServer* _updateServer = NULL;
   int _configPin = -1;
   int _statusPin = -1;
+  int _STATUS_ON = IOTWEBCONF_STATUS_ON;
   const char* _updatePath = NULL;
   boolean _forceDefaultPassword = false;
   boolean _skipApStartup = false;
