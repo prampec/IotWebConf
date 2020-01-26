@@ -21,7 +21,7 @@
 # endif
 #endif
 
-#define IOTWEBCONF_STATUS_ENABLED (this->_statusPin >= 0)
+#define IOTWEBCONF_STATUS_ENABLED (this->_statusPin >= 0 and this->_blinkEnabled)
 
 IotWebConfParameter::IotWebConfParameter()
 {
@@ -1094,6 +1094,17 @@ void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
   this->blink(repeatMs, dutyCyclePercent);
   this->_internalBlinkOnMs = this->_blinkOnMs;
   this->_internalBlinkOffMs = this->_blinkOffMs;
+}
+
+void IotWebConf::disableBlinkRoutine(){
+  this->_blinkEnabled = false;
+}
+
+void IotWebConf::enableBlinkRoutine(){
+  this->_blinkEnabled = true;
+}
+bool IotWebConf::isBlinkEnabled(){
+  return IOTWEBCONF_STATUS_ENABLED;
 }
 
 void IotWebConf::doBlink()
