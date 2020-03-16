@@ -385,14 +385,25 @@ void IotWebConf::handleConfig()
   {
     // -- Display config portal
     IOTWEBCONF_DEBUG_LINE(F("Configuration page requested."));
-    String page = htmlFormatProvider->getHead();
-    page.replace("{v}", "Config ESP");
-    page += htmlFormatProvider->getScript();
-    page += htmlFormatProvider->getStyle();
-    page += htmlFormatProvider->getHeadExtension();
-    page += htmlFormatProvider->getHeadEnd();
 
-    page += htmlFormatProvider->getFormStart();
+    // Send chunked output instead of one String, to avoid
+    // filling memory if using many parameters.
+    this->_server->sendHeader(
+        "Cache-Control", "no-cache, no-store, must-revalidate");
+    this->_server->sendHeader("Pragma", "no-cache");
+    this->_server->sendHeader("Expires", "-1");
+    this->_server->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    this->_server->send(200, "text/html", "");
+
+    String page_header = htmlFormatProvider->getHead();
+    page_header.replace("{v}", "Config ESP");
+    page_header += htmlFormatProvider->getScript();
+    page_header += htmlFormatProvider->getStyle();
+    page_header += htmlFormatProvider->getHeadExtension();
+    page_header += htmlFormatProvider->getHeadEnd();
+    page_header += htmlFormatProvider->getFormStart();
+
+    this->_server->sendContent(page_header);
     char parLength[5];
     // -- Add parameters to the form
     IotWebConfParameter* current = this->_firstParameter;
@@ -403,12 +414,12 @@ void IotWebConf::handleConfig()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
         Serial.println("Rendering separator");
 #endif
-        page += "</fieldset><fieldset>";
+        String page_separator = "</fieldset><fieldset>";
         if (current->label != NULL)
         {
-          page += "<legend>";
-          page += current->label;
-          page += "</legend>";
+          page_separator += "<legend>";
+          page_separator += current->label;
+          page_separator += "</legend>";
         }
       }
       else if (current->visible)
@@ -470,31 +481,33 @@ void IotWebConf::handleConfig()
           pitem = current->customHtml;
         }
 
-        page += pitem;
+        this->_server->sendContent(pitem);
+
       }
       current = current->_nextParameter;
     }
 
-    page += htmlFormatProvider->getFormEnd();
+    String page_footer = htmlFormatProvider->getFormEnd();
 
     if (this->_updatePath != NULL)
     {
       String pitem = htmlFormatProvider->getUpdate();
       pitem.replace("{u}", this->_updatePath);
-      page += pitem;
+      page_footer += pitem;
     }
 
     // -- Fill config version string;
     {
       String pitem = htmlFormatProvider->getConfigVer();
       pitem.replace("{v}", this->_configVersion);
-      page += pitem;
+      page_footer += pitem;
     }
 
-    page += htmlFormatProvider->getEnd();
+    page_footer += htmlFormatProvider->getEnd();
 
-    this->_server->sendHeader("Content-Length", String(page.length()));
-    this->_server->send(200, "text/html; charset=UTF-8", page);
+    this->_server->sendContent(page_footer);
+    this->_server->sendContent(F(""));
+    this->_server->client().stop();
   }
   else
   {
