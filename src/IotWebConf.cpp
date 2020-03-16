@@ -420,6 +420,7 @@ void IotWebConf::handleConfig()
           page_separator += "<legend>";
           page_separator += current->label;
           page_separator += "</legend>";
+          this->_server->sendContent(page_separator);            
         }
       }
       else if (current->visible)
