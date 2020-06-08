@@ -29,9 +29,15 @@
  *   in the IotWebConf.h .
  */
 
+#ifdef ESP8266
+#define ChipID String(ESP.getChipId(), HEX)
+#elif ESP32
+#define ChipID String((uint32_t)ESP.getEfuseMac(), HEX)
+#endif
+
 #include <IotWebConf.h>
 
-// -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
+// -- Initial name of the Thing
 const char thingName[] = "testThing";
 
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
@@ -41,6 +47,8 @@ DNSServer dnsServer;
 WebServer server(80);
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword);
+// -- Change first constructor parameter to make postfixed with ChipIP
+//IotWebConf iotWebConf(String("testThing-" + ChipID).c_str(), &dnsServer, &server, wifiInitialApPassword);
 
 void setup() 
 {
