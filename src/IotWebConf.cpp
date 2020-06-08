@@ -312,7 +312,7 @@ void IotWebConf::configSave()
     }
     current = current->_nextParameter;
   }
-  EEPROM.commit();
+  EEPROM.end();
 
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
