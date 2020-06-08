@@ -57,8 +57,12 @@
 #endif
 
 // -- Logs passwords to Serial if enabled
-// -- Comment this line to hide passwords (who can access serial, can hack the whole world)
+// -- Uncomment to SHOW and comment to HIDE passwords (who can access serial, can hack the whole world)
 #define IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+
+// -- Show passwords in config page
+// -- Uncomment to SHOW and comment to HIDE passwords
+#define IOTWEBCONF_DEBUG_PWD_TO_CONFIG_PAGE
 
 // -- Helper define for serial debug
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
