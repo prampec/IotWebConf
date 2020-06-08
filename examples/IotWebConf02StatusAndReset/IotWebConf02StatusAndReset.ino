@@ -41,9 +41,12 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define CONFIG_PIN D2
 
 // -- Status indicator pin.
-//      First it will light up (kept LOW), on Wifi connection it will blink,
-//      when connected to the Wifi it will turn off (kept HIGH).
-#define STATUS_PIN LED_BUILTIN
+//      First it will light up (kept ON), on Wifi connection it will blink,
+//      when connected to the Wifi it will turn off (kept OFF).
+#define STATUS_PIN    LED_BUILTIN
+// -- Status indicator state
+//      Indicates the ON state. Generally it is HIGH, but sometimes the ON is LOW
+#define STATUS_PIN_ON LOW
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -58,6 +61,8 @@ void setup()
 
   // -- Initializing the configuration.
   iotWebConf.setStatusPin(STATUS_PIN);
+  // -- or when LED light at LOW level (WRoom32)
+  //iotWebConf.setStatusPin(STATUS_PIN, STATUS_PIN_ON);
   iotWebConf.setConfigPin(CONFIG_PIN);
   iotWebConf.init();
 
