@@ -12,6 +12,7 @@
 #ifndef IotWebConf_h
 #define IotWebConf_h
 
+#include <Arduino.h>
 #include <IotWebConfCompatibility.h>
 
 #ifdef ESP8266
@@ -307,7 +308,16 @@ public:
   void setWifiConnectionCallback(std::function<void()> func);
 
   /**
+   * Specify a callback method, that will be called when settings is being changed.
+   * This is very handy if you have other routines, that are modifying the "EEPROM"
+   * parallel to IotWebConf, now this is the time to disable these routines.
+   * Should be called before init()!
+   */
+  void setConfigSavingCallback(std::function<void(int size)> func);
+
+  /**
    * Specify a callback method, that will be called when settings have been changed.
+   * All pending EEPROM manipulations are done by the time this method is called.
    * Should be called before init()!
    */
   void setConfigSavedCallback(std::function<void()> func);
@@ -528,6 +538,7 @@ private:
   unsigned long _apStartTimeMs = 0;
   byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
   std::function<void()> _wifiConnectionCallback = NULL;
+  std::function<void(int)> _configSavingCallback = NULL;
   std::function<void()> _configSavedCallback = NULL;
   std::function<boolean()> _formValidator = NULL;
   std::function<void(const char*, const char*)> _apConnectionHandler =
@@ -547,7 +558,7 @@ private:
   IotWebConfHtmlFormatProvider htmlFormatProviderInstance;
   IotWebConfHtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
-  void configInit();
+  int configInit();
   boolean configLoad();
   boolean configTestVersion();
   void configSaveConfigVersion();

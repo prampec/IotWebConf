@@ -128,7 +128,6 @@ boolean IotWebConf::init()
   }
 
   // -- Load configuration from EEPROM.
-  this->configInit();
   boolean validConfig = this->configLoad();
   if (!validConfig)
   {
@@ -184,7 +183,7 @@ bool IotWebConf::addParameter(IotWebConfParameter* parameter)
   return true;
 }
 
-void IotWebConf::configInit()
+int IotWebConf::configInit()
 {
   int size = 0;
   IotWebConfParameter* current = this->_firstParameter;
@@ -198,8 +197,7 @@ void IotWebConf::configInit()
   Serial.println(size);
 #endif
 
-  EEPROM.begin(
-      IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
+  return size;
 }
 
 /**
@@ -207,6 +205,10 @@ void IotWebConf::configInit()
  */
 boolean IotWebConf::configLoad()
 {
+  int size = this->configInit();
+  EEPROM.begin(
+    IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
+
   if (this->configTestVersion())
   {
     IotWebConfParameter* current = this->_firstParameter;
@@ -262,10 +264,20 @@ boolean IotWebConf::configLoad()
     IOTWEBCONF_DEBUG_LINE(F("Wrong config version."));
     return false;
   }
+
+  EEPROM.end();
 }
 
 void IotWebConf::configSave()
 {
+  int size = this->configInit();
+  if (this->_configSavingCallback != NULL)
+  {
+    this->_configSavingCallback(size);
+  }
+  EEPROM.begin(
+    IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
+
   this->configSaveConfigVersion();
   IotWebConfParameter* current = this->_firstParameter;
   int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
@@ -300,7 +312,7 @@ void IotWebConf::configSave()
     }
     current = current->_nextParameter;
   }
-  EEPROM.commit();
+  EEPROM.end();
 
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
@@ -348,6 +360,11 @@ void IotWebConf::configSaveConfigVersion()
 void IotWebConf::setWifiConnectionCallback(std::function<void()> func)
 {
   this->_wifiConnectionCallback = func;
+}
+
+void IotWebConf::setConfigSavingCallback(std::function<void(int size)> func)
+{
+  this->_configSavingCallback = func;
 }
 
 void IotWebConf::setConfigSavedCallback(std::function<void()> func)
