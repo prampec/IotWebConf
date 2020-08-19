@@ -101,9 +101,10 @@ void IotWebConf::setConfigPin(int configPin)
   this->_configPin = configPin;
 }
 
-void IotWebConf::setStatusPin(int statusPin)
+void IotWebConf::setStatusPin(int statusPin, int statusOnLevel)
 {
   this->_statusPin = statusPin;
+  this->_statusOnLevel = statusOnLevel;
 }
 
 void IotWebConf::setupUpdateServer(
@@ -124,7 +125,7 @@ boolean IotWebConf::init()
   if (IOTWEBCONF_STATUS_ENABLED)
   {
     pinMode(this->_statusPin, OUTPUT);
-    digitalWrite(this->_statusPin, IOTWEBCONF_STATUS_ON);
+    digitalWrite(this->_statusPin, !this->_statusOnLevel);
   }
 
   // -- Load configuration from EEPROM.
@@ -1114,12 +1115,12 @@ void IotWebConf::doBlink()
   {
     unsigned long now = millis();
     unsigned long delayMs =
-        this->_blinkState == LOW ? this->_blinkOnMs : this->_blinkOffMs;
+      this->_blinkStateOn ? this->_blinkOnMs : this->_blinkOffMs;
     if (delayMs < now - this->_lastBlinkTime)
     {
-      this->_blinkState = 1 - this->_blinkState;
+      this->_blinkStateOn = !this->_blinkStateOn;
       this->_lastBlinkTime = now;
-      digitalWrite(this->_statusPin, this->_blinkState);
+      digitalWrite(this->_statusPin, this->_blinkStateOn ? this->_statusOnLevel : !this->_statusOnLevel);
     }
   }
 }

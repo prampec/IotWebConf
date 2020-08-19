@@ -105,10 +105,6 @@ const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em
 // -- All previous connection on AP was disconnected.
 #define IOTWEBCONF_AP_CONNECTION_STATE_DC 2
 
-// -- Status indicator output logical levels.
-#define IOTWEBCONF_STATUS_ON LOW
-#define IOTWEBCONF_STATUS_OFF HIGH
-
 // -- User name on login.
 #define IOTWEBCONF_ADMIN_USER_NAME "admin"
 
@@ -256,8 +252,9 @@ public:
    * User can also apply custom blinks. See blink() method!
    * Must be called before init()!
    *   @statusPin - An Arduino pin. Will be configured as OUTPUT!
+   *   @statusOnLevel - Logic level of the On state of the status pin. Default is LOW.
    */
-  void setStatusPin(int statusPin);
+  void setStatusPin(int statusPin, int statusOnLevel = LOW);
 
   /**
    * Add an UpdateServer instance to the system. The firmware update link will appear on the config portal.
@@ -516,6 +513,7 @@ private:
   HTTPUpdateServer* _updateServer = NULL;
   int _configPin = -1;
   int _statusPin = -1;
+  int _statusOnLevel = LOW;
   const char* _updatePath = NULL;
   boolean _forceDefaultPassword = false;
   boolean _skipApStartup = false;
@@ -551,7 +549,7 @@ private:
   unsigned long _internalBlinkOffMs = 500;
   unsigned long _blinkOnMs = 500;
   unsigned long _blinkOffMs = 500;
-  byte _blinkState = IOTWEBCONF_STATUS_ON;
+  boolean _blinkStateOn = false;
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
   IotWebConfWifiAuthInfo _wifiAuthInfo = {_wifiSsid, _wifiPassword};
