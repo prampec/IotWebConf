@@ -12,7 +12,7 @@
 /**
  * Example: Minimal
  * Description:
- *   This example will shows the bare minimum required for IotWeConf to start up.
+ *   This example will shows the bare minimum required for IotWebConf to start up.
  *   After starting up the thing, please search for WiFi access points e.g. with
  *   your phone. Use password provided in the code!
  *   After connecting to the access point the root page will automatically appears.
