@@ -21,7 +21,7 @@
 # endif
 #endif
 
-#define IOTWEBCONF_STATUS_ENABLED (this->_statusPin >= 0)
+#define IOTWEBCONF_STATUS_ENABLED ((this->_statusPin >= 0) && this->_blinkEnabled)
 
 IotWebConfParameter::IotWebConfParameter()
 {

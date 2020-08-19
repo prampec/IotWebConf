@@ -412,6 +412,21 @@ public:
   void stopCustomBlink();
 
   /**
+   * Disables blinking, so allows user code to control same LED.
+   */
+  void disableBlink() { this->_blinkEnabled = false; }
+
+  /**
+   * Enables blinking if it has been disabled by disableBlink().
+   */
+  void enableBlink()  { this->_blinkEnabled = true; }
+
+  /**
+   * Returns blink enabled state modified by disableBlink() and enableBlink().
+   */
+  boolean isBlinkEnabled()  { return this->_blinkEnabled; }
+
+  /**
    * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
    */
   byte getState() { return this->_state; };
@@ -549,6 +564,7 @@ private:
   unsigned long _internalBlinkOffMs = 500;
   unsigned long _blinkOnMs = 500;
   unsigned long _blinkOffMs = 500;
+  boolean _blinkEnabled = true;
   boolean _blinkStateOn = false;
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
