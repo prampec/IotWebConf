@@ -53,7 +53,7 @@
 
 // -- mDNS should allow you to connect to this device with a hostname provided
 // by the device. E.g. mything.local
-#ifndef IOTWEBCONF_CONFIG_USE_MDNS
+#ifndef IOTWEBCONF_CONFIG_DONT_USE_MDNS
 # define IOTWEBCONF_CONFIG_USE_MDNS
 #endif
 
