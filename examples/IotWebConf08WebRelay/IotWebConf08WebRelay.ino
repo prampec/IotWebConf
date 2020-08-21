@@ -18,6 +18,8 @@
  *   but a complete demo application will be built.
  *   It is also expected from the reader to have a basic knowledge over
  *   HTML to understand this code.
+ *   As an addition an example is show here with combining the chip-ID
+ *   into the initial thing name.
  *   
  *   This example stets up a web page, where switch action can take place.
  *   The repay can be also altered with the push button. 
@@ -35,8 +37,14 @@
 
 #include <IotWebConf.h>
 
+#ifdef ESP8266
+String ChipId = String(ESP.getChipId(), HEX);
+#elif ESP32
+String ChipId = String((uint32_t)ESP.getEfuseMac(), HEX);
+#endif
+
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
-const char thingName[] = "testThing";
+String thingName = String("testThing-") + ChipId;
 
 // -- Initial password to connect to the Thing, when it creates an own Access Point.
 const char wifiInitialApPassword[] = "smrtTHNG8266";
@@ -68,7 +76,7 @@ DNSServer dnsServer;
 WebServer server(80);
 HTTPUpdateServer httpUpdater;
 
-IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
+IotWebConf iotWebConf(thingName.c_str(), &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 
 boolean needReset = false;
 int needAction = NO_ACTION;

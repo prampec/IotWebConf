@@ -47,7 +47,6 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 void wifiConnected();
 void configSaved();
 boolean formValidator();
-void messageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
 WebServer server(80);
