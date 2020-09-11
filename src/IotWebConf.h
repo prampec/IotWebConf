@@ -12,16 +12,28 @@
 #ifndef IotWebConf_h
 #define IotWebConf_h
 
-#include <Arduino.h>
-#include <IotWebConfCompatibility.h>
+// -- Uncomment to use ESPAsyncWebServer instead of the standard WebServer
+// Notice: Async requires ESPAsyncWebServer library, https://github.com/me-no-dev/ESPAsyncWebServer
+// Also for ESP8266 it requires ESPAsyncTCP, https://github.com/me-no-dev/ESPAsyncTCP
+// For ESP32 it requires AsyncTCP, https://github.com/me-no-dev/AsyncTCP
+//#define IOTWEBCONF_CONFIG_USE_ASYNC
 
-#ifdef ESP8266
-# include <ESP8266WiFi.h>
-# include <ESP8266WebServer.h>
-# include <ESP8266HTTPUpdateServer.h>
-#elif defined(ESP32)
-# include <WiFi.h>
-# include <WebServer.h>
+#include <Arduino.h>
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+class AsyncHTTPUpdateServer;
+# include <ESPAsyncWebServer.h>
+# include <IotWebConfAsyncUpdater.h>
+# define HTTPUpdateServer AsyncHTTPUpdateServer
+#else
+# include <IotWebConfCompatibility.h>
+# ifdef ESP8266
+#  include <ESP8266WiFi.h>
+#  include <ESP8266WebServer.h>
+#  include <ESP8266HTTPUpdateServer.h>
+# elif defined(ESP32)
+#  include <WiFi.h>
+#  include <WebServer.h>
+# endif
 #endif
 #include <DNSServer.h> // -- For captive portal
 
@@ -237,7 +249,11 @@ public:
    *     so that the config portal will force the user to reenter all the configuration values.
    */
   IotWebConf(
-      const char* thingName, DNSServer* dnsServer, WebServer* server,
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+      const char* defaultThingName, DNSServer* dnsServer, AsyncWebServer* server,
+#else
+      const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
+#endif
       const char* initialApPassword, const char* configVersion = "init");
 
   /**
@@ -292,17 +308,29 @@ public:
    * Each WebServer URL handler method should start with calling this method.
    * If this method return true, the request was already served by it.
    */
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  boolean handleCaptivePortal(AsyncWebServerRequest *request);
+#else
   boolean handleCaptivePortal();
+#endif
 
   /**
    * Config URL web request handler. Call this method to handle config request.
    */
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  void handleConfig(AsyncWebServerRequest *request);
+#else
   void handleConfig();
+#endif
 
   /**
    * URL-not-found web request handler. Used for handling captive portal request.
    */
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  void handleNotFound(AsyncWebServerRequest *request);
+#else
   void handleNotFound();
+#endif
 
   /**
    * Specify a callback method, that will be called upon WiFi connection success.
@@ -330,7 +358,11 @@ public:
    * If the method will return false, the configuration will not be saved.
    * Should be called before init()!
    */
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  void setFormValidator(std::function<boolean(AsyncWebServerRequest *request)> func);
+#else
   void setFormValidator(std::function<boolean()> func);
+#endif
 
   /**
    * Specify your custom Access Point connection handler. Please use IotWebConf::connectAp() as
@@ -472,7 +504,7 @@ public:
   /**
    * By default IotWebConf will continue startup in WiFi mode, when no configuration request arrived
    * in AP mode. With this method holding the AP mode can be forced.
-   * Further more, instant AP mode can forced even when we are currently in WiFi mode. 
+   * Further more, instant AP mode can forced even when we are currently in WiFi mode.
    *   @value - When parameter is TRUE AP mode is forced/entered.
    *     When value is FALSE normal operation will continue.
    */
@@ -530,7 +562,11 @@ private:
   const char* _initialApPassword = NULL;
   const char* _configVersion;
   DNSServer* _dnsServer;
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  AsyncWebServer* _server;
+#else
   WebServer* _server;
+#endif
   HTTPUpdateServer* _updateServer = NULL;
   int _configPin = -1;
   int _statusPin = -1;
@@ -559,7 +595,11 @@ private:
   std::function<void()> _wifiConnectionCallback = NULL;
   std::function<void(int)> _configSavingCallback = NULL;
   std::function<void()> _configSavedCallback = NULL;
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  std::function<boolean(AsyncWebServerRequest *request)> _formValidator = NULL;
+#else
   std::function<boolean()> _formValidator = NULL;
+#endif
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =
@@ -584,9 +624,13 @@ private:
   void configSaveConfigVersion();
   void readEepromValue(int start, char* valueBuffer, int length);
   void writeEepromValue(int start, char* valueBuffer, int length);
-
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  void readParamValue(const char* paramName, char* target, unsigned int len, AsyncWebServerRequest *request);
+  boolean validateForm(AsyncWebServerRequest *request);
+#else
   void readParamValue(const char* paramName, char* target, unsigned int len);
   boolean validateForm();
+#endif
 
   void changeState(byte newState);
   void stateChanged(byte oldState, byte newState);

@@ -24,6 +24,15 @@
  *   - [Optional] A push button is attached to pin D2, the other leg of the
  *     button should be attached to GND.
  */
+ 
+ /**
+ * Important: This example requires ESPAsyncWebServer library, https://github.com/me-no-dev/ESPAsyncWebServer
+ * Also for ESP8266 it requires ESPAsyncTCP, https://github.com/me-no-dev/ESPAsyncTCP
+ * For ESP32 it requires AsyncTCP, https://github.com/me-no-dev/AsyncTCP
+ * 
+ * To enable the use of the AsyncWebServer #define IOTWEBCONF_CONFIG_USE_ASYNC must be
+ * uncommented in IotWebConf.h, or otherwise defined.
+ */
 
 #include <IotWebConf.h>
 

@@ -69,7 +69,11 @@ IotWebConfSeparator::IotWebConfSeparator(const char* label)
 ////////////////////////////////////////////////////////////////
 
 IotWebConf::IotWebConf(
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    const char* defaultThingName, DNSServer* dnsServer, AsyncWebServer* server,
+#else
     const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
+#endif
     const char* initialApPassword, const char* configVersion)
 {
   strncpy(this->_thingName, defaultThingName, IOTWEBCONF_WORD_LEN);
@@ -373,7 +377,11 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+void IotWebConf::setFormValidator(std::function<boolean(AsyncWebServerRequest *request)> func)
+#else
 void IotWebConf::setFormValidator(std::function<boolean()> func)
+#endif
 {
   this->_formValidator = func;
 }
@@ -384,7 +392,23 @@ void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+void IotWebConf::handleConfig(AsyncWebServerRequest *request)
+{
+  if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  {
+    // -- Authenticate
+    if (!request->authenticate(
+            IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword))
+    {
+      IOTWEBCONF_DEBUG_LINE(F("Requesting authentication."));
+      request->requestAuthentication();
+      return;
+    }
+  }
 
+  if (!request->hasArg("iotSave") || !this->validateForm(request))
+#else
 void IotWebConf::handleConfig()
 {
   if (this->_state == IOTWEBCONF_STATE_ONLINE)
@@ -400,6 +424,7 @@ void IotWebConf::handleConfig()
   }
 
   if (!this->_server->hasArg("iotSave") || !this->validateForm())
+#endif
   {
     // -- Display config portal
     IOTWEBCONF_DEBUG_LINE(F("Configuration page requested."));
@@ -464,11 +489,19 @@ void IotWebConf::handleConfig()
             // -- Value of password is not rendered
             pitem.replace("{v}", "");
           }
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+          else if (request->hasArg(current->getId()))
+          {
+            // -- Value from previous submit
+            pitem.replace("{v}", request->arg(current->getId()));
+          }
+#else
           else if (this->_server->hasArg(current->getId()))
           {
             // -- Value from previous submit
             pitem.replace("{v}", this->_server->arg(current->getId()));
           }
+#endif
           else
           {
             // -- Value from config
@@ -510,9 +543,12 @@ void IotWebConf::handleConfig()
     }
 
     page += htmlFormatProvider->getEnd();
-
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    request->send(200, "text/html; charset=UTF-8", page);
+#else
     this->_server->sendHeader("Content-Length", String(page.length()));
     this->_server->send(200, "text/html; charset=UTF-8", page);
+#endif
   }
   else
   {
@@ -529,7 +565,11 @@ void IotWebConf::handleConfig()
             (current->getLength() <= IOTWEBCONF_PASSWORD_LEN))
         {
           // TODO: Passwords longer than IOTWEBCONF_PASSWORD_LEN not supported.
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+          this->readParamValue(current->getId(), temp, current->getLength(), request);
+#else 
           this->readParamValue(current->getId(), temp, current->getLength());
+#endif
           if (temp[0] != '\0')
           {
             // -- Value was set.
@@ -549,8 +589,14 @@ void IotWebConf::handleConfig()
         }
         else
         {
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+          this->readParamValue(
+              current->getId(), current->valueBuffer, current->getLength(), request);
+#else
           this->readParamValue(
               current->getId(), current->valueBuffer, current->getLength());
+#endif
+
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
           Serial.print(current->getId());
           Serial.print("='");
@@ -602,16 +648,26 @@ void IotWebConf::handleConfig()
       page += F("Return to <a href='/'>home page</a>.");
     }
     page += htmlFormatProvider->getEnd();
-
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    request->send(200, "text/html; charset=UTF-8", page);
+#else
     this->_server->sendHeader("Content-Length", String(page.length()));
     this->_server->send(200, "text/html; charset=UTF-8", page);
+#endif
   }
 }
 
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+void IotWebConf::readParamValue(
+    const char* paramName, char* target, unsigned int len, AsyncWebServerRequest *request)
+{
+  String value = request->arg(paramName);
+#else
 void IotWebConf::readParamValue(
     const char* paramName, char* target, unsigned int len)
 {
   String value = this->_server->arg(paramName);
+#endif
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print("Value of arg '");
   Serial.print(paramName);
@@ -621,7 +677,11 @@ void IotWebConf::readParamValue(
   value.toCharArray(target, len);
 }
 
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+boolean IotWebConf::validateForm(AsyncWebServerRequest *request)
+#else
 boolean IotWebConf::validateForm()
+#endif
 {
   // -- Clean previous error messages.
   IotWebConfParameter* current = this->_firstParameter;
@@ -635,25 +695,41 @@ boolean IotWebConf::validateForm()
   boolean valid = true;
   if (this->_formValidator != NULL)
   {
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    valid = this->_formValidator(request);
+#else
     valid = this->_formValidator();
+#endif
   }
 
   // -- Internal validation.
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  int l = request->arg(this->_thingNameParameter.getId()).length();
+#else
   int l = this->_server->arg(this->_thingNameParameter.getId()).length();
+#endif
   if (3 > l)
   {
     this->_thingNameParameter.errorMessage =
         "Give a name with at least 3 characters.";
     valid = false;
   }
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  l = request->arg(this->_apPasswordParameter.getId()).length();
+#else
   l = this->_server->arg(this->_apPasswordParameter.getId()).length();
+#endif
   if ((0 < l) && (l < 8))
   {
     this->_apPasswordParameter.errorMessage =
         "Password length must be at least 8 characters.";
     valid = false;
   }
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  l = request->arg(this->_wifiPasswordParameter.getId()).length();
+#else
   l = this->_server->arg(this->_wifiPasswordParameter.getId()).length();
+#endif
   if ((0 < l) && (l < 8))
   {
     this->_wifiPasswordParameter.errorMessage =
@@ -664,6 +740,40 @@ boolean IotWebConf::validateForm()
   return valid;
 }
 
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+void IotWebConf::handleNotFound(AsyncWebServerRequest *request)
+{
+  if (this->handleCaptivePortal(request))
+  {
+    // If captive portal redirect instead of displaying the error page.
+    return;
+  }
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print("Requested non-existing page '");
+  Serial.print(request->url());
+  Serial.print("' arguments(");
+  Serial.print(request->method() == HTTP_GET ? "GET" : "POST");
+  Serial.print("):");
+  Serial.println(request->args());
+#endif
+  String message = "File Not Found\n\n";
+  message += "URI: ";
+  message += request->url();
+  message += "\nMethod: ";
+  message += (request->method() == HTTP_GET) ? "GET" : "POST";
+  message += "\nArguments: ";
+  message += request->args();
+  message += "\n";
+
+  for (uint8_t i = 0; i < request->args(); i++)
+  {
+    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+  }
+
+  request->send(404, "text/plain", message);
+}
+
+#else
 void IotWebConf::handleNotFound()
 {
   if (this->handleCaptivePortal())
@@ -700,15 +810,22 @@ void IotWebConf::handleNotFound()
   this->_server->sendHeader("Content-Length", String(message.length()));
   this->_server->send(404, "text/plain", message);
 }
+#endif
 
 /**
  * Redirect to captive portal if we got a request for another domain.
  * Return true in that case so the page handler do not try to handle the request
  * again. (Code from WifiManager project.)
  */
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+boolean IotWebConf::handleCaptivePortal(AsyncWebServerRequest *request)
+{
+  String host = request->host();
+#else
 boolean IotWebConf::handleCaptivePortal()
 {
   String host = this->_server->hostHeader();
+#endif
   String thingName = String(this->_thingName);
   thingName.toLowerCase();
   if (!isIp(host) && !host.startsWith(thingName))
@@ -717,12 +834,21 @@ boolean IotWebConf::handleCaptivePortal()
     Serial.print("Request for ");
     Serial.print(host);
     Serial.print(" redirected to ");
+# ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    Serial.println(request->client()->localIP());
+# else
     Serial.println(this->_server->client().localIP());
+# endif
 #endif
+
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+    request->redirect((String("http://")+toStringIp(request->client()->localIP()).c_str()));
+#else    
     this->_server->sendHeader(
       "Location", String("http://") + toStringIp(this->_server->client().localIP()), true);
     this->_server->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     this->_server->client().stop(); // Stop is needed because we sent no content length
+#endif
     return true;
   }
   return false;
@@ -770,6 +896,15 @@ void IotWebConf::delay(unsigned long m)
 
 void IotWebConf::doLoop()
 {
+#ifdef IOTWEBCONF_CONFIG_USE_ASYNC
+  if (this->_updateServer != NULL)
+  {
+    if (this->_updateServer->restartRequired())
+    {
+      ESP.restart();
+    }
+  }
+#endif
   doBlink();
   yield(); // -- Yield should not be necessary, but cannot hurt eather.
   if (this->_state == IOTWEBCONF_STATE_BOOT)
@@ -803,7 +938,9 @@ void IotWebConf::doLoop()
     checkConnection();
     checkApTimeout();
     this->_dnsServer->processNextRequest();
+#ifndef IOTWEBCONF_CONFIG_USE_ASYNC
     this->_server->handleClient();
+#endif
   }
   else if (this->_state == IOTWEBCONF_STATE_CONNECTING)
   {
@@ -817,7 +954,9 @@ void IotWebConf::doLoop()
   {
     // -- In server mode we provide web interface. And check whether it is time
     // to run the client.
+#ifndef IOTWEBCONF_CONFIG_USE_ASYNC
     this->_server->handleClient();
+#endif
     if (WiFi.status() != WL_CONNECTED)
     {
       IOTWEBCONF_DEBUG_LINE(F("Not connected. Try reconnect..."));
@@ -1156,7 +1295,7 @@ void IotWebConf::forceApMode(boolean doForce)
         IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
         this->changeState(IOTWEBCONF_STATE_CONNECTING);
       }
-      
+
     }
   }
 }
