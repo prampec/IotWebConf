@@ -18,10 +18,12 @@
 #ifdef ESP8266
 # include <ESP8266WiFi.h>
 # include <ESP8266WebServer.h>
+# include <ESP8266WebServerSecure.h>
 # include <ESP8266HTTPUpdateServer.h>
 #elif defined(ESP32)
 # include <WiFi.h>
 # include <WebServer.h>
+# include <WebServerSecure.h>
 #endif
 #include <DNSServer.h> // -- For captive portal
 
@@ -224,7 +226,8 @@ protected:
 /**
  * Main class of the module.
  */
-class IotWebConf
+template <class WebServerClass, class HTTPUpdateServerClass>
+class IotWebConfTemplate
 {
 public:
   /**
@@ -236,8 +239,8 @@ public:
    *   @configVersion - When the software is updated and the configuration is changing, this key should also be changed,
    *     so that the config portal will force the user to reenter all the configuration values.
    */
-  IotWebConf(
-      const char* thingName, DNSServer* dnsServer, WebServer* server,
+  IotWebConfTemplate(
+      const char* thingName, DNSServer* dnsServer, WebServerClass* server,
       const char* initialApPassword, const char* configVersion = "init");
 
   /**
@@ -272,7 +275,7 @@ public:
    *   @updatePath - (Optional) The path to set up the UpdateServer with. Will be also used in the config portal.
    */
   void setupUpdateServer(
-      HTTPUpdateServer* updateServer, const char* updatePath = "/firmware");
+      HTTPUpdateServerClass* updateServer, const char* updatePath = "/firmware");
 
   /**
    * Start up the IotWebConf module.
@@ -472,7 +475,7 @@ public:
   /**
    * By default IotWebConf will continue startup in WiFi mode, when no configuration request arrived
    * in AP mode. With this method holding the AP mode can be forced.
-   * Further more, instant AP mode can forced even when we are currently in WiFi mode. 
+   * Further more, instant AP mode can forced even when we are currently in WiFi mode.
    *   @value - When parameter is TRUE AP mode is forced/entered.
    *     When value is FALSE normal operation will continue.
    */
@@ -530,8 +533,8 @@ private:
   const char* _initialApPassword = NULL;
   const char* _configVersion;
   DNSServer* _dnsServer;
-  WebServer* _server;
-  HTTPUpdateServer* _updateServer = NULL;
+  WebServerClass* _server;
+  HTTPUpdateServerClass* _updateServer = NULL;
   int _configPin = -1;
   int _statusPin = -1;
   int _statusOnLevel = LOW;
@@ -561,11 +564,11 @@ private:
   std::function<void()> _configSavedCallback = NULL;
   std::function<boolean()> _formValidator = NULL;
   std::function<void(const char*, const char*)> _apConnectionHandler =
-      &(IotWebConf::connectAp);
+      &(IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =
-      &(IotWebConf::connectWifi);
+      &(IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::connectWifi);
   std::function<IotWebConfWifiAuthInfo*()> _wifiConnectionFailureHandler =
-      &(IotWebConf::handleConnectWifiFailure);
+      &(IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::handleConnectWifiFailure);
   unsigned long _internalBlinkOnMs = 500;
   unsigned long _internalBlinkOffMs = 500;
   unsigned long _blinkOnMs = 500;
@@ -614,5 +617,10 @@ private:
   static void connectWifi(const char* ssid, const char* password);
   static IotWebConfWifiAuthInfo* handleConnectWifiFailure();
 };
+
+#include "IotWebConf-impl.h"
+
+using IotWebConf = IotWebConfTemplate<WebServer, HTTPUpdateServer>;
+using IotWebConfSecure = IotWebConfTemplate<WebServerSecure, HTTPUpdateServerSecure>;
 
 #endif

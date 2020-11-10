@@ -19,7 +19,6 @@
 /**
  * NOTE: Lines starting with /// are changed by IotWebConf
  */
-#include "IotWebConfCompatibility.h"
 
 static const char serverIndex[] PROGMEM =
   R"(<html><body><form method='POST' action='' enctype='multipart/form-data'>
@@ -27,10 +26,11 @@ static const char serverIndex[] PROGMEM =
                   <input type='submit' value='Update'>
                </form>
          </body></html>)";
-static const char successResponse[] PROGMEM = 
+static const char successResponse[] PROGMEM =
   "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! Rebooting...\n";
 
-HTTPUpdateServer::HTTPUpdateServer(bool serial_debug)
+template <class WebServerClass>
+HTTPUpdateServerTemplate<WebServerClass>::HTTPUpdateServerTemplate(bool serial_debug)
 {
   _serial_output = serial_debug;
   _server = NULL;
@@ -39,7 +39,8 @@ HTTPUpdateServer::HTTPUpdateServer(bool serial_debug)
   _authenticated = false;
 }
 
-void HTTPUpdateServer::setup(WebServer *server, const String& path, const String& username, const String& password)
+template <class WebServerClass>
+void HTTPUpdateServerTemplate<WebServerClass>::setup(WebServerClass *server, const String& path, const String& username, const String& password)
 {
     _server = server;
     _username = username;
@@ -110,11 +111,13 @@ void HTTPUpdateServer::setup(WebServer *server, const String& path, const String
     });
 }
 
-void HTTPUpdateServer::_setUpdaterError()
+template <class WebServerClass>
+void HTTPUpdateServerTemplate<WebServerClass>::_setUpdaterError()
 {
   if (_serial_output) Update.printError(Serial);
   StreamString str;
   Update.printError(str);
   _updaterError = str.c_str();
 }
+
 #endif

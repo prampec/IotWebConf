@@ -23,6 +23,8 @@
 #ifdef ESP8266
 # define WebServer ESP8266WebServer
 # define HTTPUpdateServer ESP8266HTTPUpdateServer
+# define WebServerSecure BearSSL::ESP8266WebServerSecure
+# define HTTPUpdateServerSecure BearSSL::ESP8266HTTPUpdateServerSecure
 #endif
 
 
@@ -49,28 +51,30 @@
 #define emptyString F("")
 
 class WebServer;
+class WebServerSecure;
 
-class HTTPUpdateServer
+template <class WebServerClass>
+class HTTPUpdateServerTemplate
 {
   public:
-    HTTPUpdateServer(bool serial_debug=false);
+    HTTPUpdateServerTemplate(bool serial_debug=false);
 
-    void setup(WebServer *server)
+    void setup(WebServerClass *server)
     {
       setup(server, emptyString, emptyString);
     }
 
-    void setup(WebServer *server, const String& path)
+    void setup(WebServerClass *server, const String& path)
     {
       setup(server, path, emptyString, emptyString);
     }
 
-    void setup(WebServer *server, const String& username, const String& password)
+    void setup(WebServerClass *server, const String& username, const String& password)
     {
       setup(server, "/update", username, password);
     }
 
-    void setup(WebServer *server, const String& path, const String& username, const String& password);
+    void setup(WebServerClass *server, const String& path, const String& username, const String& password);
 
     void updateCredentials(const String& username, const String& password)
     {
@@ -83,12 +87,17 @@ class HTTPUpdateServer
 
   private:
     bool _serial_output;
-    WebServer *_server;
+    WebServerClass *_server;
     String _username;
     String _password;
     bool _authenticated;
     String _updaterError;
 };
+
+using HTTPUpdateServer = HTTPUpdateServerTemplate<WebServer>;
+using HTTPUpdateServerSecure = HTTPUpdateServerTemplate<WebServerSecure>;
+
+#include "IotWebConfCompatibility-impl.h"
 #endif
 
 #endif

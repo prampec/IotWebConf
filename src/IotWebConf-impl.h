@@ -11,8 +11,6 @@
 
 #include <EEPROM.h>
 
-#include "IotWebConf.h"
-
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
 # ifdef ESP8266
 #  include <ESP8266mDNS.h>
@@ -68,8 +66,9 @@ IotWebConfSeparator::IotWebConfSeparator(const char* label)
 
 ////////////////////////////////////////////////////////////////
 
-IotWebConf::IotWebConf(
-    const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
+template <class WebServerClass, class HTTPUpdateServerClass>
+IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::IotWebConfTemplate(
+    const char* defaultThingName, DNSServer* dnsServer, WebServerClass* server,
     const char* initialApPassword, const char* configVersion)
 {
   strncpy(this->_thingName, defaultThingName, IOTWEBCONF_WORD_LEN);
@@ -91,30 +90,35 @@ IotWebConf::IotWebConf(
   this->addParameter(&this->_apTimeoutParameter);
 }
 
-char* IotWebConf::getThingName()
+template <class WebServerClass, class HTTPUpdateServerClass>
+char* IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::getThingName()
 {
   return this->_thingName;
 }
 
-void IotWebConf::setConfigPin(int configPin)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setConfigPin(int configPin)
 {
   this->_configPin = configPin;
 }
 
-void IotWebConf::setStatusPin(int statusPin, int statusOnLevel)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setStatusPin(int statusPin, int statusOnLevel)
 {
   this->_statusPin = statusPin;
   this->_statusOnLevel = statusOnLevel;
 }
 
-void IotWebConf::setupUpdateServer(
-    HTTPUpdateServer* updateServer, const char* updatePath)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setupUpdateServer(
+    HTTPUpdateServerClass* updateServer, const char* updatePath)
 {
   this->_updateServer = updateServer;
   this->_updatePath = updatePath;
 }
 
-boolean IotWebConf::init()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::init()
 {
   // -- Setup pins.
   if (this->_configPin >= 0)
@@ -159,7 +163,8 @@ boolean IotWebConf::init()
 
 //////////////////////////////////////////////////////////////////
 
-bool IotWebConf::addParameter(IotWebConfParameter* parameter)
+template <class WebServerClass, class HTTPUpdateServerClass>
+bool IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::addParameter(IotWebConfParameter* parameter)
 {
 /*
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -184,7 +189,8 @@ bool IotWebConf::addParameter(IotWebConfParameter* parameter)
   return true;
 }
 
-int IotWebConf::configInit()
+template <class WebServerClass, class HTTPUpdateServerClass>
+int IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::configInit()
 {
   int size = 0;
   IotWebConfParameter* current = this->_firstParameter;
@@ -204,7 +210,8 @@ int IotWebConf::configInit()
 /**
  * Load the configuration from the eeprom.
  */
-boolean IotWebConf::configLoad()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::configLoad()
 {
   int size = this->configInit();
   EEPROM.begin(
@@ -269,7 +276,8 @@ boolean IotWebConf::configLoad()
   EEPROM.end();
 }
 
-void IotWebConf::configSave()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::configSave()
 {
   int size = this->configInit();
   if (this->_configSavingCallback != NULL)
@@ -323,14 +331,16 @@ void IotWebConf::configSave()
   }
 }
 
-void IotWebConf::readEepromValue(int start, char* valueBuffer, int length)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::readEepromValue(int start, char* valueBuffer, int length)
 {
   for (int t = 0; t < length; t++)
   {
     *((char*)valueBuffer + t) = EEPROM.read(start + t);
   }
 }
-void IotWebConf::writeEepromValue(int start, char* valueBuffer, int length)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::writeEepromValue(int start, char* valueBuffer, int length)
 {
   for (int t = 0; t < length; t++)
   {
@@ -338,7 +348,8 @@ void IotWebConf::writeEepromValue(int start, char* valueBuffer, int length)
   }
 }
 
-boolean IotWebConf::configTestVersion()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::configTestVersion()
 {
   for (byte t = 0; t < IOTWEBCONF_CONFIG_VERSION_LENGTH; t++)
   {
@@ -350,7 +361,8 @@ boolean IotWebConf::configTestVersion()
   return true;
 }
 
-void IotWebConf::configSaveConfigVersion()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::configSaveConfigVersion()
 {
   for (byte t = 0; t < IOTWEBCONF_CONFIG_VERSION_LENGTH; t++)
   {
@@ -358,34 +370,40 @@ void IotWebConf::configSaveConfigVersion()
   }
 }
 
-void IotWebConf::setWifiConnectionCallback(std::function<void()> func)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setWifiConnectionCallback(std::function<void()> func)
 {
   this->_wifiConnectionCallback = func;
 }
 
-void IotWebConf::setConfigSavingCallback(std::function<void(int size)> func)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setConfigSavingCallback(std::function<void(int size)> func)
 {
   this->_configSavingCallback = func;
 }
 
-void IotWebConf::setConfigSavedCallback(std::function<void()> func)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setConfigSavedCallback(std::function<void()> func)
 {
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setFormValidator(std::function<boolean()> func)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setFormValidator(std::function<boolean()> func)
 {
   this->_formValidator = func;
 }
 
-void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setWifiConnectionTimeoutMs(unsigned long millis)
 {
   this->_wifiConnectionTimeoutMs = millis;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void IotWebConf::handleConfig()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::handleConfig()
 {
   if (this->_state == IOTWEBCONF_STATE_ONLINE)
   {
@@ -608,7 +626,8 @@ void IotWebConf::handleConfig()
   }
 }
 
-void IotWebConf::readParamValue(
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::readParamValue(
     const char* paramName, char* target, unsigned int len)
 {
   String value = this->_server->arg(paramName);
@@ -621,7 +640,8 @@ void IotWebConf::readParamValue(
   value.toCharArray(target, len);
 }
 
-boolean IotWebConf::validateForm()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::validateForm()
 {
   // -- Clean previous error messages.
   IotWebConfParameter* current = this->_firstParameter;
@@ -664,7 +684,8 @@ boolean IotWebConf::validateForm()
   return valid;
 }
 
-void IotWebConf::handleNotFound()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::handleNotFound()
 {
   if (this->handleCaptivePortal())
   {
@@ -706,7 +727,8 @@ void IotWebConf::handleNotFound()
  * Return true in that case so the page handler do not try to handle the request
  * again. (Code from WifiManager project.)
  */
-boolean IotWebConf::handleCaptivePortal()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::handleCaptivePortal()
 {
   String host = this->_server->hostHeader();
   String thingName = String(this->_thingName);
@@ -729,7 +751,8 @@ boolean IotWebConf::handleCaptivePortal()
 }
 
 /** Is this an IP? */
-boolean IotWebConf::isIp(String str)
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::isIp(String str)
 {
   for (size_t i = 0; i < str.length(); i++)
   {
@@ -743,7 +766,8 @@ boolean IotWebConf::isIp(String str)
 }
 
 /** IP to String? */
-String IotWebConf::toStringIp(IPAddress ip)
+template <class WebServerClass, class HTTPUpdateServerClass>
+String IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::toStringIp(IPAddress ip)
 {
   String res = "";
   for (int i = 0; i < 3; i++)
@@ -756,7 +780,8 @@ String IotWebConf::toStringIp(IPAddress ip)
 
 /////////////////////////////////////////////////////////////////////////////////
 
-void IotWebConf::delay(unsigned long m)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::delay(unsigned long m)
 {
   unsigned long delayStart = millis();
   while (m > millis() - delayStart)
@@ -768,7 +793,8 @@ void IotWebConf::delay(unsigned long m)
   }
 }
 
-void IotWebConf::doLoop()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::doLoop()
 {
   doBlink();
   yield(); // -- Yield should not be necessary, but cannot hurt eather.
@@ -830,7 +856,8 @@ void IotWebConf::doLoop()
 /**
  * What happens, when a state changed...
  */
-void IotWebConf::changeState(byte newState)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::changeState(byte newState)
 {
   switch (newState)
   {
@@ -877,7 +904,8 @@ void IotWebConf::changeState(byte newState)
 /**
  * What happens, when a state changed...
  */
-void IotWebConf::stateChanged(byte oldState, byte newState)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::stateChanged(byte oldState, byte newState)
 {
 //  updateOutput();
   switch (newState)
@@ -947,7 +975,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
   }
 }
 
-void IotWebConf::checkApTimeout()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::checkApTimeout()
 {
   if ( !mustStayInApMode() )
   {
@@ -966,7 +995,8 @@ void IotWebConf::checkApTimeout()
  * If so, we must not change state. But when our guest leaved, we can
  * immediately move on.
  */
-void IotWebConf::checkConnection()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::checkConnection()
 {
   if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_NC) &&
       (WiFi.softAPgetStationNum() > 0))
@@ -988,7 +1018,8 @@ void IotWebConf::checkConnection()
   }
 }
 
-boolean IotWebConf::checkWifiConnection()
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::checkWifiConnection()
 {
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -1023,7 +1054,8 @@ boolean IotWebConf::checkWifiConnection()
   return true;
 }
 
-void IotWebConf::setupAp()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::setupAp()
 {
   WiFi.mode(WIFI_AP);
 
@@ -1069,7 +1101,8 @@ void IotWebConf::setupAp()
   this->_dnsServer->start(IOTWEBCONF_DNS_PORT, "*", WiFi.softAPIP());
 }
 
-void IotWebConf::stopAp()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::stopAp()
 {
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
@@ -1077,7 +1110,8 @@ void IotWebConf::stopAp()
 
 ////////////////////////////////////////////////////////////////////
 
-void IotWebConf::blink(unsigned long repeatMs, byte dutyCyclePercent)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::blink(unsigned long repeatMs, byte dutyCyclePercent)
 {
   if (repeatMs == 0)
   {
@@ -1090,26 +1124,30 @@ void IotWebConf::blink(unsigned long repeatMs, byte dutyCyclePercent)
   }
 }
 
-void IotWebConf::fineBlink(unsigned long onMs, unsigned long offMs)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::fineBlink(unsigned long onMs, unsigned long offMs)
 {
   this->_blinkOnMs = onMs;
   this->_blinkOffMs = offMs;
 }
 
-void IotWebConf::stopCustomBlink()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::stopCustomBlink()
 {
   this->_blinkOnMs = this->_internalBlinkOnMs;
   this->_blinkOffMs = this->_internalBlinkOffMs;
 }
 
-void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
 {
   this->blink(repeatMs, dutyCyclePercent);
   this->_internalBlinkOnMs = this->_blinkOnMs;
   this->_internalBlinkOffMs = this->_blinkOffMs;
 }
 
-void IotWebConf::doBlink()
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::doBlink()
 {
   if (IOTWEBCONF_STATUS_ENABLED)
   {
@@ -1125,7 +1163,8 @@ void IotWebConf::doBlink()
   }
 }
 
-void IotWebConf::forceApMode(boolean doForce)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::forceApMode(boolean doForce)
 {
   if (this->_forceApMode == doForce)
   {
@@ -1156,20 +1195,23 @@ void IotWebConf::forceApMode(boolean doForce)
         IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
         this->changeState(IOTWEBCONF_STATE_CONNECTING);
       }
-      
+
     }
   }
 }
 
-boolean IotWebConf::connectAp(const char* apName, const char* password)
+template <class WebServerClass, class HTTPUpdateServerClass>
+boolean IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::connectAp(const char* apName, const char* password)
 {
   return WiFi.softAP(apName, password);
 }
-void IotWebConf::connectWifi(const char* ssid, const char* password)
+template <class WebServerClass, class HTTPUpdateServerClass>
+void IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::connectWifi(const char* ssid, const char* password)
 {
   WiFi.begin(ssid, password);
 }
-IotWebConfWifiAuthInfo* IotWebConf::handleConnectWifiFailure()
+template <class WebServerClass, class HTTPUpdateServerClass>
+IotWebConfWifiAuthInfo* IotWebConfTemplate<WebServerClass, HTTPUpdateServerClass>::handleConnectWifiFailure()
 {
   return NULL;
 }
