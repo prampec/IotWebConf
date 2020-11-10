@@ -24,10 +24,11 @@ Also visit experimental [Discord server](https://discord.gg/GR3uQeD).
   - Automatic "Sign in to network" pop up in your browser (captive portal),
   - Non-blocking - Your custom code will not be blocked in the whole process.
   - Well documented header file, and examples from simple to complex levels.
+  - Supports HTTP or HTTPS
 
 ![Screenshot](https://sharedinventions.com/wp-content/uploads/2018/11/Screenshot_20181105-191748a.png)
 ![Screenshot](https://sharedinventions.com/wp-content/uploads/2019/02/Screenshot-from-2019-02-03-22-16-51b.png)
-  
+
 ## How it works
 The idea is that the Thing will provide a web interface to allow modifying its configuration. E.g. for connecting to a local WiFi network, it needs the SSID and the password.
 
@@ -57,7 +58,7 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
   - The initial system password must be modified by the user, so there is no build-in password.
   - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
-  - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
+  - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network unless you use HTTPS.** So either: Do not allow ambiguous devices connecting to your WiFi router, configure your Thing only in AP mode, or use HTTPS!
   - However IotWebConf has a detailed debug output, passwords are not shown in this log by default. You have
   to enable password visibility manually in the IotWebConf.h with the IOTWEBCONF_DEBUG_PWD_TO_SERIAL
   if it is needed.
@@ -67,7 +68,7 @@ IotWebConf is primary built for ESP8266. But meanwhile it was discovered, that t
 to ESP32. There are two major problems.
   - ESP8266 uses specific naming for it's classes (e.g. ESP8266WebServer). However ESP32 uses a more generic naming (e.g. WebServer). The idea here is to use the generic naming hoping that ESP8266 will adopt these "standards" sooner or later.
   - ESP32 does not provides an HTTPUpdateServer implementation. So in this project we have implemented one. Whenever ESP32 provides an official HTTPUpdateServer, this local implementation will be removed.
-  
+
 ## TODO / Feature requests
   - We might want to add a "verify password" field.
   - Possibility to organize blocks of config items to lists. (E.g. provide more SSIDs with passwords as a connection option.)
@@ -75,7 +76,7 @@ to ESP32. There are two major problems.
 
 ## Known issues
   - It is reported, that there might be unstable working with different lwIP variants. If you experiment serious problems, try to select another lwIP variant for your board in the Tools menu! (Tested with "v2 Lower Memory" version.)
-  
+
 ## Credits
 Although IotWebConf started without being influenced by any other solutions, in the final code you can find some segments borrowed from the WiFiManager library.
   - https://github.com/tzapu/WiFiManager
