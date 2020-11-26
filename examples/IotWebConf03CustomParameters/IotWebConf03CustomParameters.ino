@@ -67,12 +67,12 @@ static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 IotWebConfTextParameter stringParam = IotWebConfTextParameter("String param", "stringParam", stringParamValue, STRING_LEN);
-IotWebConfSeparator separator1 = IotWebConfSeparator();
-IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, true, "20", "1..100", "min='1' max='100' step='1'");
+IotWebConfParameterGroup group1 = IotWebConfParameterGroup("group1", "");
+IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "20", "1..100", "min='1' max='100' step='1'");
 // -- We can add a legend to the separator
-IotWebConfSeparator separator2 = IotWebConfSeparator("Calibration factor");
-IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN, true, NULL, "e.g. 23.4", "step='0.1'");
-IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN, true, true);
+IotWebConfParameterGroup group2 = IotWebConfParameterGroup("c_factor", "Calibration factor");
+IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  NULL, "e.g. 23.4", "step='0.1'");
+IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
 IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
 
 void setup() 
@@ -81,15 +81,16 @@ void setup()
   Serial.println();
   Serial.println("Starting up...");
 
+  group1.addItem(&intParam);
+  group2.addItem(&floatParam);
+  group2.addItem(&checkboxParam);
+  group2.addItem(&chooserParam);
+
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-  iotWebConf.addParameter(&stringParam);
-  iotWebConf.addParameter(&separator1);
-  iotWebConf.addParameter(&intParam);
-  iotWebConf.addParameter(&separator2);
-  iotWebConf.addParameter(&floatParam);
-  iotWebConf.addParameter(&checkboxParam);
-  iotWebConf.addParameter(&chooserParam);
+  iotWebConf.addSystemParameter(&stringParam);
+  iotWebConf.addParameterGroup(&group1);
+  iotWebConf.addParameterGroup(&group2);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.getApTimeoutParameter()->visible = true;
@@ -132,7 +133,7 @@ void handleRoot()
   s += "<li>Float param value: ";
   s += atof(floatParamValue);
   s += "<li>CheckBox selected: ";
-  s += checkboxParam.isChecked();
+//  s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
   s += chooserParamValue;
   s += "</ul>";
@@ -152,13 +153,14 @@ boolean formValidator()
   Serial.println("Validating form.");
   boolean valid = true;
 
+/*
   int l = server.arg(stringParam.getId()).length();
   if (l < 3)
   {
     stringParam.errorMessage = "Please provide at least 3 characters for this test!";
     valid = false;
   }
-
+*/
   return valid;
 }
 

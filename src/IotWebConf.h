@@ -33,8 +33,8 @@ const char IOTWEBCONF_HTML_STYLE_INNER[] PROGMEM  = ".de{background-color:#ffaaa
 const char IOTWEBCONF_HTML_SCRIPT_INNER[] PROGMEM = "function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}; function pw(id) { var x=document.getElementById(id); if(x.type==='password') {x.type='text';} else {x.type='password';} };";
 const char IOTWEBCONF_HTML_HEAD_END[] PROGMEM     = "</head><body>";
 const char IOTWEBCONF_HTML_BODY_INNER[] PROGMEM   = "<div style='text-align:left;display:inline-block;min-width:260px;'>\n";
-const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><fieldset><input type='hidden' name='iotSave' value='true'>\n";
-const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "</fieldset><button type='submit'>Apply</button></form>\n";
+const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><input type='hidden' name='iotSave' value='true'>\n";
+const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "<button type='submit'>Apply</button></form>\n";
 const char IOTWEBCONF_HTML_SAVED[] PROGMEM        = "<div>Configuration saved<br />Return to <a href='/'>home page</a>.</div>\n";
 const char IOTWEBCONF_HTML_END[] PROGMEM          = "</div></body></html>";
 const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>\n";
@@ -87,12 +87,29 @@ protected:
   virtual String getBodyInner() { return FPSTR(IOTWEBCONF_HTML_BODY_INNER); }
 };
 
+class IotWebConfWifiParameterGroup : public IotWebConfParameterGroup
+{
+public:
+  IotWebConfWifiParameterGroup(const char* id, const char* label = NULL) : IotWebConfParameterGroup(id, label)
+  {
+    this->addItem(&this->wifiSsidParameter);
+    this->addItem(&this->wifiPasswordParameter);
+  }
+  IotWebConfTextParameter wifiSsidParameter =
+    IotWebConfTextParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
+  IotWebConfPasswordParameter wifiPasswordParameter =
+    IotWebConfPasswordParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN);
+  char _wifiSsid[IOTWEBCONF_WORD_LEN];
+  char _wifiPassword[IOTWEBCONF_PASSWORD_LEN];
+};
+
 /**
  * Main class of the module.
  */
 class IotWebConf
 {
 public:
+  IotWebConf() { };
   /**
    * Create a new configuration handler.
    *   @thingName - Initial value for the thing name. Used in many places like AP name, can be changed by the user.
@@ -233,13 +250,28 @@ public:
   }
 
   /**
-   * Add a custom parameter, that will be handled by the IotWebConf module.
-   * The parameter will be saved to/loaded from EEPROM automatically,
+   * Add a custom parameter group, that will be handled by the IotWebConf module.
+   * The parameters in this group will be saved to/loaded from EEPROM automatically,
    * and will appear on the config portal.
-   * Will return false, if adding was not successful.
    * Must be called before init()!
    */
-  bool addParameter(IotWebConfParameter* parameter);
+  void addParameterGroup(IotWebConfParameterGroup* group);
+
+  /**
+   * Add a custom parameter group, that will be handled by the IotWebConf module.
+   * The parameters in this group will be saved to/loaded from EEPROM automatically,
+   * but will NOT appear on the config portal.
+   * Must be called before init()!
+   */
+  void addHiddenParameter(IotWebConfParameter* parameter);
+
+  /**
+   * Add a custom parameter group, that will be handled by the IotWebConf module.
+   * The parameters in this group will be saved to/loaded from EEPROM automatically,
+   * but will NOT appear on the config portal.
+   * Must be called before init()!
+   */
+  void addSystemParameter(IotWebConfParameter* parameter);
 
   /**
    * Getter for the actually configured thing name.
@@ -272,8 +304,8 @@ public:
   /**
    * Similar to blink, but here we define exact on and off times for more
    * precise timings.
-   *   @onMs - Milliseconds for the LED tudned on.
-   *   @offMs -  Milliseconds for the LED tudned off.
+   *   @onMs - Milliseconds for the LED turned on.
+   *   @offMs -  Milliseconds for the LED turned off.
    */
   void fineBlink(unsigned long onMs, unsigned long offMs);
 
@@ -324,7 +356,7 @@ public:
    */
   void resetWifiAuthInfo()
   {
-    _wifiAuthInfo = {this->_wifiSsid, this->_wifiPassword};
+    _wifiAuthInfo = {this->_wifiParameters._wifiSsid, this->_wifiParameters._wifiPassword};
   };
 
   /**
@@ -347,7 +379,7 @@ public:
   /**
    * Get internal parameters, for manual handling.
    * Normally you don't need to access these parameters directly.
-   * Note, that changing valueBuffer of these parameters should be followed by configSave()!
+   * Note, that changing valueBuffer of these parameters should be followed by saveConfig()!
    */
   IotWebConfParameter* getThingNameParameter()
   {
@@ -359,11 +391,11 @@ public:
   };
   IotWebConfParameter* getWifiSsidParameter()
   {
-    return &this->_wifiSsidParameter;
+    return &this->_wifiParameters.wifiSsidParameter;
   };
   IotWebConfParameter* getWifiPasswordParameter()
   {
-    return &this->_wifiPasswordParameter;
+    return &this->_wifiParameters.wifiPasswordParameter;
   };
   IotWebConfParameter* getApTimeoutParameter()
   {
@@ -372,11 +404,11 @@ public:
 
   /**
    * If config parameters are modified directly, the new values can be saved by this method.
-   * Note, that init() must pretend configSave()!
-   * Also note, that configSave writes to EEPROM, and EEPROM can be written only some thousand times
+   * Note, that init() must pretend saveConfig()!
+   * Also note, that saveConfig writes to EEPROM, and EEPROM can be written only some thousand times
    *  in the lifetime of an ESP8266 module.
    */
-  void configSave();
+  void saveConfig();
 
   /**
    * With this method you can override the default HTML format provider to
@@ -405,18 +437,22 @@ private:
   boolean _forceDefaultPassword = false;
   boolean _skipApStartup = false;
   boolean _forceApMode = false;
-  IotWebConfParameter* _firstParameter = NULL;
-  IotWebConfTextParameter _thingNameParameter;
-  IotWebConfPasswordParameter _apPasswordParameter;
-  IotWebConfTextParameter _wifiSsidParameter;
-  IotWebConfPasswordParameter _wifiPasswordParameter;
-  IotWebConfNumberParameter _apTimeoutParameter;
+  IotWebConfParameterGroup _allParameters = IotWebConfParameterGroup("iwcAll");
+  IotWebConfParameterGroup _systemParameters = IotWebConfParameterGroup("iwcSys", "System configuration");
+  IotWebConfParameterGroup _customParameterGroups = IotWebConfParameterGroup("iwcCustom");
+  IotWebConfParameterGroup _hiddenParameters = IotWebConfParameterGroup("hidden");
+  IotWebConfWifiParameterGroup _wifiParameters = IotWebConfWifiParameterGroup("iwcWifi0");
+  IotWebConfTextParameter _thingNameParameter =
+    IotWebConfTextParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
+  IotWebConfPasswordParameter _apPasswordParameter =
+    IotWebConfPasswordParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN);
+  IotWebConfNumberParameter _apTimeoutParameter =
+    IotWebConfNumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, NULL, NULL, "min='1' max='600'");
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
-  char _wifiSsid[IOTWEBCONF_WORD_LEN];
-  char _wifiPassword[IOTWEBCONF_PASSWORD_LEN];
   char _apTimeoutStr[IOTWEBCONF_WORD_LEN];
   unsigned long _apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
+  // TODO: Add to WifiParameterGroup
   unsigned long _wifiConnectionTimeoutMs =
       IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS;
   byte _state = IOTWEBCONF_STATE_BOOT;
@@ -440,14 +476,15 @@ private:
   boolean _blinkStateOn = false;
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
-  IotWebConfWifiAuthInfo _wifiAuthInfo = {_wifiSsid, _wifiPassword};
+  // TODO: authinfo
+  IotWebConfWifiAuthInfo _wifiAuthInfo;
   IotWebConfHtmlFormatProvider htmlFormatProviderInstance;
   IotWebConfHtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
-  int configInit();
-  boolean configLoad();
-  boolean configTestVersion();
-  void configSaveConfigVersion();
+  int initConfig();
+  boolean loadConfig();
+  boolean testConfigVersion();
+  void saveConfigVersion();
   void readEepromValue(int start, byte* valueBuffer, int length);
   void writeEepromValue(int start, byte* valueBuffer, int length);
 
@@ -462,7 +499,7 @@ private:
   boolean mustStayInApMode()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0') ||
-      this->_wifiSsid[0] == '\0' || this->_forceApMode;
+      this->_wifiParameters._wifiSsid[0] == '\0' || this->_forceApMode;
   }
   boolean isIp(String str);
   String toStringIp(IPAddress ip);

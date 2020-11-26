@@ -15,6 +15,10 @@
 #include <Arduino.h>
 #include <IotWebConfSettings.h>
 
+// TODO: use webserver wrapper
+#include <IotWebConfCompatibility.h>
+
+
 const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM =
   "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' "
   "name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/>"
@@ -29,17 +33,114 @@ const char IOTWEBCONF_HTML_FORM_OPTION[] PROGMEM =
 
 typedef struct IotWebConfSerializationData
 {
-  byte* valueBuffer;
+  byte* data;
   int length;
 } IotWebConfSerializationData;
 
+class IotWebConfConfigItem
+{
+public:
+  boolean visible = true;
+  const char* getId() { return this->_id; }
+protected:
+  IotWebConfConfigItem(const char* id) { this->_id = id; };
+  /**
+   * Calculate the size of bytes should be stored in the EEPROM.
+   */
+  virtual int getStorageSize();
+
+  /**
+   * On initial startup (when no data was saved), it may be required to apply a default value
+   *   to the parameter.
+   */
+  virtual void applyDefaultValue();
+
+  /**
+   * Save data.
+   * @doStore - A method is passed as a parameter, that will performs the actual EEPROM access.
+   *   The argument 'serializationData' of this referenced method should be pre-filled with
+   *   the size and the serialized data before calling the method.
+   */
+  virtual void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore);
+
+  /**
+   * Load data.
+   * @doLoad - A method is passed as a parameter, that will performs the actual EEPROM access.
+   *   The argument 'serializationData' of this referenced method should be pre-filled with
+   *   the size of the expected data, and the data buffer should be allocated with this size.
+   *   The doLoad will fill the data from the EEPROM.
+   */
+  virtual void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad);
+
+  /**
+   * This method will create the HTML form item for the config portal.
+   * 
+   * @dataArrived - True if there was a form post, where (some) form
+   *   data arrived from the client.
+   * @server - The web server, that will send the rendered content to the client.
+   *   The server->sendContent() method should be used in the implementations.
+   */
+  virtual void renderHtml(boolean dataArrived, WebServer* server);
+
+  /**
+   * New value arrived from the form post. The value should be stored in the
+   *   in this config item.
+   * 
+   * @server - The web server, that will send the rendered content to the client.
+   *   The server->hasArg() and server->arg() methods should be used in the
+   *   implementations.
+   */
+  virtual void update(WebServer* server);
+
+  /**
+   * Before validating the form post, it is required to clear previos error messages.
+   */
+  virtual void clearErrorMessage();
+
+  /**
+   * This method should display information to Serial containing the parameter
+   *   ID and the current value of the parameter (if it is confidential).
+   *   Will only be called if debug is enabled.
+   */
+  virtual void debugTo(Stream* out);
+
+  friend class IotWebConf; // Allow IotWebConf to access protected members.
+
+private:
+  const char* _id = 0;
+  IotWebConfConfigItem* _parentItem = NULL;
+  IotWebConfConfigItem* _nextItem = NULL;
+  friend class IotWebConfParameterGroup; // Allow IotWebConfParameterGroup to access _nextItem.
+};
+
+class IotWebConfParameterGroup : public IotWebConfConfigItem
+{
+public:
+  IotWebConfParameterGroup(const char* id, const char* label = NULL);
+  void addItem(IotWebConfConfigItem* configItem);
+  const char *label;
+
+protected:
+  int getStorageSize() override;
+  void applyDefaultValue() override;
+  void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore) override;
+  void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad) override;
+  void renderHtml(boolean dataArrived, WebServer* server) override;
+  void update(WebServer* server) override;
+  void clearErrorMessage() override;
+  void debugTo(Stream* out) override;
+  friend class IotWebConf; // Allow IotWebConf to access protected members.
+
+private:
+  IotWebConfConfigItem* _firstItem = NULL;
+};
 
 /**
  * IotWebConfParameters is a configuration item of the config portal.
  * The parameter will have its input field on the configuration page,
  * and the provided value will be saved to the EEPROM.
  */
-class IotWebConfParameter
+class IotWebConfParameter : public IotWebConfConfigItem
 {
 public:
   /**
@@ -51,85 +152,32 @@ public:
    * @valueBuffer - Configuration value will be loaded to this buffer from the
    *   EEPROM.
    * @length - The buffer should have a length provided here.
-   * @visible - Should be offered to be modified by the user.
-   *   NOTE: Might be removed in the future!
    * @defaultValue - Defalt value set on startup, when no configuration ever saved
    *   with the current config-version.
    */
   IotWebConfParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean visible = true, const char* defaultValue = NULL);
-
-  /**
-   * This method will create the html form item for the config portal.
-   * 
-   * @dataArrived - True if there was a form post, where (some) form
-   *   data arrived from the client.
-   * @hasValueFromPost - Parameter is present in the form post.
-   * @valueFromPost - Value of the form parameter being posted,
-   *   String.emptyString if no value was present.
-   * @returns - The rendered HTML form-segment.
-   */
-  virtual String renderHtml(boolean dataArrived, boolean hasValueFromPost, String valueFromPost);
-
-  /**
-   * New value arrived from the form post. Value should be stored in the
-   *   valueBuffer to be saved to EEPROM.
-   */
-  virtual void update(String newValue);
-
-  /**
-   * Serialization is done before saving data to EEPROM.
-   * If the valueBuffer needs some processing before save, it can be done
-   *   here. E.g. you might want to store a numeric value in binary format.
-   * 
-   * @returns - Returns with a serialized data stored in the corresponding
-   *   structure.
-   */
-  virtual IotWebConfSerializationData serialize();
-
-  /**
-   * By default parameter is stored in the valueBuffer when read from the
-   *   EEPROM. In this method one can specify a different storing
-   *   point read from the EEPROM.
-   * 
-   * @returns - Prepared store for reading EEPROM value into.
-   */
-  virtual IotWebConfSerializationData prepareDeserialization();
-
-  /**
-   * You might want to post-process the value read from the EEPROM to be
-   *   human readable. E.g. if a numeric value is stored in binary format
-   *   it is time to convert it to text.
-   * 
-   * @serializationData - Data store prepared by the prepareDeserialization.
-   */
-  virtual void deserialize(IotWebConfSerializationData serializationData);
-
-  /**
-   * This method should display information to Serial containing the parameter
-   *   ID and the current value of the parameter (if it is confidential).
-   *   Will only be called if debug is enabled.
-   */
-  virtual void debugTo(Stream* out);
+    const char* defaultValue = NULL);
 
   const char* label;
   char* valueBuffer;
-  boolean visible;
   const char* defaultValue;
   const char* errorMessage;
 
-  const char* getId() { return this->_id; }
   int getLength() { return this->_length; }
 
 protected:
-  IotWebConfParameter() {};
+  // Overrides
+  int getStorageSize() override;
+  void applyDefaultValue() override;
+  void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore) override;
+  void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad) override;
+  virtual void update(WebServer* server) override;
+  virtual void update(String newValue);
+  void clearErrorMessage() override;
 
 private:
-  const char* _id = 0;
   int _length;
-  IotWebConfParameter* _nextParameter = NULL;
-  friend class IotWebConf; // Allow IotWebConf to access private members.
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -150,7 +198,7 @@ public:
    */
   IotWebConfTextParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean visible = true, const char* defaultValue = NULL,
+    const char* defaultValue = NULL,
     const char* placeholder = NULL,
     const char* customHtml = NULL);
 
@@ -166,25 +214,23 @@ public:
    */
   const char* customHtml;
 
-  // Overrides
+protected:
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+    boolean dataArrived, boolean hasValueFromPost, String valueFromPost);
+  // Overrides
+  virtual void renderHtml(boolean dataArrived, WebServer* server) override;
   virtual void update(String newValue) override;
-  virtual IotWebConfSerializationData serialize() override;
-  virtual IotWebConfSerializationData prepareDeserialization() override;
-  virtual void deserialize(IotWebConfSerializationData serializationData) override;
   virtual void debugTo(Stream* out) override;
 
-protected:
   /**
    * Renders a standard HTML form INPUT.
    * @type - The type attribute of the html input field.
    */
   virtual String renderHtml(const char* type, boolean hasValueFromPost, String valueFromPost);
-  IotWebConfTextParameter() {};
 
 private:
   friend class IotWebConf;
+  friend class IotWebConfWifiParameterGroup;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -193,25 +239,27 @@ private:
  * The Password parameter has a special handling, as the value will be
  * overwritten in the EEPROM only if value was provided on the config portal.
  * Because of this logic, "password" type field with length more then
- * IOTWEBCONF_WORD_LEN characters are not supported.
+ * IOTWEBCONF_PASSWORD_LEN characters are not supported.
  */
 class IotWebConfPasswordParameter : public IotWebConfTextParameter
 {
 public:
   IotWebConfPasswordParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean visible = true, const char* defaultValue = NULL,
+    const char* defaultValue = NULL,
     const char* placeholder = NULL,
     const char* customHtml = "ondblclick=\"pw(this.id)\"");
 
+protected:
   // Overrides
-  virtual String renderHtml(boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+  virtual String renderHtml(
+    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
   virtual void update(String newValue) override;
   virtual void debugTo(Stream* out) override;
 
 private:
-  IotWebConfPasswordParameter() {};
   friend class IotWebConf;
+  friend class IotWebConfWifiParameterGroup;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -224,15 +272,16 @@ class IotWebConfNumberParameter : public IotWebConfTextParameter
 public:
   IotWebConfNumberParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean visible = true, const char* defaultValue = NULL,
+    const char* defaultValue = NULL,
     const char* placeholder = NULL,
     const char* customHtml = NULL);
 
+protected:
   // Overrides
-  virtual String renderHtml(boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+  virtual String renderHtml(
+    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
 
 private:
-  IotWebConfNumberParameter() {};
   friend class IotWebConf;
 };
 
@@ -248,16 +297,16 @@ class IotWebConfCheckboxParameter : public IotWebConfTextParameter
 public:
   IotWebConfCheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean visible = true, boolean defaultValue = false);
-
-  // Overrides
-  virtual String renderHtml(boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
-  virtual void update(String newValue) override;
-
+    boolean defaultValue = false);
   boolean isChecked() { return strncmp(this->valueBuffer, "selected", this->getLength()) == 0; }
 
+protected:
+  // Overrides
+  virtual String renderHtml(
+    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+  virtual void update(String newValue) override;
+
 private:
-  IotWebConfCheckboxParameter() {};
   friend class IotWebConf;
   boolean _checked;
   const char* _checkedStr = "checked='checked'";
@@ -284,10 +333,9 @@ public:
   IotWebConfOptionsParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
-    boolean visible = true, const char* defaultValue = NULL);
+    const char* defaultValue = NULL);
 
 protected:
-  IotWebConfOptionsParameter() {};
   const char* _optionValues;
   const char* _optionNames;
   size_t _optionCount;
@@ -308,40 +356,40 @@ public:
   IotWebConfSelectParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t namesLenth,
-    boolean visible = true, const char* defaultValue = NULL);
+    const char* defaultValue = NULL);
 
+protected:
   // Overrides
   virtual String renderHtml(
     boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
 
 private:
-  IotWebConfSelectParameter() {};
   friend class IotWebConf;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-
 /**
- * A separator for separating field sets.
- * NOTE: Separator will be replaced by a grouping ability of the parameters.
+ * This class is here just to make some nice indents on debug output
+ *   for group tree.
  */
-class IotWebConfSeparator : public IotWebConfParameter
+class PrefixStreamWrapper : public Stream
 {
 public:
-  IotWebConfSeparator();
+  PrefixStreamWrapper(
+    Stream* originalStream,
+    std::function<size_t(Stream* stream)> prefixWriter);
+  size_t write(uint8_t) override;
+  size_t write(const uint8_t *buffer, size_t size) override;
+  int available() override { return _originalStream->available(); };
+  int read() override { return _originalStream->read(); };
+  int peek() override { return _originalStream->peek(); };
+  void flush() override { return _originalStream->flush(); };
 
-  /**
-   * Create a seperator with a label (legend tag)
-   */
-  IotWebConfSeparator(const char* label);
+private:
+  Stream* _originalStream;
+  std::function<size_t(Stream* stream)> _prefixWriter;
+  boolean _newLine = true;
 
-  virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
-  virtual void update(String newValue) override;
-  virtual IotWebConfSerializationData serialize() override;
-  virtual IotWebConfSerializationData prepareDeserialization() override;
-  virtual void deserialize(IotWebConfSerializationData serializationData) override;
-  virtual void debugTo(Stream* out) override;
+  size_t checkNewLine();
 };
 
 #endif

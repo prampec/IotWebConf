@@ -62,9 +62,11 @@ char gatewayValue[STRING_LEN];
 char netmaskValue[STRING_LEN];
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-IotWebConfParameter ipAddressParam = IotWebConfParameter("IP address", "ipAddress", ipAddressValue, STRING_LEN, "text", NULL, "192.168.3.222");
-IotWebConfParameter gatewayParam = IotWebConfParameter("Gateway", "gateway", gatewayValue, STRING_LEN, "text", NULL, "192.168.3.0");
-IotWebConfParameter netmaskParam = IotWebConfParameter("Subnet mask", "netmask", netmaskValue, STRING_LEN, "text", NULL, "255.255.255.0");
+// -- You can also use namespace formats e.g.: iotwebconf::ParameterGroup
+IotWebConfParameterGroup connGroup = IotWebConfParameterGroup("conn", "Connection parameters");
+IotWebConfTextParameter ipAddressParam = IotWebConfTextParameter("IP address", "ipAddress", ipAddressValue, STRING_LEN, "text", NULL, "192.168.3.222");
+IotWebConfTextParameter gatewayParam = IotWebConfTextParameter("Gateway", "gateway", gatewayValue, STRING_LEN, "text", NULL, "192.168.3.0");
+IotWebConfTextParameter netmaskParam = IotWebConfTextParameter("Subnet mask", "netmask", netmaskValue, STRING_LEN, "text", NULL, "255.255.255.0");
 
 IPAddress ipAddress;
 IPAddress gateway;
@@ -76,11 +78,13 @@ void setup()
   Serial.println();
   Serial.println("Starting up...");
 
+  connGroup.addItem(&ipAddressParam);
+  connGroup.addItem(&gatewayParam);
+  connGroup.addItem(&netmaskParam);
+
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-  iotWebConf.addParameter(&ipAddressParam);
-  iotWebConf.addParameter(&gatewayParam);
-  iotWebConf.addParameter(&netmaskParam);
+  iotWebConf.addParameterGroup(&connGroup);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.setApConnectionHandler(&connectAp);

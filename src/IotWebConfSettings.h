@@ -13,26 +13,42 @@
 #define IotWebConfSettings_h
 
 // -- We might want to place the config in the EEPROM in an offset.
-#define IOTWEBCONF_CONFIG_START 0
+#ifndef IOTWEBCONF_CONFIG_START
+# define IOTWEBCONF_CONFIG_START 0
+#endif
 
 // -- Maximal length of any string used in IotWebConfig configuration (e.g.
-// ssid, password).
-#define IOTWEBCONF_WORD_LEN 33
+// ssid).
+#ifndef IOTWEBCONF_WORD_LEN
+# define IOTWEBCONF_WORD_LEN 33
+#endif
+// -- Maximal length of password used in IotWebConfig configuration.
+#ifndef IOTWEBCONF_PASSWORD_LEN
+# define IOTWEBCONF_PASSWORD_LEN 33
+#endif
 
 // -- IotWebConf tries to connect to the local network for an amount of time
 // before falling back to AP mode.
-#define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 30000
+#ifndef IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS
+# define IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS 30000
+#endif
 
 // -- Thing will stay in AP mode for an amount of time on boot, before retrying
 // to connect to a WiFi network.
-#define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
+#ifndef IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS
+# define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
+#endif
 
 // -- mDNS should allow you to connect to this device with a hostname provided
 // by the device. E.g. mything.local
-#define IOTWEBCONF_CONFIG_USE_MDNS
+#ifndef IOTWEBCONF_CONFIG_DONT_USE_MDNS
+# define IOTWEBCONF_CONFIG_USE_MDNS
+#endif
 
 // -- Logs progress information to Serial if enabled.
-#define IOTWEBCONF_DEBUG_TO_SERIAL
+#ifndef IOTWEBCONF_DEBUG_DISABLED
+# define IOTWEBCONF_DEBUG_TO_SERIAL
+#endif
 
 // -- Logs passwords to Serial if enabled.
 //#define IOTWEBCONF_DEBUG_PWD_TO_SERIAL
@@ -45,7 +61,12 @@
 #endif
 
 // -- EEPROM config starts with a special prefix of length defined here.
-#define IOTWEBCONF_CONFIG_VESION_LENGTH 4
-#define IOTWEBCONF_DNS_PORT 53
+#ifndef IOTWEBCONF_CONFIG_VERSION_LENGTH
+# define IOTWEBCONF_CONFIG_VERSION_LENGTH 4
+#endif
+
+#ifndef IOTWEBCONF_DNS_PORT
+# define IOTWEBCONF_DNS_PORT 53
+#endif
 
 #endif

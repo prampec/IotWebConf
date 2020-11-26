@@ -21,6 +21,8 @@
  * creating local aliases for those.
  */
 #ifdef ESP8266
+# include <ESP8266WebServer.h>
+# include <ESP8266HTTPUpdateServer.h>
 # define WebServer ESP8266WebServer
 # define HTTPUpdateServer ESP8266HTTPUpdateServer
 #endif
