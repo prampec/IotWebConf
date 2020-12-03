@@ -791,6 +791,14 @@ void IotWebConf::doLoop()
         startupState = IOTWEBCONF_STATE_CONNECTING;
       }
     }
+    // If initial WiFi auth info is provided then try to connect using it.
+    if (this->_initialWifiAuthInfo)
+    {
+      IOTWEBCONF_DEBUG_LINE(F("Using initial wifi access point auth info."));
+      strcpy(this->_wifiSsid, this->_initialWifiAuthInfo->ssid);
+      strcpy(this->_wifiPassword, this->_initialWifiAuthInfo->password);
+      startupState = IOTWEBCONF_STATE_CONNECTING;
+    }
     this->changeState(startupState);
   }
   else if (
@@ -1008,6 +1016,24 @@ boolean IotWebConf::checkWifiConnection()
       else
       {
         this->changeState(IOTWEBCONF_STATE_AP_MODE);
+        // Initial Wifi Auth info failed and switching to AP mode.
+        // Clear auth info from value buffers so they are not used in config
+        // form.
+        if (this->_initialWifiAuthInfo)
+        {
+          if (strcmp(this->_wifiSsid, this->_initialWifiAuthInfo->ssid) == 0)
+          {
+            IOTWEBCONF_DEBUG_LINE(F("Clearing initial wifi auth ssid."));
+            this->_wifiSsid[0] = '\0';
+          }
+          if (strcmp(
+                  this->_wifiPassword, this->_initialWifiAuthInfo->password) ==
+              0)
+          {
+            IOTWEBCONF_DEBUG_LINE(F("Clearing initial wifi auth password."));
+            this->_wifiPassword[0] = '\0';
+          }
+        }
       }
     }
     return false;
@@ -1172,4 +1198,10 @@ void IotWebConf::connectWifi(const char* ssid, const char* password)
 IotWebConfWifiAuthInfo* IotWebConf::handleConnectWifiFailure()
 {
   return NULL;
+}
+
+void IotWebConf::setInitialWifiAuthInfo(IotWebConfWifiAuthInfo* auth)
+{
+  Serial.println("Set initial wifi auth info");
+  this->_initialWifiAuthInfo = auth;
 }

@@ -526,7 +526,13 @@ public:
     return this->htmlFormatProvider;
   }
 
+  /**
+   * Set initial WiFi auth info that is used when no login info is saved in EEPROM.
+   */
+  void setInitialWifiAuthInfo(IotWebConfWifiAuthInfo* auth);
+
 private:
+  const IotWebConfWifiAuthInfo* _initialWifiAuthInfo = NULL;
   const char* _initialApPassword = NULL;
   const char* _configVersion;
   DNSServer* _dnsServer;
