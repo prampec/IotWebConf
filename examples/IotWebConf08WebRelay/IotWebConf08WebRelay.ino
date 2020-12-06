@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -36,6 +36,11 @@
  */
 
 #include <IotWebConf.h>
+#ifdef ESP8266
+# include <ESP8266HTTPUpdateServer.h>
+#elif defined(ESP32)
+# include <IotWebConfESP32HTTPUpdateServer.h>
+#endif
 
 #ifdef ESP8266
 String ChipId = String(ESP.getChipId(), HEX);
@@ -69,12 +74,19 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define ACTION_FEQ_LIMIT 10000
 #define NO_ACTION -1
 
-// -- Callback method declarations.
+// -- Method declarations.
+void handleRoot();
+void applyAction(unsigned long now);
+// -- Callback methods.
 void configSaved();
 
 DNSServer dnsServer;
 WebServer server(80);
+#ifdef ESP8266
+ESP8266HTTPUpdateServer httpUpdater;
+#elif defined(ESP32)
 HTTPUpdateServer httpUpdater;
+#endif
 
 IotWebConf iotWebConf(thingName.c_str(), &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 
@@ -94,7 +106,9 @@ void setup()
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(BUTTON_PIN);
   iotWebConf.setConfigSavedCallback(&configSaved);
-  iotWebConf.setupUpdateServer(&httpUpdater);
+  iotWebConf.setupUpdateServer(
+    [](const char* updatePath) { httpUpdater.setup(&server, updatePath); },
+    [](const char* userName, char* password) { httpUpdater.updateCredentials(userName, password); });
 
   // -- Initializing the configuration.
   iotWebConf.init();

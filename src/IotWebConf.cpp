@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -25,13 +25,16 @@
 
 ////////////////////////////////////////////////////////////////
 
+namespace iotwebconf
+{
+
 IotWebConf::IotWebConf(
-    const char* defaultThingName, DNSServer* dnsServer, WebServer* server,
+    const char* defaultThingName, DNSServer* dnsServer, WebServerWrapper* webServerWrapper,
     const char* initialApPassword, const char* configVersion)
 {
   this->_thingNameParameter.defaultValue = defaultThingName;
   this->_dnsServer = dnsServer;
-  this->_server = server;
+  this->_webServerWrapper = webServerWrapper;
   this->_initialApPassword = initialApPassword;
   this->_configVersion = configVersion;
   itoa(this->_apTimeoutMs / 1000, this->_apTimeoutStr, 10);
@@ -63,13 +66,6 @@ void IotWebConf::setStatusPin(int statusPin, int statusOnLevel)
 {
   this->_statusPin = statusPin;
   this->_statusOnLevel = statusOnLevel;
-}
-
-void IotWebConf::setupUpdateServer(
-    HTTPUpdateServer* updateServer, const char* updatePath)
-{
-  this->_updateServer = updateServer;
-  this->_updatePath = updatePath;
 }
 
 boolean IotWebConf::init()
@@ -117,17 +113,17 @@ boolean IotWebConf::init()
 
 //////////////////////////////////////////////////////////////////
 
-void IotWebConf::addParameterGroup(IotWebConfParameterGroup* group)
+void IotWebConf::addParameterGroup(ParameterGroup* group)
 {
   this->_customParameterGroups.addItem(group);
 }
 
-void IotWebConf::addHiddenParameter(IotWebConfParameter* parameter)
+void IotWebConf::addHiddenParameter(Parameter* parameter)
 {
   this->_hiddenParameters.addItem(parameter);
 }
 
-void IotWebConf::addSystemParameter(IotWebConfParameter* parameter)
+void IotWebConf::addSystemParameter(Parameter* parameter)
 {
   this->_systemParameters.addItem(parameter);
 }
@@ -158,7 +154,7 @@ boolean IotWebConf::loadConfig()
   {
     int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
     IOTWEBCONF_DEBUG_LINE(F("Loading configurations"));
-    this->_allParameters.loadValue([&](IotWebConfSerializationData* serializationData)
+    this->_allParameters.loadValue([&](SerializationData* serializationData)
     {
         this->readEepromValue(start, serializationData->data, serializationData->length);
         start += serializationData->length;
@@ -199,7 +195,7 @@ void IotWebConf::saveConfig()
     this->_allParameters.debugTo(&Serial);
     Serial.println();
 #endif
-  this->_allParameters.storeValue([&](IotWebConfSerializationData* serializationData)
+  this->_allParameters.storeValue([&](SerializationData* serializationData)
   {
     this->writeEepromValue(start, serializationData->data, serializationData->length);
     start += serializationData->length;
@@ -277,34 +273,34 @@ void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void IotWebConf::handleConfig()
+void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 {
   if (this->_state == IOTWEBCONF_STATE_ONLINE)
   {
     // -- Authenticate
-    if (!this->_server->authenticate(
+    if (!webRequestWrapper->authenticate(
             IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword))
     {
       IOTWEBCONF_DEBUG_LINE(F("Requesting authentication."));
-      this->_server->requestAuthentication();
+      webRequestWrapper->requestAuthentication();
       return;
     }
   }
 
-  boolean dataArrived = this->_server->hasArg("iotSave");
-  if (!dataArrived || !this->validateForm())
+  boolean dataArrived = webRequestWrapper->hasArg("iotSave");
+  if (!dataArrived || !this->validateForm(webRequestWrapper))
   {
     // -- Display config portal
     IOTWEBCONF_DEBUG_LINE(F("Configuration page requested."));
 
     // Send chunked output instead of one String, to avoid
     // filling memory if using many parameters.
-    this->_server->sendHeader(
+    webRequestWrapper->sendHeader(
         "Cache-Control", "no-cache, no-store, must-revalidate");
-    this->_server->sendHeader("Pragma", "no-cache");
-    this->_server->sendHeader("Expires", "-1");
-    this->_server->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    this->_server->send(200, "text/html", "");
+    webRequestWrapper->sendHeader("Pragma", "no-cache");
+    webRequestWrapper->sendHeader("Expires", "-1");
+    webRequestWrapper->setContentLength(CONTENT_LENGTH_UNKNOWN);
+    webRequestWrapper->send(200, "text/html", "");
 
     String content = htmlFormatProvider->getHead();
     content.replace("{v}", "Config ESP");
@@ -315,7 +311,7 @@ void IotWebConf::handleConfig()
 
     content += htmlFormatProvider->getFormStart();
 
-    this->_server->sendContent(content);
+    webRequestWrapper->sendContent(content);
 
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.println("Rendering parameters:");
@@ -323,8 +319,8 @@ void IotWebConf::handleConfig()
     this->_customParameterGroups.debugTo(&Serial);
 #endif
     // -- Add parameters to the form
-    this->_systemParameters.renderHtml(dataArrived, this->_server);
-    this->_customParameterGroups.renderHtml(dataArrived, this->_server);
+    this->_systemParameters.renderHtml(dataArrived, webRequestWrapper);
+    this->_customParameterGroups.renderHtml(dataArrived, webRequestWrapper);
 
     content = htmlFormatProvider->getFormEnd();
 
@@ -344,9 +340,9 @@ void IotWebConf::handleConfig()
 
     content += htmlFormatProvider->getEnd();
 
-    this->_server->sendContent(content);
-    this->_server->sendContent(F(""));
-    this->_server->client().stop();
+    webRequestWrapper->sendContent(content);
+    webRequestWrapper->sendContent(F(""));
+    webRequestWrapper->stop();
   }
   else
   {
@@ -357,8 +353,8 @@ void IotWebConf::handleConfig()
     this->_customParameterGroups.debugTo(&Serial);
     Serial.println();
 #endif
-    this->_systemParameters.update(this->_server);
-    this->_customParameterGroups.update(this->_server);
+    this->_systemParameters.update(webRequestWrapper);
+    this->_customParameterGroups.update(webRequestWrapper);
 
     this->saveConfig();
 
@@ -390,12 +386,12 @@ void IotWebConf::handleConfig()
     }
     page += htmlFormatProvider->getEnd();
 
-    this->_server->sendHeader("Content-Length", String(page.length()));
-    this->_server->send(200, "text/html; charset=UTF-8", page);
+    webRequestWrapper->sendHeader("Content-Length", String(page.length()));
+    webRequestWrapper->send(200, "text/html; charset=UTF-8", page);
   }
 }
 
-boolean IotWebConf::validateForm()
+boolean IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
 {
   // -- Clean previous error messages.
   this->_systemParameters.clearErrorMessage();
@@ -409,21 +405,21 @@ boolean IotWebConf::validateForm()
   }
 
   // -- Internal validation.
-  int l = this->_server->arg(this->_thingNameParameter.getId()).length();
+  int l = webRequestWrapper->arg(this->_thingNameParameter.getId()).length();
   if (3 > l)
   {
     this->_thingNameParameter.errorMessage =
         "Give a name with at least 3 characters.";
     valid = false;
   }
-  l = this->_server->arg(this->_apPasswordParameter.getId()).length();
+  l = webRequestWrapper->arg(this->_apPasswordParameter.getId()).length();
   if ((0 < l) && (l < 8))
   {
     this->_apPasswordParameter.errorMessage =
         "Password length must be at least 8 characters.";
     valid = false;
   }
-  l = this->_server->arg(this->_wifiParameters.wifiPasswordParameter.getId()).length();
+  l = webRequestWrapper->arg(this->_wifiParameters.wifiPasswordParameter.getId()).length();
   if ((0 < l) && (l < 8))
   {
     this->_wifiParameters.wifiPasswordParameter.errorMessage =
@@ -434,41 +430,29 @@ boolean IotWebConf::validateForm()
   return valid;
 }
 
-void IotWebConf::handleNotFound()
+void IotWebConf::handleNotFound(WebRequestWrapper* webRequestWrapper)
 {
-  if (this->handleCaptivePortal())
+  if (this->handleCaptivePortal(webRequestWrapper))
   {
     // If captive portal redirect instead of displaying the error page.
     return;
   }
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-  Serial.print("Requested non-existing page '");
-  Serial.print(this->_server->uri());
-  Serial.print("' arguments(");
-  Serial.print(this->_server->method() == HTTP_GET ? "GET" : "POST");
-  Serial.print("):");
-  Serial.println(this->_server->args());
+  Serial.print("Requested a non-existing page '");
+  Serial.print(webRequestWrapper->uri());
+  Serial.println("'");
 #endif
-  String message = "File Not Found\n\n";
+  String message = "Requested a non-existing page\n\n";
   message += "URI: ";
-  message += this->_server->uri();
-  message += "\nMethod: ";
-  message += (this->_server->method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += this->_server->args();
+  message += webRequestWrapper->uri();
   message += "\n";
 
-  for (uint8_t i = 0; i < this->_server->args(); i++)
-  {
-    message +=
-        " " + this->_server->argName(i) + ": " + this->_server->arg(i) + "\n";
-  }
-  this->_server->sendHeader(
+  webRequestWrapper->sendHeader(
       "Cache-Control", "no-cache, no-store, must-revalidate");
-  this->_server->sendHeader("Pragma", "no-cache");
-  this->_server->sendHeader("Expires", "-1");
-  this->_server->sendHeader("Content-Length", String(message.length()));
-  this->_server->send(404, "text/plain", message);
+  webRequestWrapper->sendHeader("Pragma", "no-cache");
+  webRequestWrapper->sendHeader("Expires", "-1");
+  webRequestWrapper->sendHeader("Content-Length", String(message.length()));
+  webRequestWrapper->send(404, "text/plain", message);
 }
 
 /**
@@ -476,9 +460,9 @@ void IotWebConf::handleNotFound()
  * Return true in that case so the page handler do not try to handle the request
  * again. (Code from WifiManager project.)
  */
-boolean IotWebConf::handleCaptivePortal()
+boolean IotWebConf::handleCaptivePortal(WebRequestWrapper* webRequestWrapper)
 {
-  String host = this->_server->hostHeader();
+  String host = webRequestWrapper->hostHeader();
   String thingName = String(this->_thingName);
   thingName.toLowerCase();
   if (!isIp(host) && !host.startsWith(thingName))
@@ -487,12 +471,12 @@ boolean IotWebConf::handleCaptivePortal()
     Serial.print("Request for ");
     Serial.print(host);
     Serial.print(" redirected to ");
-    Serial.println(this->_server->client().localIP());
+    Serial.println(webRequestWrapper->localIP());
 #endif
-    this->_server->sendHeader(
-      "Location", String("http://") + toStringIp(this->_server->client().localIP()), true);
-    this->_server->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
-    this->_server->client().stop(); // Stop is needed because we sent no content length
+    webRequestWrapper->sendHeader(
+      "Location", String("http://") + toStringIp(webRequestWrapper->localIP()), true);
+    webRequestWrapper->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
+    webRequestWrapper->stop(); // Stop is needed because we sent no content length
     return true;
   }
   return false;
@@ -573,7 +557,7 @@ void IotWebConf::doLoop()
     checkConnection();
     checkApTimeout();
     this->_dnsServer->processNextRequest();
-    this->_server->handleClient();
+    this->_webServerWrapper->handleClient();
   }
   else if (this->_state == IOTWEBCONF_STATE_CONNECTING)
   {
@@ -587,7 +571,7 @@ void IotWebConf::doLoop()
   {
     // -- In server mode we provide web interface. And check whether it is time
     // to run the client.
-    this->_server->handleClient();
+    this->_webServerWrapper->handleClient();
     if (WiFi.status() != WL_CONNECTED)
     {
       IOTWEBCONF_DEBUG_LINE(F("Not connected. Try reconnect..."));
@@ -663,11 +647,11 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
         this->blinkInternal(300, 50);
       }
       setupAp();
-      if (this->_updateServer != NULL)
+      if (this->_updateServerSetupFunction != NULL)
       {
-        this->_updateServer->setup(this->_server, this->_updatePath);
+        this->_updateServerSetupFunction(this->_updatePath);
       }
-      this->_server->begin();
+      this->_webServerWrapper->begin();
       this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
       this->_apStartTimeMs = millis();
       break;
@@ -677,10 +661,10 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         stopAp();
       }
-      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServer != NULL))
+      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServerSetupFunction != NULL))
       {
         // We've skipped AP mode, so update server needs to be set up now.
-        this->_updateServer->setup(this->_server, this->_updatePath);
+        this->_updateServerSetupFunction(this->_updatePath);
       }
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -700,12 +684,12 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       break;
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
-      if (this->_updateServer != NULL)
+      if (this->_updateServerUpdateCredentialsFunction != NULL)
       {
-        this->_updateServer->updateCredentials(
+        this->_updateServerUpdateCredentialsFunction(
             IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
       }
-      this->_server->begin();
+      this->_webServerWrapper->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
       if (this->_wifiConnectionCallback != NULL)
       {
@@ -767,7 +751,7 @@ boolean IotWebConf::checkWifiConnection()
       // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
       WiFi.disconnect(true);
-      IotWebConfWifiAuthInfo* newWifiAuthInfo = _wifiConnectionFailureHandler();
+      WifiAuthInfo* newWifiAuthInfo = _wifiConnectionFailureHandler();
       if (newWifiAuthInfo != NULL)
       {
         // -- Try connecting with another connection info.
@@ -939,7 +923,9 @@ void IotWebConf::connectWifi(const char* ssid, const char* password)
 {
   WiFi.begin(ssid, password);
 }
-IotWebConfWifiAuthInfo* IotWebConf::handleConnectWifiFailure()
+WifiAuthInfo* IotWebConf::handleConnectWifiFailure()
 {
   return NULL;
 }
+
+} // end namespace

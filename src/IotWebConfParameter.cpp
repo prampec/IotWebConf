@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2019 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -11,14 +11,17 @@
 
 #include <IotWebConfParameter.h>
 
-IotWebConfParameterGroup::IotWebConfParameterGroup(
+namespace iotwebconf
+{
+
+ParameterGroup::ParameterGroup(
   const char* id, const char* label) :
-  IotWebConfConfigItem(id)
+  ConfigItem(id)
 {
   this->label = label;
 }
 
-void IotWebConfParameterGroup::addItem(IotWebConfConfigItem* configItem)
+void ParameterGroup::addItem(ConfigItem* configItem)
 {
   if (configItem->_parentItem != NULL)
   {
@@ -29,7 +32,7 @@ void IotWebConfParameterGroup::addItem(IotWebConfConfigItem* configItem)
     this->_firstItem = configItem;
     return;
   }
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current->_nextItem != NULL)
   {
     current = current->_nextItem;
@@ -38,10 +41,10 @@ void IotWebConfParameterGroup::addItem(IotWebConfConfigItem* configItem)
   configItem->_parentItem = this;
 }
 
-int IotWebConfParameterGroup::getStorageSize()
+int ParameterGroup::getStorageSize()
 {
   int size = 0;
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     size += current->getStorageSize();
@@ -49,9 +52,9 @@ int IotWebConfParameterGroup::getStorageSize()
   }
   return size;
 }
-void IotWebConfParameterGroup::applyDefaultValue()
+void ParameterGroup::applyDefaultValue()
 {
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     current->applyDefaultValue();
@@ -59,18 +62,20 @@ void IotWebConfParameterGroup::applyDefaultValue()
   }
 }
 
-void IotWebConfParameterGroup::storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore)
+void ParameterGroup::storeValue(
+  std::function<void(SerializationData* serializationData)> doStore)
 {
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     current->storeValue(doStore);
     current = current->_nextItem;
   }
 }
-void IotWebConfParameterGroup::loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad)
+void ParameterGroup::loadValue(
+  std::function<void(SerializationData* serializationData)> doLoad)
 {
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     current->loadValue(doLoad);
@@ -78,52 +83,55 @@ void IotWebConfParameterGroup::loadValue(std::function<void(IotWebConfSerializat
   }
 }
 
-void IotWebConfParameterGroup::renderHtml(
-  boolean dataArrived, WebServer* server)
+void ParameterGroup::renderHtml(
+  boolean dataArrived, WebRequestWrapper* webRequestWrapper)
 {
     if (this->label != NULL)
     {
       String content = "<fieldset id='";
       content += this->getId();
       content = "'>";
-      content += "<legend>";
-      content += this->label;
-      content += "</legend>";
-      server->sendContent(content);
+      if (this->label[0] != '\0')
+      {
+        content += "<legend>";
+        content += this->label;
+        content += "</legend>";
+      }
+      webRequestWrapper->sendContent(content);
     }
-    IotWebConfConfigItem* current = this->_firstItem;
+    ConfigItem* current = this->_firstItem;
     while (current != NULL)
     {
       if (current->visible)
       {
-        current->renderHtml(dataArrived, server);
+        current->renderHtml(dataArrived, webRequestWrapper);
       }
       current = current->_nextItem;
     }
     if (this->label != NULL)
     {
-      server->sendContent("</fieldset>");
+      webRequestWrapper->sendContent("</fieldset>");
     }
 }
-void IotWebConfParameterGroup::update(WebServer* server)
+void ParameterGroup::update(WebRequestWrapper* webRequestWrapper)
 {
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
-    current->update(server);
+    current->update(webRequestWrapper);
     current = current->_nextItem;
   }
 }
-void IotWebConfParameterGroup::clearErrorMessage()
+void ParameterGroup::clearErrorMessage()
 {
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     current->clearErrorMessage();
     current = current->_nextItem;
   }
 }
-void IotWebConfParameterGroup::debugTo(Stream* out)
+void ParameterGroup::debugTo(Stream* out)
 {
   out->print('[');
   out->print(this->getId());
@@ -152,7 +160,7 @@ void IotWebConfParameterGroup::debugTo(Stream* out)
       }
     });
 
-  IotWebConfConfigItem* current = this->_firstItem;
+  ConfigItem* current = this->_firstItem;
   while (current != NULL)
   {
     if (current->_nextItem == NULL)
@@ -172,10 +180,10 @@ void IotWebConfParameterGroup::debugTo(Stream* out)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfParameter::IotWebConfParameter(
+Parameter::Parameter(
   const char* label, const char* id, char* valueBuffer, int length,
   const char* defaultValue) :
-  IotWebConfConfigItem(id)
+  ConfigItem(id)
 {
   this->label = label;
   this->valueBuffer = valueBuffer;
@@ -184,11 +192,11 @@ IotWebConfParameter::IotWebConfParameter(
 
   this->errorMessage = NULL;
 }
-int IotWebConfParameter::getStorageSize()
+int Parameter::getStorageSize()
 {
   return this->_length;
 }
-void IotWebConfParameter::applyDefaultValue()
+void Parameter::applyDefaultValue()
 {
   if (defaultValue != NULL)
   {
@@ -199,56 +207,63 @@ void IotWebConfParameter::applyDefaultValue()
     this->valueBuffer[0] = '\0';
   }
 }
-void IotWebConfParameter::storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore)
+void Parameter::storeValue(
+  std::function<void(SerializationData* serializationData)> doStore)
 {
-  IotWebConfSerializationData serializationData;
+  SerializationData serializationData;
   serializationData.length = this->_length;
   serializationData.data = (byte*)this->valueBuffer;
   doStore(&serializationData);
 }
-void IotWebConfParameter::loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad)
+void Parameter::loadValue(
+  std::function<void(SerializationData* serializationData)> doLoad)
 {
-  IotWebConfSerializationData serializationData;
+  SerializationData serializationData;
   serializationData.length = this->_length;
   serializationData.data = (byte*)this->valueBuffer;
   doLoad(&serializationData);
 }
-void IotWebConfParameter::update(WebServer* server)
+void Parameter::update(WebRequestWrapper* webRequestWrapper)
 {
-  String newValue = server->arg(this->getId());
+  String newValue = webRequestWrapper->arg(this->getId());
   this->update(newValue);
 }
-void IotWebConfParameter::clearErrorMessage()
+void Parameter::clearErrorMessage()
 {
     this->errorMessage = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfTextParameter::IotWebConfTextParameter(
+TextParameter::TextParameter(
   const char* label, const char* id, char* valueBuffer, int length,
   const char* defaultValue,
   const char* placeholder,
   const char* customHtml)
-  : IotWebConfParameter(label, id, valueBuffer, length, defaultValue)
+  : Parameter(label, id, valueBuffer, length, defaultValue)
 {
   this->placeholder = placeholder;
   this->customHtml = customHtml;
 }
 
-void IotWebConfTextParameter::renderHtml(
-  boolean dataArrived, WebServer* server)
+void TextParameter::renderHtml(
+  boolean dataArrived, WebRequestWrapper* webRequestWrapper)
 {
-  String content = this->renderHtml(dataArrived, server->hasArg(this->getId()), server->arg(this->getId()));
-  server->sendContent(content);
+  String content = this->renderHtml(
+    dataArrived,
+    webRequestWrapper->hasArg(this->getId()),
+    webRequestWrapper->arg(this->getId()));
+  webRequestWrapper->sendContent(content);
 }
-String IotWebConfTextParameter::renderHtml(boolean dataArrived, boolean hasValueFromPost, String valueFromPost)
+String TextParameter::renderHtml(
+  boolean dataArrived, boolean hasValueFromPost, String valueFromPost)
 {
   return this->renderHtml("text", hasValueFromPost, valueFromPost);
 }
-String IotWebConfTextParameter::renderHtml(const char* type, boolean hasValueFromPost, String valueFromPost)
+String TextParameter::renderHtml(
+  const char* type, boolean hasValueFromPost, String valueFromPost)
 {
-  IotWebConfTextParameter* current = this;
+  TextParameter* current = this;
   char parLength[5];
 
   String pitem = FPSTR(IOTWEBCONF_HTML_FORM_PARAM);
@@ -281,14 +296,14 @@ String IotWebConfTextParameter::renderHtml(const char* type, boolean hasValueFro
   return pitem;
 }
 
-void IotWebConfTextParameter::update(String newValue)
+void TextParameter::update(String newValue)
 {
   newValue.toCharArray(this->valueBuffer, this->getLength());
 }
 
-void IotWebConfTextParameter::debugTo(Stream* out)
+void TextParameter::debugTo(Stream* out)
 {
-  IotWebConfParameter* current = this;
+  Parameter* current = this;
   out->print("'");
   out->print(current->getId());
   out->print("' with value: '");
@@ -298,45 +313,45 @@ void IotWebConfTextParameter::debugTo(Stream* out)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfNumberParameter::IotWebConfNumberParameter(
+NumberParameter::NumberParameter(
   const char* label, const char* id, char* valueBuffer, int length,
   const char* defaultValue,
   const char* placeholder,
   const char* customHtml)
-  : IotWebConfTextParameter(label, id, valueBuffer, length, defaultValue,
+  : TextParameter(label, id, valueBuffer, length, defaultValue,
   placeholder, customHtml)
 {
 }
 
-String IotWebConfNumberParameter::renderHtml(
+String NumberParameter::renderHtml(
   boolean dataArrived,
   boolean hasValueFromPost, String valueFromPost)
 {
-  return IotWebConfTextParameter::renderHtml("number", hasValueFromPost, valueFromPost);
+  return TextParameter::renderHtml("number", hasValueFromPost, valueFromPost);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfPasswordParameter::IotWebConfPasswordParameter(
+PasswordParameter::PasswordParameter(
   const char* label, const char* id, char* valueBuffer, int length,
   const char* defaultValue,
   const char* placeholder,
   const char* customHtml)
-  : IotWebConfTextParameter(label, id, valueBuffer, length, defaultValue,
+  : TextParameter(label, id, valueBuffer, length, defaultValue,
   placeholder, customHtml)
 {
 }
 
-String IotWebConfPasswordParameter::renderHtml(
+String PasswordParameter::renderHtml(
   boolean dataArrived,
   boolean hasValueFromPost, String valueFromPost)
 {
-  return IotWebConfTextParameter::renderHtml("password", true, String(""));
+  return TextParameter::renderHtml("password", true, String(""));
 }
 
-void IotWebConfPasswordParameter::debugTo(Stream* out)
+void PasswordParameter::debugTo(Stream* out)
 {
-  IotWebConfParameter* current = this;
+  Parameter* current = this;
   out->print("'");
   out->print(current->getId());
   out->print("' with value: ");
@@ -349,9 +364,9 @@ void IotWebConfPasswordParameter::debugTo(Stream* out)
 #endif
 }
 
-void IotWebConfPasswordParameter::update(String newValue)
+void PasswordParameter::update(String newValue)
 {
-  IotWebConfParameter* current = this;
+  Parameter* current = this;
 //  char temp[IOTWEBCONF_PASSWORD_LEN];
   char temp[current->getLength()];
   newValue.toCharArray(temp, current->getLength());
@@ -373,15 +388,15 @@ void IotWebConfPasswordParameter::update(String newValue)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfCheckboxParameter::IotWebConfCheckboxParameter(
+CheckboxParameter::CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     boolean defaultValue)
-  : IotWebConfTextParameter(label, id, valueBuffer, length, defaultValue ? "selected" : NULL,
+  : TextParameter(label, id, valueBuffer, length, defaultValue ? "selected" : NULL,
   NULL, NULL)
 {
 }
 
-String IotWebConfCheckboxParameter::renderHtml(
+String CheckboxParameter::renderHtml(
   boolean dataArrived,
   boolean hasValueFromPost, String valueFromPost)
 {
@@ -403,7 +418,7 @@ String IotWebConfCheckboxParameter::renderHtml(
 
   if (checkSelected)
   {
-    this->customHtml = IotWebConfCheckboxParameter::_checkedStr;
+    this->customHtml = CheckboxParameter::_checkedStr;
   }
   else
   {
@@ -411,21 +426,21 @@ String IotWebConfCheckboxParameter::renderHtml(
   }
   
   
-  return IotWebConfTextParameter::renderHtml("checkbox", true, "selected");
+  return TextParameter::renderHtml("checkbox", true, "selected");
 }
 
-void IotWebConfCheckboxParameter::update(String newValue)
+void CheckboxParameter::update(String newValue)
 {
-  return IotWebConfTextParameter::update(newValue);
+  return TextParameter::update(newValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfOptionsParameter::IotWebConfOptionsParameter(
+OptionsParameter::OptionsParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
     const char* defaultValue)
-  : IotWebConfTextParameter(label, id, valueBuffer, length, defaultValue,
+  : TextParameter(label, id, valueBuffer, length, defaultValue,
   NULL, NULL)
 {
   this->_optionValues = optionValues;
@@ -436,20 +451,20 @@ IotWebConfOptionsParameter::IotWebConfOptionsParameter(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IotWebConfSelectParameter::IotWebConfSelectParameter(
+SelectParameter::SelectParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
     const char* defaultValue)
-  : IotWebConfOptionsParameter(label, id, valueBuffer, length, optionValues, optionNames,
+  : OptionsParameter(label, id, valueBuffer, length, optionValues, optionNames,
   optionCount, nameLength, defaultValue)
 {
 }
 
-String IotWebConfSelectParameter::renderHtml(
+String SelectParameter::renderHtml(
   boolean dataArrived,
   boolean hasValueFromPost, String valueFromPost)
 {
-  IotWebConfTextParameter* current = this;
+  TextParameter* current = this;
 
   String options = "";
 
@@ -537,3 +552,5 @@ size_t PrefixStreamWrapper::checkNewLine()
   }
   return 0;
 }
+
+} // end namespace

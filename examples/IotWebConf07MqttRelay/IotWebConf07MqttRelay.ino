@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -54,6 +54,12 @@
 
 #include <MQTT.h>
 #include <IotWebConf.h>
+#include <IotWebConfUsing.h> // This loads aliases for easier class names.
+#ifdef ESP8266
+# include <ESP8266HTTPUpdateServer.h>
+#elif defined(ESP32)
+# include <IotWebConfESP32HTTPUpdateServer.h>
+#endif
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
@@ -84,22 +90,30 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define ACTION_FEQ_LIMIT 7000
 #define NO_ACTION -1
 
-// -- Callback method declarations.
+// -- Method declarations.
+void handleRoot();
+void mqttMessageReceived(String &topic, String &payload);
+boolean connectMqtt();
+// -- Callback methods.
 void wifiConnected();
 void configSaved();
 boolean formValidator();
-void mqttMessageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
 WebServer server(80);
+#ifdef ESP8266
+ESP8266HTTPUpdateServer httpUpdater;
+#elif defined(ESP32)
 HTTPUpdateServer httpUpdater;
+#endif
 WiFiClient net;
 MQTTClient mqttClient;
 
 char mqttServerValue[STRING_LEN];
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-IotWebConfParameter mqttServerParam = IotWebConfParameter("MQTT server", "mqttServer", mqttServerValue, STRING_LEN);
+// -- You can also use namespace formats e.g.: iotwebconf::TextParameter
+IotWebConfTextParameter mqttServerParam = IotWebConfTextParameter("MQTT server", "mqttServer", mqttServerValue, STRING_LEN);
 
 boolean needMqttConnect = false;
 boolean needReset = false;
@@ -120,11 +134,13 @@ void setup()
 
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(BUTTON_PIN);
-  iotWebConf.addParameter(&mqttServerParam);
+  iotWebConf.addSystemParameter(&mqttServerParam);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.setWifiConnectionCallback(&wifiConnected);
-  iotWebConf.setupUpdateServer(&httpUpdater);
+  iotWebConf.setupUpdateServer(
+    [](const char* updatePath) { httpUpdater.setup(&server, updatePath); },
+    [](const char* userName, char* password) { httpUpdater.updateCredentials(userName, password); });
 
   // -- Initializing the configuration.
   boolean validConfig = iotWebConf.init();

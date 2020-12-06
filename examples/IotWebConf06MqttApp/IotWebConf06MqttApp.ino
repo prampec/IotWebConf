@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -15,7 +15,7 @@
  *   All IotWebConf specific aspects of this example are described in
  *   previous examples, so please get familiar with IotWebConf before
  *   starting this example. So nothing new will be explained here, 
- *   but a complete demo application will be build.
+ *   but a complete demo application will be built.
  *   It is also expected from the reader to have a basic knowledge over
  *   MQTT to understand this code.
  *   
@@ -38,6 +38,7 @@
 
 #include <MQTT.h>
 #include <IotWebConf.h>
+#include <IotWebConfUsing.h> // This loads aliases for easier class names.
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
@@ -59,15 +60,18 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
-// -- Callback method declarations.
+// -- Method declarations.
+void handleRoot();
+void mqttMessageReceived(String &topic, String &payload);
+boolean connectMqtt();
+boolean connectMqttOptions();
+// -- Callback methods.
 void wifiConnected();
 void configSaved();
 boolean formValidator();
-void mqttMessageReceived(String &topic, String &payload);
 
 DNSServer dnsServer;
 WebServer server(80);
-HTTPUpdateServer httpUpdater;
 WiFiClient net;
 MQTTClient mqttClient;
 
@@ -77,7 +81,7 @@ char mqttUserPasswordValue[STRING_LEN];
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 // -- You can also use namespace formats e.g.: iotwebconf::ParameterGroup
-IotWebConfParameterGroup mqttGroup = IotWebConfParameterGroup("mqtt", "MQTT configuration");
+IotWebConfParameterGroup mqttGroup = IotWebConfParameterGroup("MQTT configuration");
 IotWebConfTextParameter mqttServerParam = IotWebConfTextParameter("MQTT server", "mqttServer", mqttServerValue, STRING_LEN);
 IotWebConfTextParameter mqttUserNameParam = IotWebConfTextParameter("MQTT user", "mqttUser", mqttUserNameValue, STRING_LEN);
 IotWebConfPasswordParameter mqttUserPasswordParam = IotWebConfPasswordParameter("MQTT password", "mqttPass", mqttUserPasswordValue, STRING_LEN);
@@ -104,7 +108,6 @@ void setup()
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.setWifiConnectionCallback(&wifiConnected);
-  iotWebConf.setupUpdateServer(&httpUpdater);
 
   // -- Initializing the configuration.
   boolean validConfig = iotWebConf.init();

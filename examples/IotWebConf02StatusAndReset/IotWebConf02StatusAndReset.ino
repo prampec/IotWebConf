@@ -45,6 +45,9 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
+// -- Method declarations.
+void handleRoot();
+
 DNSServer dnsServer;
 WebServer server(80);
 

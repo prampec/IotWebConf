@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
- * Copyright (C) 2018 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -26,6 +26,7 @@
  */
 
 #include <IotWebConf.h>
+#include <IotWebConfUsing.h> // This loads aliases for easier class names.
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
@@ -48,11 +49,13 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
-// -- Callback method declarations.
-void configSaved();
-boolean formValidator();
+// -- Method declarations.
+void handleRoot();
 boolean connectAp(const char* apName, const char* password);
 void connectWifi(const char* ssid, const char* password);
+// -- Callback methods.
+void configSaved();
+boolean formValidator();
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -63,7 +66,7 @@ char netmaskValue[STRING_LEN];
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 // -- You can also use namespace formats e.g.: iotwebconf::ParameterGroup
-IotWebConfParameterGroup connGroup = IotWebConfParameterGroup("conn", "Connection parameters");
+IotWebConfParameterGroup connGroup = IotWebConfParameterGroup("Connection parameters");
 IotWebConfTextParameter ipAddressParam = IotWebConfTextParameter("IP address", "ipAddress", ipAddressValue, STRING_LEN, "text", NULL, "192.168.3.222");
 IotWebConfTextParameter gatewayParam = IotWebConfTextParameter("Gateway", "gateway", gatewayValue, STRING_LEN, "text", NULL, "192.168.3.0");
 IotWebConfTextParameter netmaskParam = IotWebConfTextParameter("Subnet mask", "netmask", netmaskValue, STRING_LEN, "text", NULL, "255.255.255.0");
@@ -91,7 +94,7 @@ void setup()
   iotWebConf.setWifiConnectionHandler(&connectWifi);
 
   // -- Initializing the configuration.
-  boolean validConfig = iotWebConf.init();
+  iotWebConf.init();
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);

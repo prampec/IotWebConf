@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2019 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -13,11 +13,9 @@
 #define IotWebConfParameter_h
 
 #include <Arduino.h>
+#include <functional>
 #include <IotWebConfSettings.h>
-
-// TODO: use webserver wrapper
-#include <IotWebConfCompatibility.h>
-
+#include <IotWebConfWebServerWrapper.h>
 
 const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM =
   "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' "
@@ -31,19 +29,22 @@ const char IOTWEBCONF_HTML_FORM_SELECT_PARAM[] PROGMEM =
 const char IOTWEBCONF_HTML_FORM_OPTION[] PROGMEM =
   "<option value='{v}'{s}>{n}</option>\n";
 
-typedef struct IotWebConfSerializationData
+namespace iotwebconf
+{
+
+typedef struct SerializationData
 {
   byte* data;
   int length;
-} IotWebConfSerializationData;
+} SerializationData;
 
-class IotWebConfConfigItem
+class ConfigItem
 {
 public:
   boolean visible = true;
   const char* getId() { return this->_id; }
 protected:
-  IotWebConfConfigItem(const char* id) { this->_id = id; };
+  ConfigItem(const char* id) { this->_id = id; };
   /**
    * Calculate the size of bytes should be stored in the EEPROM.
    */
@@ -61,7 +62,7 @@ protected:
    *   The argument 'serializationData' of this referenced method should be pre-filled with
    *   the size and the serialized data before calling the method.
    */
-  virtual void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore);
+  virtual void storeValue(std::function<void(SerializationData* serializationData)> doStore);
 
   /**
    * Load data.
@@ -70,27 +71,27 @@ protected:
    *   the size of the expected data, and the data buffer should be allocated with this size.
    *   The doLoad will fill the data from the EEPROM.
    */
-  virtual void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad);
+  virtual void loadValue(std::function<void(SerializationData* serializationData)> doLoad);
 
   /**
    * This method will create the HTML form item for the config portal.
    * 
    * @dataArrived - True if there was a form post, where (some) form
    *   data arrived from the client.
-   * @server - The web server, that will send the rendered content to the client.
-   *   The server->sendContent() method should be used in the implementations.
+   * @webRequestWrapper - The webRequestWrapper, that will send the rendered content to the client.
+   *   The webRequestWrapper->sendContent() method should be used in the implementations.
    */
-  virtual void renderHtml(boolean dataArrived, WebServer* server);
+  virtual void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper);
 
   /**
    * New value arrived from the form post. The value should be stored in the
    *   in this config item.
    * 
-   * @server - The web server, that will send the rendered content to the client.
-   *   The server->hasArg() and server->arg() methods should be used in the
+   * @webRequestWrapper - The webRequestWrapper, that will send the rendered content to the client.
+   *   The webRequestWrapper->hasArg() and webRequestWrapper->arg() methods should be used in the
    *   implementations.
    */
-  virtual void update(WebServer* server);
+  virtual void update(WebRequestWrapper* webRequestWrapper);
 
   /**
    * Before validating the form post, it is required to clear previos error messages.
@@ -108,39 +109,41 @@ protected:
 
 private:
   const char* _id = 0;
-  IotWebConfConfigItem* _parentItem = NULL;
-  IotWebConfConfigItem* _nextItem = NULL;
-  friend class IotWebConfParameterGroup; // Allow IotWebConfParameterGroup to access _nextItem.
+  ConfigItem* _parentItem = NULL;
+  ConfigItem* _nextItem = NULL;
+  friend class ParameterGroup; // Allow ParameterGroup to access _nextItem.
 };
 
-class IotWebConfParameterGroup : public IotWebConfConfigItem
+class ParameterGroup : public ConfigItem
 {
 public:
-  IotWebConfParameterGroup(const char* id, const char* label = NULL);
-  void addItem(IotWebConfConfigItem* configItem);
+  ParameterGroup(const char* id, const char* label = NULL);
+  void addItem(ConfigItem* configItem);
   const char *label;
 
 protected:
   int getStorageSize() override;
   void applyDefaultValue() override;
-  void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore) override;
-  void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad) override;
-  void renderHtml(boolean dataArrived, WebServer* server) override;
-  void update(WebServer* server) override;
+  void storeValue(std::function<void(
+    SerializationData* serializationData)> doStore) override;
+  void loadValue(std::function<void(
+    SerializationData* serializationData)> doLoad) override;
+  void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper) override;
+  void update(WebRequestWrapper* webRequestWrapper) override;
   void clearErrorMessage() override;
   void debugTo(Stream* out) override;
   friend class IotWebConf; // Allow IotWebConf to access protected members.
 
 private:
-  IotWebConfConfigItem* _firstItem = NULL;
+  ConfigItem* _firstItem = NULL;
 };
 
 /**
- * IotWebConfParameters is a configuration item of the config portal.
+ * Parameters is a configuration item of the config portal.
  * The parameter will have its input field on the configuration page,
  * and the provided value will be saved to the EEPROM.
  */
-class IotWebConfParameter : public IotWebConfConfigItem
+class Parameter : public ConfigItem
 {
 public:
   /**
@@ -155,7 +158,7 @@ public:
    * @defaultValue - Defalt value set on startup, when no configuration ever saved
    *   with the current config-version.
    */
-  IotWebConfParameter(
+  Parameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL);
 
@@ -170,9 +173,9 @@ protected:
   // Overrides
   int getStorageSize() override;
   void applyDefaultValue() override;
-  void storeValue(std::function<void(IotWebConfSerializationData* serializationData)> doStore) override;
-  void loadValue(std::function<void(IotWebConfSerializationData* serializationData)> doLoad) override;
-  virtual void update(WebServer* server) override;
+  void storeValue(std::function<void(SerializationData* serializationData)> doStore) override;
+  void loadValue(std::function<void(SerializationData* serializationData)> doLoad) override;
+  virtual void update(WebRequestWrapper* webRequestWrapper) override;
   virtual void update(String newValue);
   void clearErrorMessage() override;
 
@@ -183,9 +186,9 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * IotWebConfTexParameters is to store text based parameters.
+ * TexParameters is to store text based parameters.
  */
-class IotWebConfTextParameter : public IotWebConfParameter
+class TextParameter : public Parameter
 {
 public:
   /**
@@ -194,9 +197,9 @@ public:
    * @placeholder (optional) - Text appear in an empty input box.
    * @customHtml (optional) - The text of this parameter will be added into
    *   the HTML INPUT field.
-   * (see IotWebConfParameter for more arguments)
+   * (see Parameter for more arguments)
    */
-  IotWebConfTextParameter(
+  TextParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL,
     const char* placeholder = NULL,
@@ -218,7 +221,7 @@ protected:
   virtual String renderHtml(
     boolean dataArrived, boolean hasValueFromPost, String valueFromPost);
   // Overrides
-  virtual void renderHtml(boolean dataArrived, WebServer* server) override;
+  virtual void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper) override;
   virtual void update(String newValue) override;
   virtual void debugTo(Stream* out) override;
 
@@ -230,7 +233,7 @@ protected:
 
 private:
   friend class IotWebConf;
-  friend class IotWebConfWifiParameterGroup;
+  friend class WifiParameterGroup;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,10 +244,10 @@ private:
  * Because of this logic, "password" type field with length more then
  * IOTWEBCONF_PASSWORD_LEN characters are not supported.
  */
-class IotWebConfPasswordParameter : public IotWebConfTextParameter
+class PasswordParameter : public TextParameter
 {
 public:
-  IotWebConfPasswordParameter(
+  PasswordParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL,
     const char* placeholder = NULL,
@@ -259,7 +262,7 @@ protected:
 
 private:
   friend class IotWebConf;
-  friend class IotWebConfWifiParameterGroup;
+  friend class WifiParameterGroup;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -267,10 +270,10 @@ private:
 /**
  * This is just a text parameter, that is rendered with type 'number'.
  */
-class IotWebConfNumberParameter : public IotWebConfTextParameter
+class NumberParameter : public TextParameter
 {
 public:
-  IotWebConfNumberParameter(
+  NumberParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL,
     const char* placeholder = NULL,
@@ -292,10 +295,10 @@ private:
  * handling. As the value is either empty or has the word "selected".
  * Note, that form post will not send value if checkbox was not selected.
  */
-class IotWebConfCheckboxParameter : public IotWebConfTextParameter
+class CheckboxParameter : public TextParameter
 {
 public:
-  IotWebConfCheckboxParameter(
+  CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     boolean defaultValue = false);
   boolean isChecked() { return strncmp(this->valueBuffer, "selected", this->getLength()) == 0; }
@@ -318,7 +321,7 @@ private:
  * Options parameter is a structure, that handles multiply values when redering
  * the HTML representation.
  */
-class IotWebConfOptionsParameter : public IotWebConfTextParameter
+class OptionsParameter : public TextParameter
 {
 public:
   /**
@@ -330,7 +333,7 @@ public:
    * @optionCount - Size of both 'optionValues' and 'optionNames' lists.
    * @nameLength - Size of any item in optionNames list.
    */
-  IotWebConfOptionsParameter(
+  OptionsParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
     const char* defaultValue = NULL);
@@ -350,10 +353,10 @@ private:
 /**
  * Select parameter is an option parameter, that rendered as HTML SELECT.
  */
-class IotWebConfSelectParameter : public IotWebConfOptionsParameter
+class SelectParameter : public OptionsParameter
 {
 public:
-  IotWebConfSelectParameter(
+  SelectParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t namesLenth,
     const char* defaultValue = NULL);
@@ -391,5 +394,7 @@ private:
 
   size_t checkNewLine();
 };
+
+} // end namespace
 
 #endif

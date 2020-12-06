@@ -3,7 +3,7 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2019 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -13,19 +13,24 @@
 #define IotWebConf_h
 
 #include <Arduino.h>
-#include <IotWebConfCompatibility.h>
 #include <IotWebConfParameter.h>
 #include <IotWebConfSettings.h>
+#include <IotWebConfWebServerWrapper.h>
 
 #ifdef ESP8266
 # include <ESP8266WiFi.h>
 # include <ESP8266WebServer.h>
-# include <ESP8266HTTPUpdateServer.h>
 #elif defined(ESP32)
 # include <WiFi.h>
 # include <WebServer.h>
 #endif
 #include <DNSServer.h> // -- For captive portal
+
+#ifdef ESP8266
+# ifndef WebServer
+#  define WebServer ESP8266WebServer
+# endif
+#endif
 
 // -- HTML page fragments
 const char IOTWEBCONF_HTML_HEAD[] PROGMEM         = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>{v}</title>\n";
@@ -58,16 +63,21 @@ const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em
 // -- User name on login.
 #define IOTWEBCONF_ADMIN_USER_NAME "admin"
 
-typedef struct IotWebConfWifiAuthInfo
+namespace iotwebconf
+{
+
+class IotWebConf;
+
+typedef struct WifiAuthInfo
 {
   const char* ssid;
   const char* password;
-} IotWebConfWifiAuthInfo;
+} WifiAuthInfo;
 
 /**
  * Class for providing HTML format segments.
  */
-class IotWebConfHtmlFormatProvider
+class HtmlFormatProvider
 {
 public:
   virtual String getHead() { return FPSTR(IOTWEBCONF_HTML_HEAD); }
@@ -87,18 +97,60 @@ protected:
   virtual String getBodyInner() { return FPSTR(IOTWEBCONF_HTML_BODY_INNER); }
 };
 
-class IotWebConfWifiParameterGroup : public IotWebConfParameterGroup
+class StandardWebRequestWrapper : public WebRequestWrapper
 {
 public:
-  IotWebConfWifiParameterGroup(const char* id, const char* label = NULL) : IotWebConfParameterGroup(id, label)
+  StandardWebRequestWrapper(WebServer* server) { this->_server = server; };
+
+  const String hostHeader() const override { return this->_server->hostHeader(); };
+  IPAddress localIP() override { return this->_server->client().localIP(); };
+  const String uri() const { return this->_server->uri(); };
+  bool authenticate(const char * username, const char * password) override
+    { return this->_server->authenticate(username, password); };
+  void requestAuthentication() override
+    { this->_server->requestAuthentication(); };
+  boolean hasArg(const String& name) override { return this->_server->hasArg(name); };
+  String arg(const String name) override { return this->_server->arg(name); };
+  void sendHeader(const String& name, const String& value, bool first = false) override
+    { this->_server->sendHeader(name, value, first); };
+  void setContentLength(const size_t contentLength) override
+    { this->_server->setContentLength(contentLength); };
+  void send(int code, const char* content_type = NULL, const String& content = String("")) override
+    { this->_server->send(code, content_type, content); };
+  void sendContent(const String& content) override { this->_server->sendContent(content); };
+  void stop() override { this->_server->client().stop(); };
+
+private:
+  WebServer* _server;
+  friend IotWebConf;
+};
+
+class StandardWebServerWrapper : public WebServerWrapper
+{
+public:
+  StandardWebServerWrapper(WebServer* server) { this->_server = server; };
+
+  void handleClient() override { this->_server->handleClient(); };
+  void begin() override { this->_server->begin(); };
+
+private:
+  StandardWebServerWrapper() { };
+  WebServer* _server;
+  friend IotWebConf;
+};
+
+class WifiParameterGroup : public ParameterGroup
+{
+public:
+  WifiParameterGroup(const char* id, const char* label = NULL) : ParameterGroup(id, label)
   {
     this->addItem(&this->wifiSsidParameter);
     this->addItem(&this->wifiPasswordParameter);
   }
-  IotWebConfTextParameter wifiSsidParameter =
-    IotWebConfTextParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
-  IotWebConfPasswordParameter wifiPasswordParameter =
-    IotWebConfPasswordParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN);
+  TextParameter wifiSsidParameter =
+    TextParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
+  PasswordParameter wifiPasswordParameter =
+    PasswordParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN);
   char _wifiSsid[IOTWEBCONF_WORD_LEN];
   char _wifiPassword[IOTWEBCONF_PASSWORD_LEN];
 };
@@ -121,6 +173,14 @@ public:
    */
   IotWebConf(
       const char* thingName, DNSServer* dnsServer, WebServer* server,
+      const char* initialApPassword, const char* configVersion = "init") :
+      IotWebConf(thingName, dnsServer, &this->_standardWebServerWrapper, initialApPassword, configVersion)
+  {
+    this->_standardWebServerWrapper._server = server;
+  }
+
+  IotWebConf(
+      const char* thingName, DNSServer* dnsServer, WebServerWrapper* server,
       const char* initialApPassword, const char* configVersion = "init");
 
   /**
@@ -155,7 +215,14 @@ public:
    *   @updatePath - (Optional) The path to set up the UpdateServer with. Will be also used in the config portal.
    */
   void setupUpdateServer(
-      HTTPUpdateServer* updateServer, const char* updatePath = "/firmware");
+    std::function<void(const char* _updatePath)> setup,
+    std::function<void(const char* userName, char* password)> updateCredentials,
+    const char* updatePath = "/firmware")
+  {
+    this->_updateServerSetupFunction = setup;
+    this->_updateServerUpdateCredentialsFunction = updateCredentials;
+    this->_updatePath = updatePath;
+  }
 
   /**
    * Start up the IotWebConf module.
@@ -175,17 +242,32 @@ public:
    * Each WebServer URL handler method should start with calling this method.
    * If this method return true, the request was already served by it.
    */
-  boolean handleCaptivePortal();
+  boolean handleCaptivePortal(WebRequestWrapper* webRequestWrapper);
+  boolean handleCaptivePortal()
+  {
+    StandardWebRequestWrapper webRequestWrapper = StandardWebRequestWrapper(this->_standardWebServerWrapper._server);
+    return handleCaptivePortal(&webRequestWrapper);
+  }
 
   /**
    * Config URL web request handler. Call this method to handle config request.
    */
-  void handleConfig();
+  void handleConfig(WebRequestWrapper* webRequestWrapper);
+  void handleConfig()
+  {
+    StandardWebRequestWrapper webRequestWrapper = StandardWebRequestWrapper(this->_standardWebServerWrapper._server);
+    handleConfig(&webRequestWrapper);
+  }
 
   /**
    * URL-not-found web request handler. Used for handling captive portal request.
    */
-  void handleNotFound();
+  void handleNotFound(WebRequestWrapper* webRequestWrapper);
+  void handleNotFound()
+  {
+    StandardWebRequestWrapper webRequestWrapper = StandardWebRequestWrapper(this->_standardWebServerWrapper._server);
+    handleNotFound(&webRequestWrapper);
+  }
 
   /**
    * Specify a callback method, that will be called upon WiFi connection success.
@@ -244,7 +326,7 @@ public:
    * Note, that this feature is provided because of a possible future option of providing multiply
    * WiFi settings.
    */
-  void setWifiConnectionFailedHandler( std::function<IotWebConfWifiAuthInfo*()> func )
+  void setWifiConnectionFailedHandler( std::function<WifiAuthInfo*()> func )
   {
     _wifiConnectionFailureHandler = func;
   }
@@ -255,7 +337,7 @@ public:
    * and will appear on the config portal.
    * Must be called before init()!
    */
-  void addParameterGroup(IotWebConfParameterGroup* group);
+  void addParameterGroup(ParameterGroup* group);
 
   /**
    * Add a custom parameter group, that will be handled by the IotWebConf module.
@@ -263,7 +345,7 @@ public:
    * but will NOT appear on the config portal.
    * Must be called before init()!
    */
-  void addHiddenParameter(IotWebConfParameter* parameter);
+  void addHiddenParameter(Parameter* parameter);
 
   /**
    * Add a custom parameter group, that will be handled by the IotWebConf module.
@@ -271,7 +353,7 @@ public:
    * but will NOT appear on the config portal.
    * Must be called before init()!
    */
-  void addSystemParameter(IotWebConfParameter* parameter);
+  void addSystemParameter(Parameter* parameter);
 
   /**
    * Getter for the actually configured thing name.
@@ -381,23 +463,23 @@ public:
    * Normally you don't need to access these parameters directly.
    * Note, that changing valueBuffer of these parameters should be followed by saveConfig()!
    */
-  IotWebConfParameter* getThingNameParameter()
+  Parameter* getThingNameParameter()
   {
     return &this->_thingNameParameter;
   };
-  IotWebConfParameter* getApPasswordParameter()
+  Parameter* getApPasswordParameter()
   {
     return &this->_apPasswordParameter;
   };
-  IotWebConfParameter* getWifiSsidParameter()
+  Parameter* getWifiSsidParameter()
   {
     return &this->_wifiParameters.wifiSsidParameter;
   };
-  IotWebConfParameter* getWifiPasswordParameter()
+  Parameter* getWifiPasswordParameter()
   {
     return &this->_wifiParameters.wifiPasswordParameter;
   };
-  IotWebConfParameter* getApTimeoutParameter()
+  Parameter* getApTimeoutParameter()
   {
     return &this->_apTimeoutParameter;
   };
@@ -415,11 +497,11 @@ public:
    * provide custom HTML segments.
    */
   void
-  setHtmlFormatProvider(IotWebConfHtmlFormatProvider* customHtmlFormatProvider)
+  setHtmlFormatProvider(HtmlFormatProvider* customHtmlFormatProvider)
   {
     this->htmlFormatProvider = customHtmlFormatProvider;
   }
-  IotWebConfHtmlFormatProvider* getHtmlFormatProvider()
+  HtmlFormatProvider* getHtmlFormatProvider()
   {
     return this->htmlFormatProvider;
   }
@@ -428,8 +510,12 @@ private:
   const char* _initialApPassword = NULL;
   const char* _configVersion;
   DNSServer* _dnsServer;
-  WebServer* _server;
-  HTTPUpdateServer* _updateServer = NULL;
+  WebServerWrapper* _webServerWrapper;
+  StandardWebServerWrapper _standardWebServerWrapper = StandardWebServerWrapper();
+  std::function<void(const char* _updatePath)>
+    _updateServerSetupFunction = NULL;
+  std::function<void(const char* userName, char* password)>
+    _updateServerUpdateCredentialsFunction = NULL;
   int _configPin = -1;
   int _statusPin = -1;
   int _statusOnLevel = LOW;
@@ -437,17 +523,17 @@ private:
   boolean _forceDefaultPassword = false;
   boolean _skipApStartup = false;
   boolean _forceApMode = false;
-  IotWebConfParameterGroup _allParameters = IotWebConfParameterGroup("iwcAll");
-  IotWebConfParameterGroup _systemParameters = IotWebConfParameterGroup("iwcSys", "System configuration");
-  IotWebConfParameterGroup _customParameterGroups = IotWebConfParameterGroup("iwcCustom");
-  IotWebConfParameterGroup _hiddenParameters = IotWebConfParameterGroup("hidden");
-  IotWebConfWifiParameterGroup _wifiParameters = IotWebConfWifiParameterGroup("iwcWifi0");
-  IotWebConfTextParameter _thingNameParameter =
-    IotWebConfTextParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
-  IotWebConfPasswordParameter _apPasswordParameter =
-    IotWebConfPasswordParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN);
-  IotWebConfNumberParameter _apTimeoutParameter =
-    IotWebConfNumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, NULL, NULL, "min='1' max='600'");
+  ParameterGroup _allParameters = ParameterGroup("iwcAll");
+  ParameterGroup _systemParameters = ParameterGroup("iwcSys", "System configuration");
+  ParameterGroup _customParameterGroups = ParameterGroup("iwcCustom");
+  ParameterGroup _hiddenParameters = ParameterGroup("hidden");
+  WifiParameterGroup _wifiParameters = WifiParameterGroup("iwcWifi0");
+  TextParameter _thingNameParameter =
+    TextParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
+  PasswordParameter _apPasswordParameter =
+    PasswordParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN);
+  NumberParameter _apTimeoutParameter =
+    NumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, NULL, NULL, "min='1' max='600'");
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
   char _apTimeoutStr[IOTWEBCONF_WORD_LEN];
@@ -466,7 +552,7 @@ private:
       &(IotWebConf::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =
       &(IotWebConf::connectWifi);
-  std::function<IotWebConfWifiAuthInfo*()> _wifiConnectionFailureHandler =
+  std::function<WifiAuthInfo*()> _wifiConnectionFailureHandler =
       &(IotWebConf::handleConnectWifiFailure);
   unsigned long _internalBlinkOnMs = 500;
   unsigned long _internalBlinkOffMs = 500;
@@ -477,9 +563,9 @@ private:
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
   // TODO: authinfo
-  IotWebConfWifiAuthInfo _wifiAuthInfo;
-  IotWebConfHtmlFormatProvider htmlFormatProviderInstance;
-  IotWebConfHtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
+  WifiAuthInfo _wifiAuthInfo;
+  HtmlFormatProvider htmlFormatProviderInstance;
+  HtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   int initConfig();
   boolean loadConfig();
@@ -488,7 +574,7 @@ private:
   void readEepromValue(int start, byte* valueBuffer, int length);
   void writeEepromValue(int start, byte* valueBuffer, int length);
 
-  boolean validateForm();
+  boolean validateForm(WebRequestWrapper* webRequestWrapper);
 
   void changeState(byte newState);
   void stateChanged(byte oldState, byte newState);
@@ -514,7 +600,11 @@ private:
 
   static boolean connectAp(const char* apName, const char* password);
   static void connectWifi(const char* ssid, const char* password);
-  static IotWebConfWifiAuthInfo* handleConnectWifiFailure();
+  static WifiAuthInfo* handleConnectWifiFailure();
 };
+
+} // end namespace
+
+using iotwebconf::IotWebConf;
 
 #endif
