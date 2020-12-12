@@ -540,11 +540,16 @@ private:
   boolean _skipApStartup = false;
   boolean _forceApMode = false;
   IotWebConfParameter* _firstParameter = NULL;
-  IotWebConfParameter _thingNameParameter;
-  IotWebConfParameter _apPasswordParameter;
-  IotWebConfParameter _wifiSsidParameter;
-  IotWebConfParameter _wifiPasswordParameter;
-  IotWebConfParameter _apTimeoutParameter;
+  IotWebConfParameter _thingNameParameter =
+    IotWebConfParameter("Thing name", "iwcThingName", this->_thingName, IOTWEBCONF_WORD_LEN);
+  IotWebConfParameter _apPasswordParameter =
+    IotWebConfParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN, "password");
+  IotWebConfParameter _wifiSsidParameter =
+    IotWebConfParameter("WiFi SSID", "iwcWifiSsid", this->_wifiSsid, IOTWEBCONF_WORD_LEN);
+  IotWebConfParameter _wifiPasswordParameter =
+    IotWebConfParameter("WiFi password", "iwcWifiPassword", this->_wifiPassword, IOTWEBCONF_PASSWORD_LEN, "password");
+  IotWebConfParameter _apTimeoutParameter =
+    IotWebConfParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, "number", NULL, NULL, "min='1' max='600'", false);
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
   char _wifiSsid[IOTWEBCONF_WORD_LEN];
