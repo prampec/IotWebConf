@@ -68,7 +68,7 @@ void IotWebConf::setStatusPin(int statusPin, int statusOnLevel)
   this->_statusOnLevel = statusOnLevel;
 }
 
-boolean IotWebConf::init()
+bool IotWebConf::init()
 {
   // -- Setup pins.
   if (this->_configPin >= 0)
@@ -83,7 +83,7 @@ boolean IotWebConf::init()
   }
 
   // -- Load configuration from EEPROM.
-  boolean validConfig = this->loadConfig();
+  bool validConfig = this->loadConfig();
   if (!validConfig)
   {
     // -- No config
@@ -144,7 +144,7 @@ int IotWebConf::initConfig()
 /**
  * Load the configuration from the eeprom.
  */
-boolean IotWebConf::loadConfig()
+bool IotWebConf::loadConfig()
 {
   int size = this->initConfig();
   EEPROM.begin(
@@ -226,7 +226,7 @@ void IotWebConf::writeEepromValue(int start, byte* valueBuffer, int length)
   }
 }
 
-boolean IotWebConf::testConfigVersion()
+bool IotWebConf::testConfigVersion()
 {
   for (byte t = 0; t < IOTWEBCONF_CONFIG_VERSION_LENGTH; t++)
   {
@@ -261,7 +261,7 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setFormValidator(std::function<boolean()> func)
+void IotWebConf::setFormValidator(std::function<bool()> func)
 {
   this->_formValidator = func;
 }
@@ -287,7 +287,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     }
   }
 
-  boolean dataArrived = webRequestWrapper->hasArg("iotSave");
+  bool dataArrived = webRequestWrapper->hasArg("iotSave");
   if (!dataArrived || !this->validateForm(webRequestWrapper))
   {
     // -- Display config portal
@@ -391,14 +391,14 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
   }
 }
 
-boolean IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
+bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
 {
   // -- Clean previous error messages.
   this->_systemParameters.clearErrorMessage();
   this->_customParameterGroups.clearErrorMessage();
 
   // -- Call external validator.
-  boolean valid = true;
+  bool valid = true;
   if (this->_formValidator != NULL)
   {
     valid = this->_formValidator();
@@ -460,7 +460,7 @@ void IotWebConf::handleNotFound(WebRequestWrapper* webRequestWrapper)
  * Return true in that case so the page handler do not try to handle the request
  * again. (Code from WifiManager project.)
  */
-boolean IotWebConf::handleCaptivePortal(WebRequestWrapper* webRequestWrapper)
+bool IotWebConf::handleCaptivePortal(WebRequestWrapper* webRequestWrapper)
 {
   String host = webRequestWrapper->hostHeader();
   String thingName = String(this->_thingName);
@@ -483,7 +483,7 @@ boolean IotWebConf::handleCaptivePortal(WebRequestWrapper* webRequestWrapper)
 }
 
 /** Is this an IP? */
-boolean IotWebConf::isIp(String str)
+bool IotWebConf::isIp(String str)
 {
   for (size_t i = 0; i < str.length(); i++)
   {
@@ -742,7 +742,7 @@ void IotWebConf::checkConnection()
   }
 }
 
-boolean IotWebConf::checkWifiConnection()
+bool IotWebConf::checkWifiConnection()
 {
   if (WiFi.status() != WL_CONNECTED)
   {
@@ -879,7 +879,7 @@ void IotWebConf::doBlink()
   }
 }
 
-void IotWebConf::forceApMode(boolean doForce)
+void IotWebConf::forceApMode(bool doForce)
 {
   if (this->_forceApMode == doForce)
   {
@@ -915,7 +915,7 @@ void IotWebConf::forceApMode(boolean doForce)
   }
 }
 
-boolean IotWebConf::connectAp(const char* apName, const char* password)
+bool IotWebConf::connectAp(const char* apName, const char* password)
 {
   return WiFi.softAP(apName, password);
 }

@@ -41,7 +41,7 @@ typedef struct SerializationData
 class ConfigItem
 {
 public:
-  boolean visible = true;
+  bool visible = true;
   const char* getId() { return this->_id; }
 protected:
   ConfigItem(const char* id) { this->_id = id; };
@@ -81,7 +81,7 @@ protected:
    * @webRequestWrapper - The webRequestWrapper, that will send the rendered content to the client.
    *   The webRequestWrapper->sendContent() method should be used in the implementations.
    */
-  virtual void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper);
+  virtual void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper);
 
   /**
    * New value arrived from the form post. The value should be stored in the
@@ -128,7 +128,7 @@ protected:
     SerializationData* serializationData)> doStore) override;
   void loadValue(std::function<void(
     SerializationData* serializationData)> doLoad) override;
-  void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper) override;
+  void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper) override;
   void update(WebRequestWrapper* webRequestWrapper) override;
   void clearErrorMessage() override;
   void debugTo(Stream* out) override;
@@ -219,9 +219,9 @@ public:
 
 protected:
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost);
+    bool dataArrived, bool hasValueFromPost, String valueFromPost);
   // Overrides
-  virtual void renderHtml(boolean dataArrived, WebRequestWrapper* webRequestWrapper) override;
+  virtual void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper) override;
   virtual void update(String newValue) override;
   virtual void debugTo(Stream* out) override;
 
@@ -229,7 +229,7 @@ protected:
    * Renders a standard HTML form INPUT.
    * @type - The type attribute of the html input field.
    */
-  virtual String renderHtml(const char* type, boolean hasValueFromPost, String valueFromPost);
+  virtual String renderHtml(const char* type, bool hasValueFromPost, String valueFromPost);
 
 private:
   friend class IotWebConf;
@@ -256,7 +256,7 @@ public:
 protected:
   // Overrides
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
   virtual void update(String newValue) override;
   virtual void debugTo(Stream* out) override;
 
@@ -282,7 +282,7 @@ public:
 protected:
   // Overrides
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
 
 private:
   friend class IotWebConf;
@@ -300,18 +300,18 @@ class CheckboxParameter : public TextParameter
 public:
   CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean defaultValue = false);
-  boolean isChecked() { return strncmp(this->valueBuffer, "selected", this->getLength()) == 0; }
+    bool defaultValue = false);
+  bool isChecked() { return strncmp(this->valueBuffer, "selected", this->getLength()) == 0; }
 
 protected:
   // Overrides
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
   virtual void update(String newValue) override;
 
 private:
   friend class IotWebConf;
-  boolean _checked;
+  bool _checked;
   const char* _checkedStr = "checked='checked'";
 };
 
@@ -364,7 +364,7 @@ public:
 protected:
   // Overrides
   virtual String renderHtml(
-    boolean dataArrived, boolean hasValueFromPost, String valueFromPost) override;
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
 
 private:
   friend class IotWebConf;
@@ -390,7 +390,7 @@ public:
 private:
   Stream* _originalStream;
   std::function<size_t(Stream* stream)> _prefixWriter;
-  boolean _newLine = true;
+  bool _newLine = true;
 
   size_t checkNewLine();
 };

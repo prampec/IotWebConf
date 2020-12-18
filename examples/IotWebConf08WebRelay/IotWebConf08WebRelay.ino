@@ -90,7 +90,7 @@ HTTPUpdateServer httpUpdater;
 
 IotWebConf iotWebConf(thingName.c_str(), &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 
-boolean needReset = false;
+bool needReset = false;
 int needAction = NO_ACTION;
 int state = LOW;
 unsigned long lastAction = 0;

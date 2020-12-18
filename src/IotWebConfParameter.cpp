@@ -84,7 +84,7 @@ void ParameterGroup::loadValue(
 }
 
 void ParameterGroup::renderHtml(
-  boolean dataArrived, WebRequestWrapper* webRequestWrapper)
+  bool dataArrived, WebRequestWrapper* webRequestWrapper)
 {
     if (this->label != NULL)
     {
@@ -138,8 +138,8 @@ void ParameterGroup::debugTo(Stream* out)
   out->println(']');
 
   // -- Here is some overcomplicated logic to have nice debug ouput.
-  boolean ownItem = false;
-  boolean lastItem = false;
+  bool ownItem = false;
+  bool lastItem = false;
   PrefixStreamWrapper stream =
     PrefixStreamWrapper(
       out,
@@ -247,7 +247,7 @@ TextParameter::TextParameter(
 }
 
 void TextParameter::renderHtml(
-  boolean dataArrived, WebRequestWrapper* webRequestWrapper)
+  bool dataArrived, WebRequestWrapper* webRequestWrapper)
 {
   String content = this->renderHtml(
     dataArrived,
@@ -256,12 +256,12 @@ void TextParameter::renderHtml(
   webRequestWrapper->sendContent(content);
 }
 String TextParameter::renderHtml(
-  boolean dataArrived, boolean hasValueFromPost, String valueFromPost)
+  bool dataArrived, bool hasValueFromPost, String valueFromPost)
 {
   return this->renderHtml("text", hasValueFromPost, valueFromPost);
 }
 String TextParameter::renderHtml(
-  const char* type, boolean hasValueFromPost, String valueFromPost)
+  const char* type, bool hasValueFromPost, String valueFromPost)
 {
   TextParameter* current = this;
   char parLength[5];
@@ -324,8 +324,8 @@ NumberParameter::NumberParameter(
 }
 
 String NumberParameter::renderHtml(
-  boolean dataArrived,
-  boolean hasValueFromPost, String valueFromPost)
+  bool dataArrived,
+  bool hasValueFromPost, String valueFromPost)
 {
   return TextParameter::renderHtml("number", hasValueFromPost, valueFromPost);
 }
@@ -343,8 +343,8 @@ PasswordParameter::PasswordParameter(
 }
 
 String PasswordParameter::renderHtml(
-  boolean dataArrived,
-  boolean hasValueFromPost, String valueFromPost)
+  bool dataArrived,
+  bool hasValueFromPost, String valueFromPost)
 {
   return TextParameter::renderHtml("password", true, String(""));
 }
@@ -390,17 +390,17 @@ void PasswordParameter::update(String newValue)
 
 CheckboxParameter::CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    boolean defaultValue)
+    bool defaultValue)
   : TextParameter(label, id, valueBuffer, length, defaultValue ? "selected" : NULL,
   NULL, NULL)
 {
 }
 
 String CheckboxParameter::renderHtml(
-  boolean dataArrived,
-  boolean hasValueFromPost, String valueFromPost)
+  bool dataArrived,
+  bool hasValueFromPost, String valueFromPost)
 {
-  boolean checkSelected = false;
+  bool checkSelected = false;
   if (dataArrived)
   {
     if (hasValueFromPost && valueFromPost.equals("selected"))
@@ -461,8 +461,8 @@ SelectParameter::SelectParameter(
 }
 
 String SelectParameter::renderHtml(
-  boolean dataArrived,
-  boolean hasValueFromPost, String valueFromPost)
+  bool dataArrived,
+  bool hasValueFromPost, String valueFromPost)
 {
   TextParameter* current = this;
 

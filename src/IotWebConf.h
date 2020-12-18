@@ -109,7 +109,7 @@ public:
     { return this->_server->authenticate(username, password); };
   void requestAuthentication() override
     { this->_server->requestAuthentication(); };
-  boolean hasArg(const String& name) override { return this->_server->hasArg(name); };
+  bool hasArg(const String& name) override { return this->_server->hasArg(name); };
   String arg(const String name) override { return this->_server->arg(name); };
   void sendHeader(const String& name, const String& value, bool first = false) override
     { this->_server->sendHeader(name, value, first); };
@@ -229,7 +229,7 @@ public:
    * Loads all configuration from the EEPROM, and initialize the system.
    * Will return false, if no configuration (with specified config version) was found in the EEPROM.
    */
-  boolean init();
+  bool init();
 
   /**
    * IotWebConf is a non-blocking, state controlled system. Therefor it should be
@@ -242,8 +242,8 @@ public:
    * Each WebServer URL handler method should start with calling this method.
    * If this method return true, the request was already served by it.
    */
-  boolean handleCaptivePortal(WebRequestWrapper* webRequestWrapper);
-  boolean handleCaptivePortal()
+  bool handleCaptivePortal(WebRequestWrapper* webRequestWrapper);
+  bool handleCaptivePortal()
   {
     StandardWebRequestWrapper webRequestWrapper = StandardWebRequestWrapper(this->_standardWebServerWrapper._server);
     return handleCaptivePortal(&webRequestWrapper);
@@ -295,14 +295,14 @@ public:
    * If the method will return false, the configuration will not be saved.
    * Should be called before init()!
    */
-  void setFormValidator(std::function<boolean()> func);
+  void setFormValidator(std::function<bool()> func);
 
   /**
    * Specify your custom Access Point connection handler. Please use IotWebConf::connectAp() as
    * reference when implementing your custom solution.
    */
   void setApConnectionHandler(
-      std::function<boolean(const char* apName, const char* password)> func)
+      std::function<bool(const char* apName, const char* password)> func)
   {
     _apConnectionHandler = func;
   }
@@ -410,7 +410,7 @@ public:
   /**
    * Returns blink enabled state modified by disableBlink() and enableBlink().
    */
-  boolean isBlinkEnabled()  { return this->_blinkEnabled; }
+  bool isBlinkEnabled()  { return this->_blinkEnabled; }
 
   /**
    * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
@@ -456,7 +456,7 @@ public:
    *   @value - When parameter is TRUE AP mode is forced/entered.
    *     When value is FALSE normal operation will continue.
    */
-  void forceApMode(boolean value);
+  void forceApMode(bool value);
 
   /**
    * Get internal parameters, for manual handling.
@@ -520,9 +520,9 @@ private:
   int _statusPin = -1;
   int _statusOnLevel = LOW;
   const char* _updatePath = NULL;
-  boolean _forceDefaultPassword = false;
-  boolean _skipApStartup = false;
-  boolean _forceApMode = false;
+  bool _forceDefaultPassword = false;
+  bool _skipApStartup = false;
+  bool _forceApMode = false;
   ParameterGroup _allParameters = ParameterGroup("iwcAll");
   ParameterGroup _systemParameters = ParameterGroup("iwcSys", "System configuration");
   ParameterGroup _customParameterGroups = ParameterGroup("iwcCustom");
@@ -547,7 +547,7 @@ private:
   std::function<void()> _wifiConnectionCallback = NULL;
   std::function<void(int)> _configSavingCallback = NULL;
   std::function<void()> _configSavedCallback = NULL;
-  std::function<boolean()> _formValidator = NULL;
+  std::function<bool()> _formValidator = NULL;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =
@@ -558,8 +558,8 @@ private:
   unsigned long _internalBlinkOffMs = 500;
   unsigned long _blinkOnMs = 500;
   unsigned long _blinkOffMs = 500;
-  boolean _blinkEnabled = true;
-  boolean _blinkStateOn = false;
+  bool _blinkEnabled = true;
+  bool _blinkStateOn = false;
   unsigned long _lastBlinkTime = 0;
   unsigned long _wifiConnectionStart = 0;
   // TODO: authinfo
@@ -568,37 +568,37 @@ private:
   HtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   int initConfig();
-  boolean loadConfig();
-  boolean testConfigVersion();
+  bool loadConfig();
+  bool testConfigVersion();
   void saveConfigVersion();
   void readEepromValue(int start, byte* valueBuffer, int length);
   void writeEepromValue(int start, byte* valueBuffer, int length);
 
-  boolean validateForm(WebRequestWrapper* webRequestWrapper);
+  bool validateForm(WebRequestWrapper* webRequestWrapper);
 
   void changeState(byte newState);
   void stateChanged(byte oldState, byte newState);
-  boolean mustUseDefaultPassword()
+  bool mustUseDefaultPassword()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0');
   }
-  boolean mustStayInApMode()
+  bool mustStayInApMode()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0') ||
       this->_wifiParameters._wifiSsid[0] == '\0' || this->_forceApMode;
   }
-  boolean isIp(String str);
+  bool isIp(String str);
   String toStringIp(IPAddress ip);
   void doBlink();
   void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
 
   void checkApTimeout();
   void checkConnection();
-  boolean checkWifiConnection();
+  bool checkWifiConnection();
   void setupAp();
   void stopAp();
 
-  static boolean connectAp(const char* apName, const char* password);
+  static bool connectAp(const char* apName, const char* password);
   static void connectWifi(const char* ssid, const char* password);
   static WifiAuthInfo* handleConnectWifiFailure();
 };

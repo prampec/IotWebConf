@@ -63,12 +63,12 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Method declarations.
 void handleRoot();
 void mqttMessageReceived(String &topic, String &payload);
-boolean connectMqtt();
-boolean connectMqttOptions();
+bool connectMqtt();
+bool connectMqttOptions();
 // -- Callback methods.
 void wifiConnected();
 void configSaved();
-boolean formValidator();
+bool formValidator();
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -86,8 +86,8 @@ IotWebConfTextParameter mqttServerParam = IotWebConfTextParameter("MQTT server",
 IotWebConfTextParameter mqttUserNameParam = IotWebConfTextParameter("MQTT user", "mqttUser", mqttUserNameValue, STRING_LEN);
 IotWebConfPasswordParameter mqttUserPasswordParam = IotWebConfPasswordParameter("MQTT password", "mqttPass", mqttUserPasswordValue, STRING_LEN);
 
-boolean needMqttConnect = false;
-boolean needReset = false;
+bool needMqttConnect = false;
+bool needReset = false;
 int pinState = HIGH;
 unsigned long lastReport = 0;
 unsigned long lastMqttConnectionAttempt = 0;
@@ -110,7 +110,7 @@ void setup()
   iotWebConf.setWifiConnectionCallback(&wifiConnected);
 
   // -- Initializing the configuration.
-  boolean validConfig = iotWebConf.init();
+  bool validConfig = iotWebConf.init();
   if (!validConfig)
   {
     mqttServerValue[0] = '\0';
@@ -200,10 +200,10 @@ void configSaved()
   needReset = true;
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   int l = server.arg(mqttServerParam.getId()).length();
   if (l < 3)
@@ -215,7 +215,7 @@ boolean formValidator()
   return valid;
 }
 
-boolean connectMqtt() {
+bool connectMqtt() {
   unsigned long now = millis();
   if (1000 > now - lastMqttConnectionAttempt)
   {
@@ -235,7 +235,7 @@ boolean connectMqtt() {
 
 /*
 // -- This is an alternative MQTT connection method.
-boolean connectMqtt() {
+bool connectMqtt() {
   Serial.println("Connecting to MQTT server...");
   while (!connectMqttOptions()) {
     iotWebConf.delay(1000);
@@ -247,9 +247,9 @@ boolean connectMqtt() {
 }
 */
 
-boolean connectMqttOptions()
+bool connectMqttOptions()
 {
-  boolean result;
+  bool result;
   if (mqttUserPasswordValue[0] != '\0')
   {
     result = mqttClient.connect(iotWebConf.getThingName(), mqttUserNameValue, mqttUserPasswordValue);

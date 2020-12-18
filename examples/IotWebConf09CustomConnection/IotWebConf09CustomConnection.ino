@@ -51,11 +51,11 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 // -- Method declarations.
 void handleRoot();
-boolean connectAp(const char* apName, const char* password);
+bool connectAp(const char* apName, const char* password);
 void connectWifi(const char* ssid, const char* password);
 // -- Callback methods.
 void configSaved();
-boolean formValidator();
+bool formValidator();
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -138,10 +138,10 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-boolean formValidator()
+bool formValidator()
 {
   Serial.println("Validating form.");
-  boolean valid = true;
+  bool valid = true;
 
   if (!ipAddress.fromString(server.arg(ipAddressParam.getId())))
   {
@@ -162,7 +162,7 @@ boolean formValidator()
   return valid;
 }
 
-boolean connectAp(const char* apName, const char* password)
+bool connectAp(const char* apName, const char* password)
 {
   // -- Custom AP settings
   return WiFi.softAP(apName, password, 4);

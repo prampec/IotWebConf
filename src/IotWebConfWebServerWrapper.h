@@ -26,7 +26,7 @@ public:
   virtual const String uri() const;
   virtual bool authenticate(const char * username, const char * password);
   virtual void requestAuthentication();
-  virtual boolean hasArg(const String& name);
+  virtual bool hasArg(const String& name);
   virtual String arg(const String name);
   virtual void sendHeader(const String& name, const String& value, bool first = false);
   virtual void setContentLength(const size_t contentLength);
