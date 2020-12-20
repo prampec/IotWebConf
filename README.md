@@ -1,5 +1,11 @@
 # IotWebConf [![Build Status](https://travis-ci.org/prampec/IotWebConf.svg?branch=master)](https://travis-ci.org/prampec/IotWebConf)
 
+## Upgrading to v3.0.0
+Lately version 3.0.0 is released. This release in backward compatible with
+older versions, and some modification have to be done on existing codes.
+**Please visit [Migration Guide](doc/MigrationGuide-v3.0.0.md) for
+ details!**
+
 ## Summary
 IotWebConf is an Arduino library for ESP8266/ESP32 to provide a non-blocking standalone WiFi/AP web configuration portal.
 **For ESP8266, IotWebConf requires the esp8266 board package version 2.4.2 or later!**
