@@ -499,6 +499,12 @@ public:
   void saveConfig();
 
   /**
+   * Loads all configuration from the EEPROM without initializing the system.
+   * Will return false, if no configuration (with specified config version) was found in the EEPROM.
+   */
+  bool loadConfig();
+
+  /**
    * With this method you can override the default HTML format provider to
    * provide custom HTML segments.
    */
@@ -574,7 +580,6 @@ private:
   HtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   int initConfig();
-  bool loadConfig();
   bool testConfigVersion();
   void saveConfigVersion();
   void readEepromValue(int start, byte* valueBuffer, int length);
