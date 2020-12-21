@@ -109,7 +109,7 @@ should use ```iotwebconf::TextParameter```,
 ```iotwebconf::PasswordParameter```, etc.
 
 
-##Grouping parameters
+## Grouping parameters
 
 With v3.0.0 "separator" disappears. Separators were used to create
 field sets in the rendered HTML. Now you must directly define connected
@@ -163,7 +163,7 @@ Also note, that ```IotWebConfParameterGroup``` and
 should use ```iotwebconf::ParameterGroup```,
 ```iotwebconf::NumberParameter```, etc.
 
-##Default value handling
+## Default value handling
 
 For the Parameters you could always specify "defaultValue". In v2.x
 .x this value was intended to be appeared in the config portal, if no
@@ -185,7 +185,7 @@ automatically.
   }
 ```
 
-##Hidden parameters
+## Hidden parameters
 
 IotWebConf can save and load parameters, that are not populated to the
 web interface. To mark an item as hidden, you should have set the last
@@ -197,7 +197,7 @@ by IotWebConf.
 iotWebConf.addHiddenParameter(&myHiddenParameter);
 ```
 
-##UpdateServer changes
+## UpdateServer changes
 
 In prior versions, IotWebConf switched on HTTP Update server. With
 version 3.0.0, IotWebConf dropped the dependency to UpdateServer. The
@@ -218,5 +218,5 @@ Note, that ESP32 still doesn't provide Update Server solution out of the
 box. IotWebConf still provides an implementation for that, but it is now
 completely independent from the core codes.
 
-##configSave
+## configSave
 Method configSave is renamed to saveConfig.
