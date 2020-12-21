@@ -431,6 +431,12 @@ public:
    */
   unsigned long getApTimeoutMs() { return this->_apTimeoutMs; };
 
+    /**
+   * Returns the current WiFi authentication credentials. These are usually the configured ones,
+   * but might be overwritten by setWifiConnectionFailedHandler().
+   */
+  WifiAuthInfo getWifiAuthInfo() { return _wifiAuthInfo; };
+
   /**
    * Resets the authentication credentials for WiFi connection to the configured one.
    * With the return value of setWifiConnectionFailedHandler() one can provide alternative connection settings,
