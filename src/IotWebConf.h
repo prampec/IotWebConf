@@ -433,6 +433,12 @@ public:
    */
   unsigned long getApTimeoutMs() { return this->_apTimeoutMs; };
 
+    /**
+   * Returns the current WiFi authentication credentials. These are usually the configured ones,
+   * but might be overwritten by setWifiConnectionFailedHandler().
+   */
+  WifiAuthInfo getWifiAuthInfo() { return _wifiAuthInfo; };
+
   /**
    * Resets the authentication credentials for WiFi connection to the configured one.
    * With the return value of setWifiConnectionFailedHandler() one can provide alternative connection settings,
@@ -501,6 +507,12 @@ public:
    *  in the lifetime of an ESP8266 module.
    */
   void saveConfig();
+
+  /**
+   * Loads all configuration from the EEPROM without initializing the system.
+   * Will return false, if no configuration (with specified config version) was found in the EEPROM.
+   */
+  bool loadConfig();
 
   /**
    * With this method you can override the default HTML format provider to
@@ -578,7 +590,6 @@ private:
   HtmlFormatProvider* htmlFormatProvider = &htmlFormatProviderInstance;
 
   int initConfig();
-  bool loadConfig();
   bool testConfigVersion();
   void saveConfigVersion();
   void readEepromValue(int start, byte* valueBuffer, int length);
