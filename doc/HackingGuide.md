@@ -1,4 +1,4 @@
-#IotWebConf hacking guide
+# IotWebConf hacking guide
 
 IotWebConf comes with a lot of examples. These examples are intended
 to be easy to use, with clear goals. While IotWebConf is also ment to be
@@ -45,12 +45,12 @@ build_flags =
   -DIOTWEBCONF_DEBUG_DISABLED
 ```
 
-##Groups and Parameters
+## Groups and Parameters
 With version 3.0.0 IotWebConf introduces individual parameter classes for
 each type, and you can organize your parameters into groups.
 You can also free to add groups into groups to make a tree hierarchy. 
 
-##Using system parameter-group
+## Using system parameter-group
 By default, you should add your own parameter group, that will appear as
 a new field-set on the Config Portal. However, there is a special group
 maintained by IotWebConf called the System group, where you are also
@@ -73,7 +73,7 @@ Example:
 There is another group "WiFi parameters" managed by IotWebConf, that
 can be retrieved by getWifiParameterGroup().
 
-##Accessing system properties
+## Accessing system properties
 IotWebConf comes with some parameters, that are required for the basic
 functionality. You can retrieve these parameter by getters, e.g.
 ```getThingNameParameter()```. You can directly modify these items as
@@ -91,7 +91,7 @@ example ```IotWebConf11AdvancedRuntime```!
     iotWebConf.saveConfig();
 ```
 
-##Use custom style
+## Use custom style
 You can provide your own custom HTML template by updating default
 HTML format provider. For this you should utilize the
  ```setHtmlFormatProvider()``` method.
@@ -99,7 +99,7 @@ HTML format provider. For this you should utilize the
 There is a complete example about this topic, so please visit example
 ```IotWebConf10CustomHtml```!
 
-##Create your property class
+## Create your property class
 With version 3.0.0 you are free to create your own property class.
 It is done by inheriting the iotwebconf::Parameter C++ class. You can use
 other property types e.g. PasswordProperty as a template for this.
@@ -115,7 +115,7 @@ implementation for it.
 You can also override ParameterGroup class in case you need some special
 group appearance.
 
-##Control on WiFi connection status change
+## Control on WiFi connection status change
 IotWebConf provides a feature to control WiFi connection events by defining
 your custom handler event handler.
 

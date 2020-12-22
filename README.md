@@ -61,15 +61,15 @@ have configured for "AP password". The user name is "admin".
 
 ## IotWebConf vs. WiFiManager
 tzapu's WiFiManager is a great library. The features of IotWebConf may appear very similar to WiFiManager. However, IotWebConf tries to be different.
-  - WiFiManager does not manages your custom properties. IotWebConf stores your configuration in "EEPROM".
+  - WiFiManager does not manage your custom properties. IotWebConf stores your configuration in "EEPROM".
   - WiFiManager does not do validation. IotWebConf allow you to validate your property changes made in the config portal.
   - With WiFiManager you cannot use both startup and on-demand configuration. With IotWebConf the config portal remains available via the connected local WiFi.
-  - WiFiManager provides list of available networks and also an information page, while these features are cool, IotWebConf tries to keep the code simple. So these features are not (yet) provided by IotWebConf.
+  - WiFiManager provides list of available networks, and an information page, while these features are cool, IotWebConf tries to keep the code simple. So these features are not (yet) provided by IotWebConf.
   - IotWebConf is fitted for more advanced users. You can keep control of the web server setup, configuration item input field behavior, and validation.
 
 ## Security aspects
   - The initial system password must be modified by the user, so there is no build-in password.
-  - When connecting in AP mode, the WiFi provides an encryption layer, so all you communication here is known to be safe.
+  - When connecting in AP mode, the WiFi provides an encryption layer, so all your communication here is known to be safe.
   - When connecting through a WiFi router (WiFi mode), the Thing will ask for authentication when someone requests the config portal. This is required as the Thing will be visible for all devices sharing the same network. But be warned by the following note...
   - NOTE: **When connecting through a WiFi router (WiFi mode), your communication is not hidden from devices connecting to the same network.** So either: Do not allow ambiguous devices connecting to your WiFi router, or configure your Thing only in AP mode!
   - However IotWebConf has a detailed debug output, passwords are not shown in this log by default. You have
@@ -79,12 +79,17 @@ tzapu's WiFiManager is a great library. The features of IotWebConf may appear ve
 ## Compatibility
 IotWebConf is primary built for ESP8266. But meanwhile it was discovered, that the code can be adopted
 to ESP32. There are two major problems.
-  - ESP8266 uses specific naming for it's classes (e.g. ESP8266WebServer). However ESP32 uses a more generic naming (e.g. WebServer). The idea here is to use the generic naming hoping that ESP8266 will adopt these "standards" sooner or later.
-  - ESP32 does not provides an HTTPUpdateServer implementation. So in this project we have implemented one. Whenever ESP32 provides an official HTTPUpdateServer, this local implementation will be removed.
-  
+  - ESP8266 uses specific naming for it's classes (e.g. ESP8266WebServer). However, ESP32 uses a more generic naming (e.g. WebServer). The idea here is to use the generic naming hoping that ESP8266 will adopt these "standards" sooner or later.
+  - ESP32 does not provide an HTTPUpdateServer implementation. So in this project we have implemented one. Whenever ESP32 provides an official HTTPUpdateServer, this local implementation will be removed.
+
+## Customizing and extending functionality
+IotWebConf is ment to be developer friendly by providing lots
+of customization options. See [HackingGuide](#doc/HackingGuide.md) for
+details.
+
 ## TODO / Feature requests
   - We might want to add a "verify password" field.
-  - Option the configure multiply WiFi connections. Try next when the last used one is just not available.
+  - Option to configure multiply WiFi connections. Try next when the last used one is just not available.
   - Provide an option, where IotWebConf renders HTML-response,
 handles HTTP-request for a specific branch of groups.
   - Separate WiFi management from the code, so config portal can also
