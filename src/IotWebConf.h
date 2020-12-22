@@ -310,6 +310,8 @@ public:
   /**
    * Specify your custom WiFi connection handler. Please use IotWebConf::connectWifi() as
    * reference when implementing your custom solution.
+   * Your method will be called when IotWebConf trying to establish
+   * connection to a WiFi network.
    */
   void setWifiConnectionHandler(
       std::function<void(const char* ssid, const char* password)> func)
@@ -319,7 +321,7 @@ public:
 
   /**
    * With this method you can specify your custom WiFi timeout handler.
-   * This hander can manage what should happen, when WiFi connection timed out.
+   * This handler can manage what should happen, when WiFi connection timed out.
    * By default the handler implementation returns with NULL, as seen on reference implementation
    * IotWebConf::handleConnectWifiFailure(). This means we need to fall back to AP mode.
    * If it method returns with a (new) WiFi settings, it is used as a next try.
@@ -463,6 +465,10 @@ public:
    * Normally you don't need to access these parameters directly.
    * Note, that changing valueBuffer of these parameters should be followed by saveConfig()!
    */
+  ParameterGroup* getSystemParameterGroup()
+  {
+    return &this->_systemParameters;
+  };
   Parameter* getThingNameParameter()
   {
     return &this->_thingNameParameter;
@@ -470,6 +476,10 @@ public:
   Parameter* getApPasswordParameter()
   {
     return &this->_apPasswordParameter;
+  };
+  WifiParameterGroup* getWifiParameterGroup()
+  {
+    return &this->_wifiParameters;
   };
   Parameter* getWifiSsidParameter()
   {

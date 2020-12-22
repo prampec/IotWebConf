@@ -59,8 +59,10 @@ getApTimeoutMs	KEYWORD2
 resetWifiAuthInfo	KEYWORD2
 skipApStartup	KEYWORD2
 forceApMode	KEYWORD2
+getSystemParameterGroup KEYWORD2
 getThingNameParameter	KEYWORD2
 getApPasswordParameter	KEYWORD2
+getWifiParameterGroup   KEYWORD2
 getWifiSsidParameter	KEYWORD2
 getWifiPasswordParameter	KEYWORD2
 getApTimeoutParameter	KEYWORD2

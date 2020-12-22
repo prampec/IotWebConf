@@ -90,7 +90,7 @@ void ParameterGroup::renderHtml(
     {
       String content = "<fieldset id='";
       content += this->getId();
-      content = "'>";
+      content += "'>";
       if (this->label[0] != '\0')
       {
         content += "<legend>";
