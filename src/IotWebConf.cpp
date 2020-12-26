@@ -37,7 +37,6 @@ IotWebConf::IotWebConf(
   this->_webServerWrapper = webServerWrapper;
   this->_initialApPassword = initialApPassword;
   this->_configVersion = configVersion;
-  itoa(this->_apTimeoutMs / 1000, this->_apTimeoutStr, 10);
 
   this->_apTimeoutParameter.visible = false;
   this->_systemParameters.addItem(&this->_thingNameParameter);
@@ -90,12 +89,8 @@ bool IotWebConf::init()
     this->_apPassword[0] = '\0';
     this->_wifiParameters._wifiSsid[0] = '\0';
     this->_wifiParameters._wifiPassword[0] = '\0';
-    this->_apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
   }
-  else
-  {
-    this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
-  }
+  this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
   // -- Setup mdns
 #ifdef ESP8266
@@ -192,8 +187,8 @@ void IotWebConf::saveConfig()
   int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
   IOTWEBCONF_DEBUG_LINE(F("Saving configuration"));
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-    this->_allParameters.debugTo(&Serial);
-    Serial.println();
+  this->_allParameters.debugTo(&Serial);
+  Serial.println();
 #endif
   this->_allParameters.storeValue([&](SerializationData* serializationData)
   {
@@ -654,6 +649,33 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->_webServerWrapper->begin();
       this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
       this->_apStartTimeMs = millis();
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+      if (mustStayInApMode())
+      {
+        if (this->_forceDefaultPassword)
+        {
+          Serial.println(F("Default password was forced."));
+        }
+        if (this->_apPassword[0] == '\0')
+        {
+          Serial.println(F("AP password was not set."));
+        }
+        if (this->_wifiParameters._wifiSsid[0] == '\0')
+        {
+          Serial.println(F("WiFi SSID was not set."));
+        }
+        if (this->_forceApMode)
+        {
+          Serial.println(F("AP was forced."));
+        }
+        Serial.println(F("Will stay in AP mode."));
+      }
+      else
+      {
+        Serial.print(F("AP timeout (ms): "));
+        Serial.println(this->_apTimeoutMs);
+      }
+#endif
       break;
     case IOTWEBCONF_STATE_CONNECTING:
       if ((oldState == IOTWEBCONF_STATE_AP_MODE) ||
@@ -677,6 +699,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
 # else
       Serial.println(F("] (password is hidden)"));
 # endif
+      Serial.print(F("WiFi timeout (ms): "));
+      Serial.println(this->_wifiConnectionTimeoutMs);
 #endif
       this->_wifiConnectionStart = millis();
       this->_wifiConnectionHandler(
@@ -707,7 +731,7 @@ void IotWebConf::checkApTimeout()
   {
     // -- Only move on, when we have a valid WifF and AP configured.
     if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC) ||
-        ((this->_apTimeoutMs < millis() - this->_apStartTimeMs) &&
+        (((millis() - this->_apStartTimeMs) > this->_apTimeoutMs) &&
          (this->_apConnectionStatus != IOTWEBCONF_AP_CONNECTION_STATE_C)))
     {
       this->changeState(IOTWEBCONF_STATE_CONNECTING);
@@ -746,7 +770,7 @@ bool IotWebConf::checkWifiConnection()
 {
   if (WiFi.status() != WL_CONNECTED)
   {
-    if (this->_wifiConnectionTimeoutMs < millis() - this->_wifiConnectionStart)
+    if ((millis() - this->_wifiConnectionStart) > this->_wifiConnectionTimeoutMs)
     {
       // -- WiFi not available, fall back to AP mode.
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));

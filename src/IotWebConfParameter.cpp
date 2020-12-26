@@ -225,8 +225,11 @@ void Parameter::loadValue(
 }
 void Parameter::update(WebRequestWrapper* webRequestWrapper)
 {
-  String newValue = webRequestWrapper->arg(this->getId());
-  this->update(newValue);
+  if (webRequestWrapper->hasArg(this->getId()))
+  {
+    String newValue = webRequestWrapper->arg(this->getId());
+    this->update(newValue);
+  }
 }
 void Parameter::clearErrorMessage()
 {
@@ -299,6 +302,11 @@ String TextParameter::renderHtml(
 void TextParameter::update(String newValue)
 {
   newValue.toCharArray(this->valueBuffer, this->getLength());
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(this->getId());
+  Serial.print(": ");
+  Serial.println(this->valueBuffer);
+#endif
 }
 
 void TextParameter::debugTo(Stream* out)
@@ -367,21 +375,26 @@ void PasswordParameter::debugTo(Stream* out)
 void PasswordParameter::update(String newValue)
 {
   Parameter* current = this;
-//  char temp[IOTWEBCONF_PASSWORD_LEN];
-  char temp[current->getLength()];
-  newValue.toCharArray(temp, current->getLength());
-  if (temp[0] != '\0')
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(this->getId());
+  Serial.print(": ");
+#endif
+  if (newValue.length() > 0)
   {
     // -- Value was set.
-    strncpy(current->valueBuffer, temp, current->getLength());
+    newValue.toCharArray(current->valueBuffer, current->getLength());
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-    Serial.print("Updated ");
+# ifdef IOTWEBCONF_DEBUG_PWD_TO_SERIAL
+    Serial.println(current->valueBuffer);
+# else
+    Serial.println("<updated>");
+# endif
 #endif
   }
   else
   {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-    Serial.println("Was not changed ");
+    Serial.println("<was not changed>");
 #endif
   }
 }

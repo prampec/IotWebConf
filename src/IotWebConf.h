@@ -555,11 +555,11 @@ private:
   PasswordParameter _apPasswordParameter =
     PasswordParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN);
   NumberParameter _apTimeoutParameter =
-    NumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, NULL, NULL, "min='1' max='600'");
+    NumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS, NULL, "min='1' max='600'");
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
   char _apTimeoutStr[IOTWEBCONF_WORD_LEN];
-  unsigned long _apTimeoutMs = IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS;
+  unsigned long _apTimeoutMs;
   // TODO: Add to WifiParameterGroup
   unsigned long _wifiConnectionTimeoutMs =
       IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS;
@@ -606,7 +606,7 @@ private:
   bool mustStayInApMode()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0') ||
-      this->_wifiParameters._wifiSsid[0] == '\0' || this->_forceApMode;
+      (this->_wifiParameters._wifiSsid[0] == '\0') || this->_forceApMode;
   }
   bool isIp(String str);
   String toStringIp(IPAddress ip);

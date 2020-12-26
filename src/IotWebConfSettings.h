@@ -35,8 +35,8 @@
 
 // -- Thing will stay in AP mode for an amount of time on boot, before retrying
 // to connect to a WiFi network.
-#ifndef IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS
-# define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS 30000
+#ifndef IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS
+# define IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS "30"
 #endif
 
 // -- mDNS should allow you to connect to this device with a hostname provided
