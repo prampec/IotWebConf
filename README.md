@@ -84,7 +84,7 @@ to ESP32. There are two major problems.
 
 ## Customizing and extending functionality
 IotWebConf is ment to be developer friendly by providing lots
-of customization options. See [HackingGuide](#doc/HackingGuide.md) for
+of customization options. See [HackingGuide](doc/HackingGuide.md) for
 details.
 
 ## TODO / Feature requests
