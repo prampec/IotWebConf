@@ -177,6 +177,7 @@ protected:
   void loadValue(std::function<void(SerializationData* serializationData)> doLoad) override;
   virtual void update(WebRequestWrapper* webRequestWrapper) override;
   virtual void update(String newValue);
+  virtual bool updateEmpty() { return false; }
   void clearErrorMessage() override;
 
 private:
@@ -308,6 +309,7 @@ protected:
   virtual String renderHtml(
     bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
   virtual void update(String newValue) override;
+  virtual bool updateEmpty() { return true; };
 
 private:
   friend class IotWebConf;

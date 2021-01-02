@@ -230,6 +230,8 @@ void Parameter::update(WebRequestWrapper* webRequestWrapper)
     String newValue = webRequestWrapper->arg(this->getId());
     this->update(newValue);
   }
+  else if (this->updateEmpty())
+    this->update("");
 }
 void Parameter::clearErrorMessage()
 {
