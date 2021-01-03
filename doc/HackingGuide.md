@@ -29,7 +29,10 @@ It is recommended to use PlatformIO instead of the Arduino environment.
 
 With v3.0.0, a folder ```pio``` is provided with scripts that transforms
 examples to PlatformIO compatible format. You can use these as templates
-for your project.
+for your project. (On the other hand, these scripts creating soft-link
+loops, and having soft link loops in these folders might cause Arduino
+and other environment to fail. Just keep in mind, if something goes
+wrong with your IDE, then examples-pio is likely the corporate.)
 
 ## Compile time configuration
 IotWebConf includes a configuration file named IotWebConfSettings.h.
@@ -44,6 +47,11 @@ build_flags =
   -DIOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS="60000"
   -DIOTWEBCONF_DEBUG_DISABLED
 ```
+
+**Note:** You must not use ```#define IOTWEBCONF_CONFIG_START 20```, or
+simmilar defines in your .ino file (e.g. before the includes). It will eventually
+just not work, as all .cpp files are compiled separately for each other.
+Thus, you must use the ```-D``` compiler flag for the job.
 
 ## Groups and Parameters
 With version 3.0.0 IotWebConf introduces individual parameter classes for
