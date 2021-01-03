@@ -307,7 +307,7 @@ protected:
   // Overrides
   virtual String renderHtml(
     bool dataArrived, bool hasValueFromPost, String valueFromPost) override;
-  virtual void update(String newValue) override;
+  virtual void update(WebRequestWrapper* webRequestWrapper) override;
 
 private:
   friend class IotWebConf;

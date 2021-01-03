@@ -442,9 +442,18 @@ String CheckboxParameter::renderHtml(
   return TextParameter::renderHtml("checkbox", true, "selected");
 }
 
-void CheckboxParameter::update(String newValue)
+void CheckboxParameter::update(WebRequestWrapper* webRequestWrapper)
 {
-  return TextParameter::update(newValue);
+  if (webRequestWrapper->hasArg(this->getId()))
+  {
+    String newValue = webRequestWrapper->arg(this->getId());
+    return TextParameter::update(newValue);
+  }
+  else if (this->visible)
+  {
+    // HTML will not post back unchecked checkboxes.
+    return TextParameter::update("");
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
