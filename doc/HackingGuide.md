@@ -112,8 +112,8 @@ With version 3.0.0 you are free to create your own property class.
 It is done by inheriting the iotwebconf::Parameter C++ class. You can use
 other property types e.g. PasswordProperty as a template for this.
 
-Now custom properties are mainly handy, when you would like to create
-some special HTML form item. But eventually you can change to whole
+Now, custom properties are mainly handy, when you would like to create
+some special HTML form item. But eventually you can change the whole
 behaviour of your parameter handling. E.g. by overriding ```storeValue()```
 and ```loadValue()``` you can basically convert your internal data format
 to whatever you like. E.g. let's say, that you would like to store
@@ -122,6 +122,9 @@ implementation for it.
 
 You can also override ParameterGroup class in case you need some special
 group appearance.
+
+There is a complete example about this topic, so please visit example
+```IotWebConf12CustomParameterType```!
 
 ## Control on WiFi connection status change
 IotWebConf provides a feature to control WiFi connection events by defining

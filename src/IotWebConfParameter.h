@@ -224,6 +224,11 @@ protected:
   virtual void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper) override;
   virtual void update(String newValue) override;
   virtual void debugTo(Stream* out) override;
+  /**
+   * One can override this method in case a specific HTML template is required
+   * for a parameter.
+   */
+  virtual String getHtmlTemplate() { return FPSTR(IOTWEBCONF_HTML_FORM_PARAM); };
 
   /**
    * Renders a standard HTML form INPUT.

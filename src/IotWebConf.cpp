@@ -295,7 +295,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     webRequestWrapper->sendHeader("Pragma", "no-cache");
     webRequestWrapper->sendHeader("Expires", "-1");
     webRequestWrapper->setContentLength(CONTENT_LENGTH_UNKNOWN);
-    webRequestWrapper->send(200, "text/html", "");
+    webRequestWrapper->send(200, "text/html; charset=UTF-8", "");
 
     String content = htmlFormatProvider->getHead();
     content.replace("{v}", "Config ESP");

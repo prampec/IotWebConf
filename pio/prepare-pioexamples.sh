@@ -7,7 +7,8 @@
 # The output of this script can be added to the workspace of Visual Studio Code.
 #
 conf=`pwd`
-target=`pwd`"/../examples-pio"
+examplespio="examples-pio"
+target=`pwd`"/../${examplespio}"
 test -e ${target} || mkdir ${target}
 
 cd ../examples
@@ -24,7 +25,7 @@ for example in IotWebConf*; do
     ln -s "../../../examples/$example/$example.ino" "$target/$example/src/main.cpp"
     ln -s "../../.." "$target/$example/lib/IotWebConf"
     echo "		{"
-    echo "			\"path\": \"pio-src/$example\""
+    echo "			\"path\": \"${examplespio}/$example\""
     echo "		},"
   fi
 done

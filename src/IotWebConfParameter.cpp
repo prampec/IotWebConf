@@ -269,7 +269,7 @@ String TextParameter::renderHtml(
   TextParameter* current = this;
   char parLength[5];
 
-  String pitem = FPSTR(IOTWEBCONF_HTML_FORM_PARAM);
+  String pitem = getHtmlTemplate();
 
   pitem.replace("{b}", current->label);
   pitem.replace("{t}", type);
