@@ -17,6 +17,11 @@
 #include <IotWebConfSettings.h>
 #include <IotWebConfWebServerWrapper.h>
 
+const char IOTWEBCONF_HTML_FORM_GROUP_START[] PROGMEM =
+  "<fieldset id='{i}'><legend>{b}</legend>\n";
+const char IOTWEBCONF_HTML_FORM_GROUP_END[] PROGMEM =
+  "</fieldset>\n";
+
 const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM =
   "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' "
   "name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/>"
@@ -43,8 +48,7 @@ class ConfigItem
 public:
   bool visible = true;
   const char* getId() { return this->_id; }
-protected:
-  ConfigItem(const char* id) { this->_id = id; };
+
   /**
    * Calculate the size of bytes should be stored in the EEPROM.
    */
@@ -105,7 +109,8 @@ protected:
    */
   virtual void debugTo(Stream* out);
 
-  friend class IotWebConf; // Allow IotWebConf to access protected members.
+protected:
+  ConfigItem(const char* id) { this->_id = id; };
 
 private:
   const char* _id = 0;
@@ -132,10 +137,23 @@ protected:
   void update(WebRequestWrapper* webRequestWrapper) override;
   void clearErrorMessage() override;
   void debugTo(Stream* out) override;
+  /**
+   * One can override this method in case a specific HTML template is required
+   * for a group.
+   */
+  virtual String getStartTemplate() { return FPSTR(IOTWEBCONF_HTML_FORM_GROUP_START); };
+  /**
+   * One can override this method in case a specific HTML template is required
+   * for a group.
+   */
+  virtual String getEndTemplate() { return FPSTR(IOTWEBCONF_HTML_FORM_GROUP_END); };
+
+  ConfigItem* _firstItem = NULL;
+  ConfigItem* getNextItemOf(ConfigItem* parent) { return parent->_nextItem; };
+
   friend class IotWebConf; // Allow IotWebConf to access protected members.
 
 private:
-  ConfigItem* _firstItem = NULL;
 };
 
 /**

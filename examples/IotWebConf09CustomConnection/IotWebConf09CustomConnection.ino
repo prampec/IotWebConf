@@ -122,7 +122,9 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 09 Custom Connection</title></head><body>Hello world!";
+  s += "<title>IotWebConf 09 Custom Connection</title></head><body><div>Status page of ";
+  s += iotWebConf.getThingName();
+  s += ".</div>";
   s += "<ul>";
   s += "<li>IP address: ";
   s += ipAddressValue;

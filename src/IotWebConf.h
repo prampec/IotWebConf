@@ -39,7 +39,7 @@ const char IOTWEBCONF_HTML_SCRIPT_INNER[] PROGMEM = "function c(l){document.getE
 const char IOTWEBCONF_HTML_HEAD_END[] PROGMEM     = "</head><body>";
 const char IOTWEBCONF_HTML_BODY_INNER[] PROGMEM   = "<div style='text-align:left;display:inline-block;min-width:260px;'>\n";
 const char IOTWEBCONF_HTML_FORM_START[] PROGMEM   = "<form action='' method='post'><input type='hidden' name='iotSave' value='true'>\n";
-const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "<button type='submit'>Apply</button></form>\n";
+const char IOTWEBCONF_HTML_FORM_END[] PROGMEM     = "<button type='submit' style='margin-top: 10px;'>Apply</button></form>\n";
 const char IOTWEBCONF_HTML_SAVED[] PROGMEM        = "<div>Configuration saved<br />Return to <a href='/'>home page</a>.</div>\n";
 const char IOTWEBCONF_HTML_END[] PROGMEM          = "</div></body></html>";
 const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>\n";

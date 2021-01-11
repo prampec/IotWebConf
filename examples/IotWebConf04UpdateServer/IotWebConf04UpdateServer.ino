@@ -106,7 +106,7 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 04 Update Server</title></head><body>Hello world!";
+  s += "<title>IotWebConf 04 Update Server</title></head><body>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
 

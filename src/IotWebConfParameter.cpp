@@ -88,15 +88,9 @@ void ParameterGroup::renderHtml(
 {
     if (this->label != NULL)
     {
-      String content = "<fieldset id='";
-      content += this->getId();
-      content += "'>";
-      if (this->label[0] != '\0')
-      {
-        content += "<legend>";
-        content += this->label;
-        content += "</legend>";
-      }
+      String content = getStartTemplate();
+      content.replace("{b}", this->label);
+      content.replace("{i}", this->getId());
       webRequestWrapper->sendContent(content);
     }
     ConfigItem* current = this->_firstItem;
@@ -110,7 +104,10 @@ void ParameterGroup::renderHtml(
     }
     if (this->label != NULL)
     {
-      webRequestWrapper->sendContent("</fieldset>");
+      String content = getEndTemplate();
+      content.replace("{b}", this->label);
+      content.replace("{i}", this->getId());
+      webRequestWrapper->sendContent(content);
     }
 }
 void ParameterGroup::update(WebRequestWrapper* webRequestWrapper)

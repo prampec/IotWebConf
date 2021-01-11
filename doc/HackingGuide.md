@@ -17,6 +17,7 @@ __Contents__:
   - [PlatformIO](#using-iotwebconf-with-platformio)
   - [Compile time configuration](#compile-time-configuration)
   - [Groups and Parameters](#groups-and-parameters)
+  - [Optional and chained groups](#optional-and-chained-groups)
   - [Using System parameter-group](#using-system-parameter-group)
   - [Accessing system properties](#accessing-system-properties)
   - [Use custom style](#use-custom-style)
@@ -57,6 +58,25 @@ Thus, you must use the ```-D``` compiler flag for the job.
 With version 3.0.0 IotWebConf introduces individual parameter classes for
 each type, and you can organize your parameters into groups.
 You can also free to add groups into groups to make a tree hierarchy. 
+
+## Optional and chained groups
+With ```OptionalParameterGroup```, the group you have defined will have
+a special appearance in the config portal, as the fieldset in which the
+group items are shown can be hidden (inactive) / shown (active).
+
+E.g you want to create a group with property items, that are not mandatory,
+so you can hide these options in the config portal by default, and
+only reveal the contents, when it is strictly requested.
+There is a specific example covering this very feature under
+```IotWebConf13OptionalGroup```.
+
+```ChainedParameterGroup```s can be linked. One after another. The
+property sets will reveal on after another, when user requests is. The
+difference between ```OptionalParameterGroup``` and ```ChainedParameterGroup```
+is that second group item in a chained list can only be added, when
+the first item is already visible.
+There is a specific example covering this very feature under
+```IotWebConf14GroupChain```.
 
 ## Using system parameter-group
 By default, you should add your own parameter group, that will appear as

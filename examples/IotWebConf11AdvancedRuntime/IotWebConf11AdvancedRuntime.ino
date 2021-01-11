@@ -93,7 +93,7 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 02 Status and Reset</title></head><body>Hello world!";
+  s += "<title>IotWebConf 02 Status and Reset</title></head><body>";
   s += "Go to <a href='config'>configure page</a> to change settings.";
   s += "</body></html>\n";
 
@@ -172,9 +172,10 @@ void processCommand()
       }
       else if (commandParameter[0] == '0')
       {
-        iotWebConf.setApTimeoutMs(IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS);
-        Serial.print(F(">> AP timeout was changed to default (ms):"));
-        Serial.println(IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_MS);
+        iotWebConf.setApTimeoutMs(
+          1000L * atol(IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS));
+        Serial.print(F(">> AP timeout was changed to default (secs):"));
+        Serial.println(IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS);
       }
       break;
     case 'n':
