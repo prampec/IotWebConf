@@ -53,7 +53,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 void handleRoot();
 // -- Callback methods.
 void configSaved();
-bool formValidator();
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -151,13 +151,13 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-bool formValidator()
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper)
 {
   Serial.println("Validating form.");
   bool valid = true;
 
 /*
-  int l = server.arg(stringParam.getId()).length();
+  int l = webRequestWrapper->arg(stringParam.getId()).length();
   if (l < 3)
   {
     stringParam.errorMessage = "Please provide at least 3 characters for this test!";

@@ -97,7 +97,7 @@ bool connectMqtt();
 // -- Callback methods.
 void wifiConnected();
 void configSaved();
-bool formValidator();
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -263,12 +263,12 @@ void configSaved()
   needReset = true;
 }
 
-bool formValidator()
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper)
 {
   Serial.println("Validating form.");
   bool valid = true;
 
-  int l = server.arg(mqttServerParam.getId()).length();
+  int l = webRequestWrapper->arg(mqttServerParam.getId()).length();
   if (l < 3)
   {
     mqttServerParam.errorMessage = "Please provide at least 3 characters!";

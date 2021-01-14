@@ -113,12 +113,12 @@ void IotWebConf::addParameterGroup(ParameterGroup* group)
   this->_customParameterGroups.addItem(group);
 }
 
-void IotWebConf::addHiddenParameter(Parameter* parameter)
+void IotWebConf::addHiddenParameter(ConfigItem* parameter)
 {
   this->_hiddenParameters.addItem(parameter);
 }
 
-void IotWebConf::addSystemParameter(Parameter* parameter)
+void IotWebConf::addSystemParameter(ConfigItem* parameter)
 {
   this->_systemParameters.addItem(parameter);
 }
@@ -256,7 +256,8 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setFormValidator(std::function<bool()> func)
+void IotWebConf::setFormValidator(
+  std::function<bool(WebRequestWrapper* webRequestWrapper)> func)
 {
   this->_formValidator = func;
 }
@@ -396,7 +397,7 @@ bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
   bool valid = true;
   if (this->_formValidator != NULL)
   {
-    valid = this->_formValidator();
+    valid = this->_formValidator(webRequestWrapper);
   }
 
   // -- Internal validation.
@@ -422,6 +423,11 @@ bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
     valid = false;
   }
 
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(F("Form validation result is: "));
+  Serial.println(valid ? "positive" : "negative");
+#endif
+
   return valid;
 }
 
@@ -433,7 +439,7 @@ void IotWebConf::handleNotFound(WebRequestWrapper* webRequestWrapper)
     return;
   }
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-  Serial.print("Requested a non-existing page '");
+  Serial.print(F("Requested a non-existing page '"));
   Serial.print(webRequestWrapper->uri());
   Serial.println("'");
 #endif

@@ -19,6 +19,7 @@ __Contents__:
   - [Groups and Parameters](#groups-and-parameters)
   - [Optional and chained groups](#optional-and-chained-groups)
   - [Using System parameter-group](#using-system-parameter-group)
+  - [Alternative WiFi connection](#alternative-wifi-connection)
   - [Accessing system properties](#accessing-system-properties)
   - [Use custom style](#use-custom-style)
   - [Create your property class](#create-your-property-class)
@@ -100,6 +101,21 @@ Example:
 
 There is another group "WiFi parameters" managed by IotWebConf, that
 can be retrieved by getWifiParameterGroup().
+
+## Alternative WiFi connection
+With v3.0.0 you can set up multiply WiFi connection by utilizing the
+MultiplyWifiAddition class can be found in IotWebConfMultiplyWifi.h .
+
+This class basically set up some handlers in iotWebConf to
+1. display optional WiFi settings in admin GUI,
+2. use these alternative settings in case previous WiFi connection
+attempts fails.
+
+The maximal number of connection settings are determined compile-time,
+as we want to avoid any dynamic memory allocations in Arduino.
+
+There is a complete example covering this topic, please visit example
+```IotWebConf15MultiplyWifi```!
 
 ## Accessing system properties
 IotWebConf comes with some parameters, that are required for the basic

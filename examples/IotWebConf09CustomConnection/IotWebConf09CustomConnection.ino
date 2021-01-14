@@ -55,7 +55,7 @@ bool connectAp(const char* apName, const char* password);
 void connectWifi(const char* ssid, const char* password);
 // -- Callback methods.
 void configSaved();
-bool formValidator();
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 
 DNSServer dnsServer;
 WebServer server(80);
@@ -140,22 +140,22 @@ void configSaved()
   Serial.println("Configuration was updated.");
 }
 
-bool formValidator()
+bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper)
 {
   Serial.println("Validating form.");
   bool valid = true;
 
-  if (!ipAddress.fromString(server.arg(ipAddressParam.getId())))
+  if (!ipAddress.fromString(webRequestWrapper->arg(ipAddressParam.getId())))
   {
     ipAddressParam.errorMessage = "Please provide a valid IP address!";
     valid = false;
   }
-  if (!netmask.fromString(server.arg(netmaskParam.getId())))
+  if (!netmask.fromString(webRequestWrapper->arg(netmaskParam.getId())))
   {
     netmaskParam.errorMessage = "Please provide a valid netmask!";
     valid = false;
   }
-  if (!gateway.fromString(server.arg(gatewayParam.getId())))
+  if (!gateway.fromString(webRequestWrapper->arg(gatewayParam.getId())))
   {
     gatewayParam.errorMessage = "Please provide a valid gateway address!";
     valid = false;

@@ -17,6 +17,7 @@ I would recommend comparing git changes in the examples.
   - [Hidden parameters](#hidden-parameters)
   - [UpdateServer changes](#updateserver-changes)
   - [configSave](#configsave)
+  - [formValidator](#formvalidator)
   
 ## Namespaces
 
@@ -207,7 +208,7 @@ to do the actual switching.
 A quite complicated code needs to introduced because of this, and you
 need to manually include UpdateServer to your code. See example:
  ```IotWebConf04UpdateServer``` for details!
- 
+
 ```
   iotWebConf.setupUpdateServer(
     [](const char* updatePath) { httpUpdater.setup(&server, updatePath); },
@@ -220,3 +221,7 @@ completely independent from the core codes.
 
 ## configSave
 Method configSave is renamed to saveConfig.
+
+## formValidator
+The formValidator() methods from now on will have a WebRequestWrapper*
+parameter.

@@ -109,3 +109,17 @@ isChecked KEYWORD2
 
 IotWebConfSelectParameter KEYWORD1
 SelectParameter KEYWORD1
+
+#IotWebConfOptionalGroup.h
+
+OptionalGroupHtmlFormatProvider KEYWORD1
+OptionalParameterGroup KEYWORD1
+ChainedParameterGroup KEYWORD1
+setNext KEYWORD2
+getNext KEYWORD2
+
+#IotWebConfOptionalGroup.h
+
+ChainedWifiParameterGroup KEYWORD1
+MultiplyWifiAddition KEYWORD1
+

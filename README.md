@@ -21,6 +21,8 @@ Also visit experimental [Discord server](https://discord.gg/GR3uQeD).
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
   - You can extend the configuration with your own property items, that are stored automatically,
+  - Option to configure multiply WiFi connections. (Try next when the
+   last used one is just not available.)
   - HTML customization,
   - Validation support for the configuration property items,
   - User code will be notified of status changes with callback methods,
@@ -89,7 +91,6 @@ details.
 
 ## TODO / Feature requests
   - We might want to add a "verify password" field.
-  - Option to configure multiply WiFi connections. Try next when the last used one is just not available.
   - Provide an option, where IotWebConf renders HTML-response,
 handles HTTP-request for a specific branch of groups.
   - Separate WiFi management from the code, so config portal can also
