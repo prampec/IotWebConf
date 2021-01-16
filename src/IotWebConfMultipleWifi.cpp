@@ -1,5 +1,5 @@
 /**
- * IotWebConfMultiplyWifi.cpp -- IotWebConf is an ESP8266/ESP32
+ * IotWebConfMultipleWifi.cpp -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
@@ -9,12 +9,12 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#include "IotWebConfMultiplyWifi.h"
+#include "IotWebConfMultipleWifi.h"
 
 namespace iotwebconf
 {
 
-MultiplyWifiAddition::MultiplyWifiAddition(
+MultipleWifiAddition::MultipleWifiAddition(
   IotWebConf* iotWebConf,
   ChainedWifiParameterGroup sets[],
   size_t setsSize)
@@ -31,7 +31,7 @@ MultiplyWifiAddition::MultiplyWifiAddition(
   }
 }
 
-void MultiplyWifiAddition::init()
+void MultipleWifiAddition::init()
 {
   // -- Add parameter groups.
   ChainedWifiParameterGroup* set = this->_firstSet;
@@ -84,7 +84,7 @@ void MultiplyWifiAddition::init()
     });
 };
 
-bool MultiplyWifiAddition::formValidator(
+bool MultipleWifiAddition::formValidator(
   WebRequestWrapper* webRequestWrapper)
 {
   ChainedWifiParameterGroup* set = this->_firstSet;

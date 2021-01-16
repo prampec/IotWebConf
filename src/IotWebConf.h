@@ -328,8 +328,8 @@ public:
    * Note, that in case once you have returned with NULL, you might also want to
    * resetWifiAuthInfo(), that sets the auth info used for the next time to the
    * one set up in the admin portal.
-   * Note, that this feature is provided because of the option of providing multiply
-   * WiFi settings utilized by the MultiplyWifiAddition class. (See IotWebConfMultiplyWifi.h)
+   * Note, that this feature is provided because of the option of providing multiple
+   * WiFi settings utilized by the MultipleWifiAddition class. (See IotWebConfMultipleWifi.h)
    */
   void setWifiConnectionFailedHandler( std::function<WifiAuthInfo*()> func )
   {

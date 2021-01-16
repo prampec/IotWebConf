@@ -103,8 +103,8 @@ There is another group "WiFi parameters" managed by IotWebConf, that
 can be retrieved by getWifiParameterGroup().
 
 ## Alternative WiFi connection
-With v3.0.0 you can set up multiply WiFi connection by utilizing the
-MultiplyWifiAddition class can be found in IotWebConfMultiplyWifi.h .
+With v3.0.0 you can set up multiple WiFi connection by utilizing the
+MultipleWifiAddition class can be found in IotWebConfMultipleWifi.h .
 
 This class basically set up some handlers in iotWebConf to
 1. display optional WiFi settings in admin GUI,
@@ -115,7 +115,7 @@ The maximal number of connection settings are determined compile-time,
 as we want to avoid any dynamic memory allocations in Arduino.
 
 There is a complete example covering this topic, please visit example
-```IotWebConf15MultiplyWifi```!
+```IotWebConf15MultipleWifi```!
 
 ## Accessing system properties
 IotWebConf comes with some parameters, that are required for the basic
@@ -171,7 +171,7 @@ will be called, when a connection to a WiFi network failed (most likely
 timed out). Now, when you return with a new valid connection-info from
 your callback, IotWebConf will not fall back to AP mode, but try the
 connection you have just provided. With this method you can theoretically
-set up multiply WiFi networks for IotWebConf to try connect to after
+set up multiple WiFi networks for IotWebConf to try connect to after
 one-by-one if the previous one fails. Some days IotWebConf might also
 provide this feature out of the box.
 

@@ -1,5 +1,5 @@
 /**
- * IotWebConf15MultiplyWifi.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf15MultipleWifi.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -10,15 +10,15 @@
  */
 
 /**
- * Example: Multiply WiFi
+ * Example: Multiple WiFi
  * Description:
  *   In this example we are setting up config portal, so that
  *   admins can provide more than one WiFi connection info.
  *   The idea is, that if one connection is not available, then
  *   the next one will be tried.
- *   The MultiplyWifiAddition registers all required component into
+ *   The MultipleWifiAddition registers all required component into
  *   IotWebConf. Note, that both formValidator and htmlFormatProvider
- *   of IotWebConf are set with calling MultiplyWifiAddition.init().
+ *   of IotWebConf are set with calling MultipleWifiAddition.init().
  *   Also note, that chainedWifiParameterGroups[] should be prefilled
  *   with ChainedWifiParameterGroup instances, as we would like to
  *   avoid dynamic memory allocations.
@@ -30,7 +30,7 @@
  */
 
 #include <IotWebConf.h>
-#include <IotWebConfMultiplyWifi.h>
+#include <IotWebConfMultipleWifi.h>
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
@@ -69,7 +69,7 @@ iotwebconf::ChainedWifiParameterGroup chainedWifiParameterGroups[] = {
   iotwebconf::ChainedWifiParameterGroup("wifi3")
 };
 
-iotwebconf::MultiplyWifiAddition multiplyWifiAddition(
+iotwebconf::MultipleWifiAddition multipleWifiAddition(
   &iotWebConf,
   chainedWifiParameterGroups,
   sizeof(chainedWifiParameterGroups)  / sizeof(chainedWifiParameterGroups[0]));
@@ -86,10 +86,10 @@ void setup()
   iotWebConf.setConfigPin(CONFIG_PIN);
 
   // -- Initializing the configuration.
-  multiplyWifiAddition.init();
-  // -- Note: multiplyWifiAddition.init() calls setFormValidator, that
+  multipleWifiAddition.init();
+  // -- Note: multipleWifiAddition.init() calls setFormValidator, that
   // overwrites existing formValidator setup. Thus setFormValidator
-  // should be called _after_ multiplyWifiAddition.init() .
+  // should be called _after_ multipleWifiAddition.init() .
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.setHtmlFormatProvider(&optionalGroupHtmlFormatProvider);
   iotWebConf.init();
@@ -156,9 +156,9 @@ void handleRoot()
 bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper)
 {
   Serial.println("Validating form.");
-  // -- Note: multiplyWifiAddition.formValidator() should be called, as
+  // -- Note: multipleWifiAddition.formValidator() should be called, as
   // we have override this setup.
-  bool valid = multiplyWifiAddition.formValidator(webRequestWrapper);
+  bool valid = multipleWifiAddition.formValidator(webRequestWrapper);
 
 /*
   int l = webRequestWrapper->arg(stringParam.getId()).length();

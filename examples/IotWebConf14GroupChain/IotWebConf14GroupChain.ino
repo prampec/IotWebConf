@@ -15,7 +15,7 @@
  *   In this example we are building up a list of groups. (Remember
  *   that a group is a set of property items, rendered fieldset
  *   in the config portal.) The idea here is that admins can add
- *   multiply sets, one after another.
+ *   multiple sets, one after another.
  *   For the group (where we collect a set of properties) we create
  *   a new class with name ActionGroup. We must create the maximal
  *   amount of ActionGroup instances should be needed. The group

@@ -21,7 +21,7 @@ Also visit experimental [Discord server](https://discord.gg/GR3uQeD).
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
   - You can extend the configuration with your own property items, that are stored automatically,
-  - Option to configure multiply WiFi connections. (Try next when the
+  - Option to configure multiple WiFi connections. (Try next when the
    last used one is just not available.)
   - HTML customization,
   - Validation support for the configuration property items,

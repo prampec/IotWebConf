@@ -1,5 +1,5 @@
 /**
- * IotWebConfMultiplyWifi.h -- IotWebConf is an ESP8266/ESP32
+ * IotWebConfMultipleWifi.h -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
@@ -9,8 +9,8 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
-#ifndef IotWebConfMultiplyWifi_h
-#define IotWebConfMultiplyWifi_h
+#ifndef IotWebConfMultipleWifi_h
+#define IotWebConfMultipleWifi_h
 
 #include "IotWebConfOptionalGroup.h"
 #include "IotWebConf.h" // for WebRequestWrapper
@@ -44,17 +44,17 @@ private:
   char _wifiPasswordParameterId[IOTWEBCONF_WORD_LEN];
 };
 
-class MultiplyWifiAddition
+class MultipleWifiAddition
 {
 public:
-  MultiplyWifiAddition(
+  MultipleWifiAddition(
     IotWebConf* iotWebConf,
     ChainedWifiParameterGroup sets[],
     size_t setsSize);
   /**
    * Note, that init() calls setFormValidator, that overwrites existing
    * formValidator setup. Thus your setFormValidator should be called
-   * _after_ multiplyWifiAddition.init() .
+   * _after_ multipleWifiAddition.init() .
    */
   virtual void init();
 

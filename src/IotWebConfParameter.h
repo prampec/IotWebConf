@@ -341,7 +341,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 /**
- * Options parameter is a structure, that handles multiply values when redering
+ * Options parameter is a structure, that handles multiple values when redering
  * the HTML representation.
  */
 class OptionsParameter : public TextParameter
