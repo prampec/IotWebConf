@@ -272,7 +272,7 @@ String TextParameter::renderHtml(
   pitem.replace("{t}", type);
   pitem.replace("{i}", current->getId());
   pitem.replace("{p}", current->placeholder == NULL ? "" : current->placeholder);
-  snprintf(parLength, 5, "%d", current->getLength());
+  snprintf(parLength, 5, "%d", current->getLength()-1);
   pitem.replace("{l}", parLength);
   if (hasValueFromPost)
   {
