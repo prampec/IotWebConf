@@ -210,12 +210,12 @@ class TextParameter : public Parameter
 {
 public:
   /**
-   * Create a parameter for the config portal.
+   * Create a text parameter for the config portal.
    *
    * @placeholder (optional) - Text appear in an empty input box.
    * @customHtml (optional) - The text of this parameter will be added into
    *   the HTML INPUT field.
-   * (see Parameter for more arguments)
+   * (See Parameter for arguments!)
    */
   TextParameter(
     const char* label, const char* id, char* valueBuffer, int length,
@@ -270,6 +270,11 @@ private:
 class PasswordParameter : public TextParameter
 {
 public:
+  /**
+   * Create a password parameter for the config portal.
+   *
+   * (See TextParameter for arguments!)
+   */
   PasswordParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL,
@@ -296,6 +301,11 @@ private:
 class NumberParameter : public TextParameter
 {
 public:
+  /**
+   * Create a numeric parameter for the config portal.
+   *
+   * (See TextParameter for arguments!)
+   */
   NumberParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* defaultValue = NULL,
@@ -321,6 +331,11 @@ private:
 class CheckboxParameter : public TextParameter
 {
 public:
+  /**
+   * Create a checkbox parameter for the config portal.
+   *
+   * (See TextParameter for arguments!)
+   */
   CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     bool defaultValue = false);
@@ -355,6 +370,7 @@ public:
    *   items.
    * @optionCount - Size of both 'optionValues' and 'optionNames' lists.
    * @nameLength - Size of any item in optionNames list.
+   * (See TextParameter for arguments!)
    */
   OptionsParameter(
     const char* label, const char* id, char* valueBuffer, int length,
@@ -375,10 +391,16 @@ private:
 
 /**
  * Select parameter is an option parameter, that rendered as HTML SELECT.
+ * Basically it is a dropdown combobox.
  */
 class SelectParameter : public OptionsParameter
 {
 public:
+  /**
+   * Create a select parameter for the config portal.
+   *
+   * (See OptionsParameter for arguments!)
+   */
   SelectParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t namesLenth,
