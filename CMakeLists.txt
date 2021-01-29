@@ -1,6 +1,9 @@
 set(COMPONENT_SRCS
         src/IotWebConf.cpp
-        src/IotWebConfCompatibility.cpp
+        src/IotWebConfMultipleWifi.cpp
+        src/IotWebConfOptionalGroup.cpp
+        src/IotWebConfParameter.cpp
+        src/IotWebConfESP32HTTPUpdateServer.cpp
         )
 
 set(COMPONENT_ADD_INCLUDEDIRS
@@ -9,7 +12,7 @@ set(COMPONENT_ADD_INCLUDEDIRS
 list(APPEND COMPONENT_REQUIRES "arduino")
 register_component()
 
-ADD_DEFINITIONS(-DESP32)
+#ADD_DEFINITIONS(-DESP32)
 
 list(APPEND DEFINITIONS "ESP32")
 
