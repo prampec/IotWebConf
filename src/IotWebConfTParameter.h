@@ -3,7 +3,8 @@
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf
  *
- * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2021 Balazs Kelemen <prampec+arduino@gmail.com>
+ *                    rovo89
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
@@ -28,14 +29,23 @@
 namespace iotwebconf
 {
 
+class ConfigItemBridge : public ConfigItem
+{
+protected:
+  ConfigItemBridge(const char* id) : ConfigItem(id) { }
+  virtual String toString();
+  virtual int getInputLength() { return 0; };
+  virtual const char* getLabel();
+};
+
 template <typename ValueType, typename _DefaultValueType = ValueType>
-class TParameter : public ConfigItem
+class TParameter : virtual public ConfigItemBridge
 {
 public:
   using DefaultValueType = _DefaultValueType;
 
   TParameter(const char* id, const char* label, DefaultValueType defaultValue) :
-    ConfigItem(id),
+    ConfigItemBridge(id),
     _label(label),
     _defaultValue(defaultValue)
   {
@@ -45,13 +55,121 @@ public:
   ValueType& operator*() { return this->_value; }
 
 protected:
-  const char* _label;
-  ValueType _value;
-  const DefaultValueType _defaultValue;
+//  void storeValue(std::function<void(SerializationData* serializationData)> doStore) override;
+//  void loadValue(std::function<void(SerializationData* serializationData)> doLoad) override;
+
+  int getStorageSize() override
+  {
+    return sizeof(ValueType);
+  }
+  virtual void update(WebRequestWrapper* webRequestWrapper) override
+  {
+      if (webRequestWrapper->hasArg(this->getId()))
+      {
+        String newValue = webRequestWrapper->arg(this->getId());
+        this->update(newValue);
+      }
+  }
+  void debugTo(Stream* out) override
+  {
+    out->print("'");
+    out->print(this->getId());
+    out->print("' with value: '");
+    out->print(this->toString());
+    out->println("'");
+  }
 
   virtual bool update(String newValue, bool validateOnly = false) = 0;
   bool validate(String newValue) { return update(newValue, true); }
-  virtual String toString() { return String(this->_value); }
+  virtual String toString() override { return String(this->_value); }
+  virtual const char* getLabel() override { return this->_label; }
+
+  const char* _label;
+  ValueType _value;
+  const DefaultValueType _defaultValue;
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+class InputParameter : virtual public ConfigItemBridge
+{
+public:
+  InputParameter(const char* id) : ConfigItemBridge::ConfigItemBridge(id) { }
+  virtual void renderHtml(
+    bool dataArrived, WebRequestWrapper* webRequestWrapper) override
+  {
+    String content = this->renderHtml(
+      dataArrived,
+      webRequestWrapper->hasArg(this->getId()),
+      webRequestWrapper->arg(this->getId()));
+    webRequestWrapper->sendContent(content);
+  }
+
+  /**
+   * This variable is meant to store a value that is displayed in an empty
+   *   (not filled) field.
+   */
+  const char* placeholder;
+
+  /**
+   * Usually this variable is used when rendering the form input field
+   *   so one can customize the rendered outcome of this particular item.
+   */
+  const char* customHtml;
+
+  const char* errorMessage;
+
+protected:
+  void clearErrorMessage() override
+  {
+    this->errorMessage = NULL;
+  }
+
+  virtual String renderHtml(
+    bool dataArrived, bool hasValueFromPost, String valueFromPost)
+  {
+    String pitem = String(this->getHtmlTemplate());
+
+    pitem.replace("{b}", this->getLabel());
+    pitem.replace("{t}", this->getInputType());
+    pitem.replace("{i}", this->getId());
+    pitem.replace(
+      "{p}", this->placeholder == NULL ? "" : this->placeholder);
+    int length = this->getInputLength();
+    if (length >= 0)
+    {
+      char parLength[5];
+      snprintf(parLength, 5, "%d", length);
+      pitem.replace("{l}", parLength);
+    }
+    if (hasValueFromPost)
+    {
+      // -- Value from previous submit
+      pitem.replace("{v}", valueFromPost);
+    }
+    else
+    {
+      // -- Value from config
+      pitem.replace("{v}", this->toString());
+    }
+    pitem.replace(
+        "{c}", this->customHtml == NULL ? "" : this->customHtml);
+    pitem.replace(
+        "{s}",
+        this->errorMessage == NULL ? "" : "de"); // Div style class.
+    pitem.replace(
+        "{e}",
+        this->errorMessage == NULL ? "" : this->errorMessage);
+
+    return pitem;
+  }
+
+  /**
+   * One can override this method in case a specific HTML template is required
+   * for a parameter.
+   */
+  virtual String getHtmlTemplate() { return FPSTR(IOTWEBCONF_HTML_FORM_PARAM); };
+  virtual const char* getInputType();
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -77,9 +195,17 @@ protected:
 template <size_t len>
 class CharArrayTParameter : public TParameter<char[len], const char*>
 {
+public:
 using TParameter<char[len], const char*>::TParameter;
+  CharArrayTParameter(const char* id, const char* label, const char* defaultValue) :
+    TParameter<char[len], const char*>::TParameter(id, label, defaultValue),
+    ConfigItemBridge::ConfigItemBridge(id) { };
 
 protected:
+  virtual void applyDefaultValue() override
+  {
+    strncpy(this->_value, this->_defaultValue, len);
+  }
   virtual bool update(String newValue, bool validateOnly) override
   {
     if (newValue.length() + 1 > len)
@@ -92,6 +218,23 @@ protected:
     }
     return true;
   }
+  void storeValue(std::function<void(
+    SerializationData* serializationData)> doStore) override
+  {
+    SerializationData serializationData;
+    serializationData.length = len;
+    serializationData.data = (byte*)this->_value;
+    doStore(&serializationData);
+  }
+  void loadValue(std::function<void(
+    SerializationData* serializationData)> doLoad) override
+  {
+    SerializationData serializationData;
+    serializationData.length = len;
+    serializationData.data = (byte*)this->_value;
+    doLoad(&serializationData);
+  }
+  virtual int getInputLength() override { return len; };
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -187,7 +330,7 @@ public:
   virtual ParamType build() const
   {
     return std::move(
-      ParamType(this->_label, this->_id, this->_defaultValue));
+      ParamType(this->_id, this->_label, this->_defaultValue));
   }
 
   Builder<ParamType>& label(const char* label)
@@ -232,6 +375,20 @@ protected:
   uintmax_t _max;
 };
 
+///////////////////////////////////////////////////////////////////////////
+
+template <size_t len>
+class TextTParameter : public CharArrayTParameter<len>, public InputParameter
+{
+public:
+using CharArrayTParameter<len>::CharArrayTParameter;
+  TextTParameter(const char* id, const char* label, const char* defaultValue) :
+    CharArrayTParameter<len>::CharArrayTParameter(id, label, defaultValue),
+    InputParameter::InputParameter(id), ConfigItemBridge(id) { }
+
+protected:
+  virtual const char* getInputType() override { return "text"; }
+};
 
 } // end namespace
 

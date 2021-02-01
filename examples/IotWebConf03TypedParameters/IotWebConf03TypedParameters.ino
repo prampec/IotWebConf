@@ -33,7 +33,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define NUMBER_LEN 32
 
 // -- Configuration specific key. The value should be modified if config structure was changed.
-#define CONFIG_VERSION "dem2"
+#define CONFIG_VERSION "dem3"
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
 //      password to buld an AP. (E.g. in case of lost password)
@@ -53,9 +53,14 @@ bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 DNSServer dnsServer;
 WebServer server(80);
 
-auto myInt = iotwebconf::Builder<iotwebconf::SignedIntTParameter<int16_t>>("id").label("label").defaultValue(42).build();
-auto myCharArray = iotwebconf::Builder<iotwebconf::CharArrayTParameter<STRING_LEN>>("id").label("label").defaultValue("the_default").build();
-
+//auto myInt = iotwebconf::Builder<iotwebconf::SignedIntTParameter<int16_t>>("id").label("label").defaultValue(42).build();
+/*
+auto myText =
+  iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("id")
+  .label("label").defaultValue("the_default").build();
+*/
+iotwebconf::TextTParameter<STRING_LEN> tp =
+  iotwebconf::TextTParameter<STRING_LEN>("myId", "My Label", "My default value");
 static char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
 static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
@@ -87,6 +92,7 @@ void setup()
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
 //  iotWebConf.addSystemParameter(&stringParam);
+iotWebConf.addSystemParameter(&tp);
 //  iotWebConf.addParameterGroup(&group1);
 //  iotWebConf.addParameterGroup(&group2);
   iotWebConf.setConfigSavedCallback(&configSaved);
