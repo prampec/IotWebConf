@@ -52,13 +52,13 @@ public:
   /**
    * Calculate the size of bytes should be stored in the EEPROM.
    */
-  virtual int getStorageSize();
+  virtual int getStorageSize() = 0;
 
   /**
    * On initial startup (when no data was saved), it may be required to apply a default value
    *   to the parameter.
    */
-  virtual void applyDefaultValue();
+  virtual void applyDefaultValue() = 0;
 
   /**
    * Save data.
@@ -66,7 +66,7 @@ public:
    *   The argument 'serializationData' of this referenced method should be pre-filled with
    *   the size and the serialized data before calling the method.
    */
-  virtual void storeValue(std::function<void(SerializationData* serializationData)> doStore);
+  virtual void storeValue(std::function<void(SerializationData* serializationData)> doStore) = 0;
 
   /**
    * Load data.
@@ -75,7 +75,7 @@ public:
    *   the size of the expected data, and the data buffer should be allocated with this size.
    *   The doLoad will fill the data from the EEPROM.
    */
-  virtual void loadValue(std::function<void(SerializationData* serializationData)> doLoad);
+  virtual void loadValue(std::function<void(SerializationData* serializationData)> doLoad) = 0;
 
   /**
    * This method will create the HTML form item for the config portal.
@@ -85,7 +85,7 @@ public:
    * @webRequestWrapper - The webRequestWrapper, that will send the rendered content to the client.
    *   The webRequestWrapper->sendContent() method should be used in the implementations.
    */
-  virtual void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper);
+  virtual void renderHtml(bool dataArrived, WebRequestWrapper* webRequestWrapper) = 0;
 
   /**
    * New value arrived from the form post. The value should be stored in the
@@ -95,19 +95,19 @@ public:
    *   The webRequestWrapper->hasArg() and webRequestWrapper->arg() methods should be used in the
    *   implementations.
    */
-  virtual void update(WebRequestWrapper* webRequestWrapper);
+  virtual void update(WebRequestWrapper* webRequestWrapper) = 0;
 
   /**
    * Before validating the form post, it is required to clear previos error messages.
    */
-  virtual void clearErrorMessage();
+  virtual void clearErrorMessage() = 0;
 
   /**
    * This method should display information to Serial containing the parameter
    *   ID and the current value of the parameter (if it is confidential).
    *   Will only be called if debug is enabled.
    */
-  virtual void debugTo(Stream* out);
+  virtual void debugTo(Stream* out) = 0;
 
 protected:
   ConfigItem(const char* id) { this->_id = id; };

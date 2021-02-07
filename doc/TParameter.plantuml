@@ -1,0 +1,68 @@
+"plantuml.exportOutDir": "docs/diagrams"
+@startuml
+scale 1
+abstract class ConfigItem {
+    +visble: bool
+    +getId(): const char*
+    +{abstract}getStorageSize(): int
+    +{abstract}applyDefaultValue(): void
+    +{abstract}storeValue(): void
+    +{abstract}loadValue(): void
+    +{abstract}renderHtml(): void
+    +{abstract}update(): void
+    +{abstract}clearErrorMessage(): void
+    +{abstract}debugTo(): void
+}
+
+abstract class ConfigItemBridge {
+    +getStorageSize(): int
+    +update(): void
+    +debugTo(): void
+    #{abstract}toString(): String
+    #{abstract}getInputLength(): string
+}
+
+abstract class TParameter<ValueType, (DefaultValueType)> {
+    value(): ValueType&
+    #toString(): String
+    #getInputLength(): string
+}
+
+class CharArrayTParameter<len>
+{
+    +applyDefaultValue() void
+    +update() bool
+    +getStorageSize() int
+    +storeValue() void
+    +loadValue() void
+    +getInputLength() int
+}
+
+class InputParameter
+{
+    +label: const char*
+    +placeholder: const char*
+    +customHtml: const char*
+    +errorMessage: const char*
+    #renderHtml(): void
+    #clearErrorMessage(): void
+    #getHtmlTemplate(): String
+    #{abstract}getInputType(): const char*
+}
+
+class TextTParameter<len>
+{
+    #getInputType(): const char*
+}
+
+ConfigItem <|-- ConfigItemBridge
+
+TParameter <|-- CharArrayTParameter
+
+ConfigItemBridge <|-- TParameter
+
+ConfigItemBridge <|-- InputParameter
+
+InputParameter <|-- TextTParameter
+CharArrayTParameter <|-- TextTParameter
+@enduml

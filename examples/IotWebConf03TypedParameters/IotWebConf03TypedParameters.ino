@@ -53,29 +53,42 @@ bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 DNSServer dnsServer;
 WebServer server(80);
 
-//auto myInt = iotwebconf::Builder<iotwebconf::SignedIntTParameter<int16_t>>("id").label("label").defaultValue(42).build();
+auto np = iotwebconf::Builder<iotwebconf::IntTParameter<int16_t>>("myId1").label("My Label1").defaultValue(42).build();
 /*
 auto myText =
   iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("id")
   .label("label").defaultValue("the_default").build();
 */
+/*
 iotwebconf::TextTParameter<STRING_LEN> tp =
   iotwebconf::TextTParameter<STRING_LEN>("myId", "My Label", "My default value");
+iotwebconf::PasswordTParameter<STRING_LEN> pp =
+  iotwebconf::PasswordTParameter<STRING_LEN>("myId2", "My Label2", "My default value");
+iotwebconf::IntTParameter<int16_t> np =
+  iotwebconf::IntTParameter<int16_t>("myId3", "My Label3", (int16_t)32);
+*/
 static char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
 static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-/*
-// -- You can also use namespace formats e.g.: iotwebconf::TextParameter
-IotWebConfTextParameter stringParam = IotWebConfTextParameter("String param", "stringParam", stringParamValue, STRING_LEN);
-IotWebConfParameterGroup group1 = IotWebConfParameterGroup("group1", "");
-IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "20", "1..100", "min='1' max='100' step='1'");
+iotwebconf::TextTParameter<STRING_LEN> stringParam =
+  iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("stringParam").
+  label("String param").build();
+iotwebconf::ParameterGroup group1 = iotwebconf::ParameterGroup("group1", "");
+iotwebconf::IntTParameter<int16_t> intParam =
+  iotwebconf::Builder<iotwebconf::IntTParameter<int16_t>>("intParam").
+  label("Int param").
+  defaultValue(30).
+  min(1).max(100).
+  step(1).placeholder("1..100").build();
 // -- We can add a legend to the separator
-IotWebConfParameterGroup group2 = IotWebConfParameterGroup("c_factor", "Calibration factor");
-IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  NULL, "e.g. 23.4", "step='0.1'");
-IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
-IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
-*/
+iotwebconf::ParameterGroup group2 = iotwebconf::ParameterGroup("c_factor", "Calibration factor");
+iotwebconf::FloatTParameter floatParam =
+  iotwebconf::FloatTParameter("floatParam", "Float param", 0.0);
+//IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  NULL, "e.g. 23.4", "step='0.1'");
+//IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
+//IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
+
 
 void setup() 
 {
@@ -83,17 +96,16 @@ void setup()
   Serial.println();
   Serial.println("Starting up...");
 
-/*
   group1.addItem(&intParam);
   group2.addItem(&floatParam);
+/*
   group2.addItem(&checkboxParam);
   group2.addItem(&chooserParam);
 */
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
 //  iotWebConf.addSystemParameter(&stringParam);
-iotWebConf.addSystemParameter(&tp);
-//  iotWebConf.addParameterGroup(&group1);
+  iotWebConf.addParameterGroup(&group1);
 //  iotWebConf.addParameterGroup(&group2);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
@@ -129,20 +141,18 @@ void handleRoot()
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
   s += "<title>IotWebConf 03 Custom Parameters</title></head><body>Hello world!";
-/*
   s += "<ul>";
   s += "<li>String param value: ";
-  s += stringParamValue;
+  s += stringParam.value();
   s += "<li>Int param value: ";
-  s += atoi(intParamValue);
+  s += intParam.value();
   s += "<li>Float param value: ";
-  s += atof(floatParamValue);
+  s += floatParam.value();
   s += "<li>CheckBox selected: ";
 //  s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
-  s += chooserParamValue;
+//  s += chooserParamValue;
   s += "</ul>";
-*/
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
 
