@@ -84,7 +84,10 @@ iotwebconf::IntTParameter<int16_t> intParam =
 // -- We can add a legend to the separator
 iotwebconf::ParameterGroup group2 = iotwebconf::ParameterGroup("c_factor", "Calibration factor");
 iotwebconf::FloatTParameter floatParam =
-  iotwebconf::FloatTParameter("floatParam", "Float param", 0.0);
+   iotwebconf::Builder<iotwebconf::FloatTParameter>("floatParam").
+   label("Float param").
+   defaultValue(0.0).
+   step(0.1).placeholder("e.g. 23.4").build();
 //IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  NULL, "e.g. 23.4", "step='0.1'");
 //IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
 //IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);

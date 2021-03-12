@@ -51,29 +51,27 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////
 
-template <typename ValueType, int base>
-class Builder<IntTParameter<ValueType, base>> :
-  public AbstractBuilder<IntTParameter<ValueType, base>>
+template <typename ValueType, typename ParamType>
+class PrimitiveBuilder :
+  public AbstractBuilder<ParamType>
 {
 public:
-  Builder<IntTParameter<ValueType, base>>(const char* id) :
-    AbstractBuilder<IntTParameter<ValueType, base>>(id) { };
-  virtual IntTParameter<ValueType, base> build() const override
+  PrimitiveBuilder<ValueType, ParamType>(const char* id) :
+    AbstractBuilder<ParamType>(id) { };
+  virtual  ParamType build() const override
   {
-    IntTParameter<ValueType, base> instance =
-      std::move(IntTParameter<ValueType, base>(
-        this->_label, this->_id, this->_defaultValue));
+    ParamType instance = AbstractBuilder<ParamType>::build();
     this->apply(&instance);
     return instance;
   }
-  Builder& min(ValueType min) { this->_minDefined = true; this->_min = min; return *this; }
-  Builder& max(ValueType max) { this->_maxDefined = true; this->_max = max; return *this; }
-  Builder& step(ValueType step) { this->_step = step; return *this; }
-  Builder& placeholder(const char* placeholder) { this->_placeholder = placeholder; return *this; }
+  Builder<ParamType>& min(ValueType min) { this->_minDefined = true; this->_min = min; return static_cast<Builder<ParamType>&>(*this); }
+  Builder<ParamType>& max(ValueType max) { this->_maxDefined = true; this->_max = max; return static_cast<Builder<ParamType>&>(*this); }
+  Builder<ParamType>& step(ValueType step) { this->_step = step; return static_cast<Builder<ParamType>&>(*this); }
+  Builder<ParamType>& placeholder(const char* placeholder) { this->_placeholder = placeholder; return static_cast<Builder<ParamType>&>(*this); }
 
 protected:
-  virtual IntTParameter<ValueType, base>* apply(
-    IntTParameter<ValueType, base>* instance) const
+  virtual  ParamType* apply(
+     ParamType* instance) const
   {
     if (this->_minDefined)
     {
@@ -94,6 +92,24 @@ protected:
   ValueType _max;
   ValueType _step = 0;
   const char* _placeholder = NULL;
+};
+
+template <typename ValueType, int base>
+class Builder<IntTParameter<ValueType, base>> :
+  public PrimitiveBuilder<ValueType, IntTParameter<ValueType, base>>
+{
+public:
+  Builder<IntTParameter<ValueType, base>>(const char* id) :
+    PrimitiveBuilder<ValueType, IntTParameter<ValueType, base>>(id) { };
+};
+
+template <>
+class Builder<FloatTParameter> :
+  public PrimitiveBuilder<float, FloatTParameter>
+{
+public:
+  Builder<FloatTParameter>(const char* id) :
+    PrimitiveBuilder<float, FloatTParameter>(id) { };
 };
 
 } // End namespace

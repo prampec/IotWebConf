@@ -324,8 +324,6 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////
-
 class InputParameter : virtual public ConfigItemBridge
 {
 public:
@@ -507,16 +505,13 @@ private:
   const char* _customHtmlPwd = "ondblclick=\"pw(this.id)\"";
 };
 
-// TODO: extract primitive type getters to an InputParameter extension.
-template <typename ValueType, int base = 10>
-class IntTParameter :
-  public SignedIntDataType<ValueType, base>,
+template <typename ValueType>
+class PrimitiveInputParameter :
   public InputParameter
 {
 public:
-  IntTParameter(const char* id, const char* label, ValueType defaultValue) :
-    ConfigItemBridge(id),
-    SignedIntDataType<ValueType, base>::SignedIntDataType(id, defaultValue),
+  PrimitiveInputParameter(const char* id, const char* label) :
+    ConfigItemBridge::ConfigItemBridge(id),
     InputParameter::InputParameter(id, label) { }
 
   virtual String getCustomHtml() override
@@ -547,6 +542,41 @@ public:
 
   ValueType step = 0;
   void setStep(ValueType step) { this->step = step; }
+  virtual ValueType getMin() = 0;
+  virtual ValueType getMax() = 0;
+  virtual bool isMinDefined() = 0;
+  virtual bool isMaxDefined() = 0;
+};
+
+template <typename ValueType, int base = 10>
+class IntTParameter :
+  public virtual SignedIntDataType<ValueType, base>,
+  public PrimitiveInputParameter<ValueType>
+{
+public:
+  IntTParameter(const char* id, const char* label, ValueType defaultValue) :
+    ConfigItemBridge(id),
+    SignedIntDataType<ValueType, base>::SignedIntDataType(id, defaultValue),
+    PrimitiveInputParameter<ValueType>::PrimitiveInputParameter(id, label) { }
+
+  // TODO: somehow organize these methods into common parent.
+  virtual ValueType getMin() override
+  {
+    return PrimitiveDataType<ValueType>::getMin();
+  }
+  virtual ValueType getMax() override
+  {
+    return PrimitiveDataType<ValueType>::getMax();
+  }
+
+  virtual bool isMinDefined() override
+  {
+    return PrimitiveDataType<ValueType>::isMinDefined();
+  }
+  virtual bool isMaxDefined() override
+  {
+    return PrimitiveDataType<ValueType>::isMaxDefined();
+  }
 
 protected:
   virtual const char* getInputType() override { return "number"; }
@@ -554,13 +584,31 @@ protected:
 
 class FloatTParameter :
   public FloatDataType,
-  public InputParameter
+  public PrimitiveInputParameter<float>
 {
 public:
   FloatTParameter(const char* id, const char* label, float defaultValue) :
     ConfigItemBridge(id),
     FloatDataType::FloatDataType(id, defaultValue),
-    InputParameter::InputParameter(id, label) { }
+    PrimitiveInputParameter<float>::PrimitiveInputParameter(id, label) { }
+
+  virtual float getMin() override
+  {
+    return PrimitiveDataType<float>::getMin();
+  }
+  virtual float getMax() override
+  {
+    return PrimitiveDataType<float>::getMax();
+  }
+
+  virtual bool isMinDefined() override
+  {
+    return PrimitiveDataType<float>::isMinDefined();
+  }
+  virtual bool isMaxDefined() override
+  {
+    return PrimitiveDataType<float>::isMaxDefined();
+  }
 
 protected:
   virtual const char* getInputType() override { return "number"; }
