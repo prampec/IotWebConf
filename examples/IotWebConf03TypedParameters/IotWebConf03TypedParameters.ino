@@ -88,8 +88,11 @@ iotwebconf::FloatTParameter floatParam =
    label("Float param").
    defaultValue(0.0).
    step(0.1).placeholder("e.g. 23.4").build();
-//IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  NULL, "e.g. 23.4", "step='0.1'");
-//IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
+iotwebconf::CheckboxTParameter checkboxParam =
+   iotwebconf::Builder<iotwebconf::CheckboxTParameter>("checkParam").
+   label("Check param").
+   defaultValue(true).
+   build();
 //IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
 
 
@@ -101,15 +104,13 @@ void setup()
 
   group1.addItem(&intParam);
   group2.addItem(&floatParam);
-/*
   group2.addItem(&checkboxParam);
-  group2.addItem(&chooserParam);
-*/
+//  group2.addItem(&chooserParam);
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
-//  iotWebConf.addSystemParameter(&stringParam);
+  iotWebConf.addSystemParameter(&stringParam);
   iotWebConf.addParameterGroup(&group1);
-//  iotWebConf.addParameterGroup(&group2);
+  iotWebConf.addParameterGroup(&group2);
   iotWebConf.setConfigSavedCallback(&configSaved);
   iotWebConf.setFormValidator(&formValidator);
   iotWebConf.getApTimeoutParameter()->visible = true;
@@ -152,7 +153,7 @@ void handleRoot()
   s += "<li>Float param value: ";
   s += floatParam.value();
   s += "<li>CheckBox selected: ";
-//  s += checkboxParam.isChecked();
+  s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
 //  s += chooserParamValue;
   s += "</ul>";

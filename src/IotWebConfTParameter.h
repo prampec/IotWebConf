@@ -269,6 +269,21 @@ protected:
   }
 };
 
+class BoolDataType : public PrimitiveDataType<bool>
+{
+public:
+using DataType<bool>::DataType;
+  BoolDataType(const char* id, bool defaultValue) :
+    ConfigItemBridge::ConfigItemBridge(id),
+    PrimitiveDataType<bool>::PrimitiveDataType(id, defaultValue) { };
+
+protected:
+  virtual bool getValue(String stringValue)
+  {
+    return stringValue.c_str()[0] == 1;
+  }
+};
+
 class FloatDataType : public PrimitiveDataType<float>
 {
 public:
@@ -429,6 +444,51 @@ using CharArrayDataType<len>::CharArrayDataType;
 
 protected:
   virtual const char* getInputType() override { return "text"; }
+};
+
+class CheckboxTParameter : public BoolDataType, public InputParameter
+{
+public:
+  CheckboxTParameter(const char* id, const char* label, const bool defaultValue) :
+    ConfigItemBridge(id),
+    BoolDataType::BoolDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+  bool isChecked() { return this->value(); }
+
+protected:
+  virtual const char* getInputType() override { return "checkbox"; }
+  virtual String renderHtml(
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override
+  {
+    bool checkSelected = false;
+    if (dataArrived)
+    {
+      if (hasValueFromPost && valueFromPost.equals("selected"))
+      {
+        checkSelected = true;
+      }
+    }
+    else
+    {
+      if (this->isChecked())
+      {
+        checkSelected = true;
+      }
+    }
+
+    if (checkSelected)
+    {
+      this->customHtml = CheckboxTParameter::_checkedStr;
+    }
+    else
+    {
+      this->customHtml = NULL;
+    }
+    
+    return InputParameter::renderHtml(dataArrived, true, String("selected"));
+  }
+private:
+  const char* _checkedStr = "checked='checked'";
 };
 
 template <size_t len>
