@@ -67,8 +67,8 @@ iotwebconf::PasswordTParameter<STRING_LEN> pp =
 iotwebconf::IntTParameter<int16_t> np =
   iotwebconf::IntTParameter<int16_t>("myId3", "My Label3", (int16_t)32);
 */
-static char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
-static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
+static const char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
+static const char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 iotwebconf::TextTParameter<STRING_LEN> stringParam =
@@ -93,7 +93,14 @@ iotwebconf::CheckboxTParameter checkboxParam =
    label("Check param").
    defaultValue(true).
    build();
-//IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
+iotwebconf::SelectTParameter<STRING_LEN> chooserParam =
+   iotwebconf::Builder<iotwebconf::SelectTParameter<STRING_LEN>>("chooseParam").
+   label("Choose param").
+   optionValues((const char*)chooserValues).
+   optionNames((const char*)chooserNames).
+   optionCount(sizeof(chooserValues) / STRING_LEN).
+   nameLength(STRING_LEN).
+   build();
 
 
 void setup() 
@@ -105,7 +112,7 @@ void setup()
   group1.addItem(&intParam);
   group2.addItem(&floatParam);
   group2.addItem(&checkboxParam);
-//  group2.addItem(&chooserParam);
+  group2.addItem(&chooserParam);
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
   iotWebConf.addSystemParameter(&stringParam);
@@ -155,7 +162,7 @@ void handleRoot()
   s += "<li>CheckBox selected: ";
   s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
-//  s += chooserParamValue;
+  s += chooserParam.value();
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";

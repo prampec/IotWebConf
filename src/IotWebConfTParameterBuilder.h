@@ -27,8 +27,10 @@ public:
   AbstractBuilder(const char* id) : _id(id) { };
   virtual ParamType build() const
   {
-    return std::move(
+    ParamType instance = std::move(
       ParamType(this->_id, this->_label, this->_defaultValue));
+    this->apply(&instance);
+    return instance;
   }
 
   Builder<ParamType>& label(const char* label)
@@ -37,6 +39,10 @@ public:
     { this->_defaultValue = defaultValue; return static_cast<Builder<ParamType>&>(*this); }
 
 protected:
+  virtual ParamType* apply(ParamType* instance) const
+  {
+    return instance;
+  }
   const char* _label;
   const char* _id;
   typename ParamType::DefaultValueType _defaultValue;
@@ -58,20 +64,14 @@ class PrimitiveBuilder :
 public:
   PrimitiveBuilder<ValueType, ParamType>(const char* id) :
     AbstractBuilder<ParamType>(id) { };
-  virtual  ParamType build() const override
-  {
-    ParamType instance = AbstractBuilder<ParamType>::build();
-    this->apply(&instance);
-    return instance;
-  }
   Builder<ParamType>& min(ValueType min) { this->_minDefined = true; this->_min = min; return static_cast<Builder<ParamType>&>(*this); }
   Builder<ParamType>& max(ValueType max) { this->_maxDefined = true; this->_max = max; return static_cast<Builder<ParamType>&>(*this); }
   Builder<ParamType>& step(ValueType step) { this->_step = step; return static_cast<Builder<ParamType>&>(*this); }
   Builder<ParamType>& placeholder(const char* placeholder) { this->_placeholder = placeholder; return static_cast<Builder<ParamType>&>(*this); }
 
 protected:
-  virtual  ParamType* apply(
-     ParamType* instance) const
+  virtual ParamType* apply(
+     ParamType* instance) const override
   {
     if (this->_minDefined)
     {
@@ -110,6 +110,50 @@ class Builder<FloatTParameter> :
 public:
   Builder<FloatTParameter>(const char* id) :
     PrimitiveBuilder<float, FloatTParameter>(id) { };
+};
+
+
+template <size_t len>
+class Builder<SelectTParameter<len>> :
+  public AbstractBuilder<SelectTParameter<len>>
+{
+public:
+  Builder<SelectTParameter<len>>(const char* id) :
+    AbstractBuilder<SelectTParameter<len>>(id) { };
+
+  virtual SelectTParameter<len> build() const override
+  {
+    return SelectTParameter<len>(
+      this->_id, this->_label, this->_defaultValue,
+      this->_optionValues, this->_optionNames,
+      this->_optionCount, this->_nameLength);
+  }
+
+  Builder<SelectTParameter<len>>& optionValues(const char* optionValues)
+    { this->_optionValues = optionValues; return *this; }
+  Builder<SelectTParameter<len>>& optionNames(const char* optionNames)
+    { this->_optionNames = optionNames; return *this; }
+  Builder<SelectTParameter<len>>& optionCount(size_t optionCount)
+    { this->_optionCount = optionCount; return *this; }
+  Builder<SelectTParameter<len>>& nameLength(size_t nameLength)
+    { this->_nameLength = nameLength; return *this; }
+
+protected:
+  virtual SelectTParameter<len>* apply(
+     SelectTParameter<len>* instance) const override
+  {
+    instance->setOptionValues(this->_optionValues);
+    instance->setOptionNames(this->_optionNames);
+    instance->setOptionCount(this->_optionCount);
+    instance->setNameLength(this->_nameLength);
+    return instance;
+  }
+
+private:
+  const char* _optionValues;
+  const char* _optionNames;
+  size_t _optionCount;
+  size_t _nameLength;
 };
 
 } // End namespace

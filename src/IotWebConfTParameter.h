@@ -674,6 +674,142 @@ protected:
   virtual const char* getInputType() override { return "number"; }
 };
 
+/**
+ * Options parameter is a structure, that handles multiple values when redering
+ * the HTML representation.
+ */
+template <size_t len>
+class OptionsTParameter : public TextTParameter<len>
+{
+public:
+  /**
+   * @optionValues - List of values to choose from with, where each value
+   *   can have a maximal size of 'length'. Contains 'optionCount' items.
+   * @optionNames - List of names to render for the values, where each
+   *   name can have a maximal size of 'nameLength'. Contains 'optionCount'
+   *   items.
+   * @optionCount - Size of both 'optionValues' and 'optionNames' lists.
+   * @nameLength - Size of any item in optionNames list.
+   * (See TextParameter for arguments!)
+   */
+  OptionsTParameter(
+    const char* id, const char* label, const char* defaultValue,
+    const char* optionValues, const char* optionNames,
+    size_t optionCount, size_t nameLength) :
+    ConfigItemBridge(id),
+    TextTParameter<len>(id, label, defaultValue)
+  {
+    this->_optionValues = optionValues;
+    this->_optionNames = optionNames;
+    this->_optionCount = optionCount;
+    this->_nameLength = nameLength;
+  }
+
+  // TODO: make these protected
+  void setOptionValues(const char* optionValues) { this->_optionValues = optionValues; }
+  void setOptionNames(const char* optionNames) { this->_optionNames = optionNames; }
+  void setOptionCount(size_t optionCount) { this->_optionCount = optionCount; }
+  void setNameLength(size_t nameLength) { this->_nameLength = nameLength; }
+protected:
+  OptionsTParameter(
+    const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    TextTParameter<len>(id, label, defaultValue)
+  {
+  }
+
+  const char* _optionValues;
+  const char* _optionNames;
+  size_t _optionCount;
+  size_t _nameLength;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Select parameter is an option parameter, that rendered as HTML SELECT.
+ * Basically it is a dropdown combobox.
+ */
+template <size_t len>
+class SelectTParameter : public OptionsTParameter<len>
+{
+public:
+  /**
+   * Create a select parameter for the config portal.
+   *
+   * (See OptionsParameter for arguments!)
+   */
+  SelectTParameter(
+    const char* id, const char* label, const char* defaultValue,
+    const char* optionValues, const char* optionNames,
+    size_t optionCount, size_t nameLength) :
+    ConfigItemBridge(id),
+    OptionsTParameter<len>(
+      id, label, defaultValue, optionValues, optionNames, optionCount, nameLength)
+    { }
+  // TODO: make this protected
+  SelectTParameter(
+    const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    OptionsTParameter<len>(id, label, defaultValue) { }
+
+protected:
+  // Overrides
+  virtual String renderHtml(
+    bool dataArrived, bool hasValueFromPost, String valueFromPost) override
+  {
+    String options = "";
+
+    for (size_t i=0; i<this->_optionCount; i++)
+    {
+      const char *optionValue = (this->_optionValues + (i*len) );
+      const char *optionName = (this->_optionNames + (i*this->_nameLength) );
+      String oitem = FPSTR(IOTWEBCONF_HTML_FORM_OPTION);
+      oitem.replace("{v}", optionValue);
+//    if (sizeof(this->_optionNames) > i)
+      {
+        oitem.replace("{n}", optionName);
+      }
+//    else
+//    {
+//      oitem.replace("{n}", "?");
+//    }
+      if ((hasValueFromPost && (valueFromPost == optionValue)) ||
+        (strncmp(this->value(), optionValue, len) == 0))
+      {
+        // -- Value from previous submit
+        oitem.replace("{s}", " selected");
+      }
+      else
+      {
+        // -- Value from config
+        oitem.replace("{s}", "");
+      }
+
+      options += oitem;
+    }
+
+    String pitem = FPSTR(IOTWEBCONF_HTML_FORM_SELECT_PARAM);
+
+    pitem.replace("{b}", this->label);
+    pitem.replace("{i}", this->getId());
+    pitem.replace(
+        "{c}", this->customHtml == NULL ? "" : this->customHtml);
+    pitem.replace(
+        "{s}",
+        this->errorMessage == NULL ? "" : "de"); // Div style class.
+    pitem.replace(
+        "{e}",
+        this->errorMessage == NULL ? "" : this->errorMessage);
+    pitem.replace("{o}", options);
+
+    return pitem;
+  }
+
+private:
+};
+
+
 } // end namespace
 
 #include <IotWebConfTParameterBuilder.h>
