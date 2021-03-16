@@ -1,5 +1,5 @@
 /**
- * IotWebConf03CustomParameters.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf03TypedParameters.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
@@ -12,7 +12,12 @@
 /**
  * Example: Custom parameters
  * Description:
- *   TODO!!!
+ *   Typed Parameters are a new approach to store/handle parameter data.
+ *   This part of the software is very experimental, and certainly
+ *   not recommended for beginners.
+ *   The goal of this particular example is to compare the original
+ *   approach of IotWebConf03CustomParameters to this new typed
+ *   parameters, as both examples should work the same.
  *
  * Hardware setup for this example:
  *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
@@ -53,20 +58,6 @@ bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 DNSServer dnsServer;
 WebServer server(80);
 
-auto np = iotwebconf::Builder<iotwebconf::IntTParameter<int16_t>>("myId1").label("My Label1").defaultValue(42).build();
-/*
-auto myText =
-  iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("id")
-  .label("label").defaultValue("the_default").build();
-*/
-/*
-iotwebconf::TextTParameter<STRING_LEN> tp =
-  iotwebconf::TextTParameter<STRING_LEN>("myId", "My Label", "My default value");
-iotwebconf::PasswordTParameter<STRING_LEN> pp =
-  iotwebconf::PasswordTParameter<STRING_LEN>("myId2", "My Label2", "My default value");
-iotwebconf::IntTParameter<int16_t> np =
-  iotwebconf::IntTParameter<int16_t>("myId3", "My Label3", (int16_t)32);
-*/
 static const char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
 static const char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
@@ -113,6 +104,7 @@ void setup()
   group2.addItem(&floatParam);
   group2.addItem(&checkboxParam);
   group2.addItem(&chooserParam);
+
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
   iotWebConf.addSystemParameter(&stringParam);

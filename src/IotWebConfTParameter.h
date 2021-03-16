@@ -29,6 +29,10 @@
 namespace iotwebconf
 {
 
+/**
+ * This class is to hide web related properties from the
+ *  data manipulation.
+ */
 class ConfigItemBridge : public ConfigItem
 {
 public:
@@ -58,6 +62,11 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
+/**
+ * DataType is the data related part of the parameter.
+ * It does not care about web and visualization, but takes care of the
+ *  data validation and storing.
+ */
 template <typename ValueType, typename _DefaultValueType = ValueType>
 class DataType : virtual public ConfigItemBridge
 {
@@ -159,6 +168,9 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
+/**
+ * All non-complex types should be inherited from this base class.
+ */
 template <typename ValueType>
 class PrimitiveDataType : public DataType<ValueType>
 {
@@ -341,6 +353,10 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////
 
+/**
+ * Input parameter is the part of the parameter that is responsible
+ * for the appearance of the parameter in HTML.
+ */
 class InputParameter : virtual public ConfigItemBridge
 {
 public:
@@ -592,6 +608,10 @@ private:
   const char* _customHtmlPwd = "ondblclick=\"pw(this.id)\"";
 };
 
+/**
+ * All non-complex type input parameters should be inherited from this
+ *  base class.
+ */
 template <typename ValueType>
 class PrimitiveInputParameter :
   public InputParameter
