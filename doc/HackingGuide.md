@@ -179,7 +179,7 @@ difference in the usage of the two different approach.
 **Please note, that Typed Parameters are very experimental, and the
 interface might be a subject of change in the future.**
 
-![UML diagram of the Typed Parameters approach.](TParameter.png | width = 400)
+![UML diagram of the Typed Parameters approach.](TParameter.png)
 
 ## Control on WiFi connection status change
 IotWebConf provides a feature to control WiFi connection events by defining
