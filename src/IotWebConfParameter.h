@@ -24,7 +24,7 @@ const char IOTWEBCONF_HTML_FORM_GROUP_END[] PROGMEM =
 
 const char IOTWEBCONF_HTML_FORM_PARAM[] PROGMEM =
   "<div class='{s}'><label for='{i}'>{b}</label><input type='{t}' id='{i}' "
-  "name='{i}' maxlength={l} placeholder='{p}' value='{v}' {c}/>"
+  "name='{i}' {l} placeholder='{p}' value='{v}' {c}/>"
   "<div class='em'>{e}</div></div>\n";
 
 const char IOTWEBCONF_HTML_FORM_SELECT_PARAM[] PROGMEM =

@@ -13,6 +13,8 @@
 #ifndef IotWebConfTParameter_h
 #define IotWebConfTParameter_h
 
+// TODO: This file is a mess. Help wanted to organize thing!
+
 #include <IotWebConfParameter.h>
 #include <Arduino.h>
 #include <IPAddress.h>
@@ -68,7 +70,7 @@ public:
   {
   }
 
-  ValueType& value() { return this->_value; }
+  ValueType& getValue() { return this->_value; }
   ValueType& operator*() { return this->_value; }
 
 protected:
@@ -178,7 +180,7 @@ protected:
   virtual bool update(String newValue, bool validateOnly) override
   {
     errno = 0;
-    ValueType val = getValue(newValue);
+    ValueType val = fromString(newValue);
     if ((errno == ERANGE)
       || (this->_minDefined && (val < this->_min))
       || (this->_maxDefined && (val > this->_max)))
@@ -221,7 +223,7 @@ protected:
     ValueType* valuePointer = reinterpret_cast<ValueType*>(buf);
     this->_value = *valuePointer;
   }
-  virtual ValueType getValue(String stringValue) = 0;
+  virtual ValueType fromString(String stringValue) = 0;
 
   ValueType getMax() { return this->_max; }
   ValueType getMin() { return this->_min; }
@@ -247,7 +249,7 @@ using DataType<ValueType>::DataType;
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
 
 protected:
-  virtual ValueType getValue(String stringValue)
+  virtual ValueType fromString(String stringValue)
   {
     return (ValueType)strtoimax(stringValue.c_str(), NULL, base);
   }
@@ -263,7 +265,7 @@ using DataType<ValueType>::DataType;
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
 
 protected:
-  virtual ValueType getValue(String stringValue)
+  virtual ValueType fromString(String stringValue)
   {
     return (ValueType)strtoumax(stringValue.c_str(), NULL, base);
   }
@@ -278,7 +280,7 @@ using DataType<bool>::DataType;
     PrimitiveDataType<bool>::PrimitiveDataType(id, defaultValue) { };
 
 protected:
-  virtual bool getValue(String stringValue)
+  virtual bool fromString(String stringValue)
   {
     return stringValue.c_str()[0] == 1;
   }
@@ -293,7 +295,7 @@ using DataType<float>::DataType;
     PrimitiveDataType<float>::PrimitiveDataType(id, defaultValue) { };
 
 protected:
-  virtual float getValue(String stringValue)
+  virtual float fromString(String stringValue)
   {
     return atof(stringValue.c_str());
   }
@@ -308,7 +310,7 @@ using DataType<double>::DataType;
     PrimitiveDataType<double>::PrimitiveDataType(id, defaultValue) { };
 
 protected:
-  virtual double getValue(String stringValue)
+  virtual double fromString(String stringValue)
   {
     return strtod(stringValue.c_str(), NULL);
   }
@@ -375,7 +377,10 @@ public:
    * Used when rendering the input field. Is is overriden by different
    *   implementations.
    */
-  virtual String getCustomHtml() { return String(customHtml); }
+  virtual String getCustomHtml()
+  {
+    return String(customHtml == NULL ? "" : customHtml);
+  }
 
   const char* errorMessage = NULL;
 
@@ -400,7 +405,12 @@ protected:
     {
       char parLength[5];
       snprintf(parLength, 5, "%d", length);
-      pitem.replace("{l}", parLength);
+      String maxLength = String("maxlength=") + parLength;
+      pitem.replace("{l}", maxLength);
+    }
+    else
+    {
+      pitem.replace("{l}", "");
     }
     if (hasValueFromPost)
     {
@@ -412,8 +422,7 @@ protected:
       // -- Value from config
       pitem.replace("{v}", this->toString());
     }
-    pitem.replace(
-        "{c}", this->customHtml == NULL ? "" : this->customHtml);
+    pitem.replace("{c}", this->getCustomHtml());
     pitem.replace(
         "{s}",
         this->errorMessage == NULL ? "" : "de"); // Div style class.
@@ -453,10 +462,28 @@ public:
     ConfigItemBridge(id),
     BoolDataType::BoolDataType(id, defaultValue),
     InputParameter::InputParameter(id, label) { }
-  bool isChecked() { return this->value(); }
+  bool isChecked() { return this->getValue(); }
 
 protected:
   virtual const char* getInputType() override { return "checkbox"; }
+
+  virtual void update(WebRequestWrapper* webRequestWrapper) override
+  {
+      bool selected = false;
+      if (webRequestWrapper->hasArg(this->getId()))
+      {
+        String valueFromPost = webRequestWrapper->arg(this->getId());
+        selected = valueFromPost.equals("selected");
+      }
+//      this->update(String(selected ? "1" : "0"));
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+      Serial.print(this->getId());
+      Serial.print(": ");
+      Serial.println(selected ? "selected" : "not selected");
+#endif
+      this->_value = selected;
+  }
+
   virtual String renderHtml(
     bool dataArrived, bool hasValueFromPost, String valueFromPost) override
   {
@@ -775,7 +802,7 @@ protected:
 //      oitem.replace("{n}", "?");
 //    }
       if ((hasValueFromPost && (valueFromPost == optionValue)) ||
-        (strncmp(this->value(), optionValue, len) == 0))
+        (strncmp(this->getValue(), optionValue, len) == 0))
       {
         // -- Value from previous submit
         oitem.replace("{s}", " selected");
