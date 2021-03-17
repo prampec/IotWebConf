@@ -161,7 +161,6 @@ public:
 class IotWebConf
 {
 public:
-  IotWebConf() { };
   /**
    * Create a new configuration handler.
    *   @thingName - Initial value for the thing name. Used in many places like AP name, can be changed by the user.
