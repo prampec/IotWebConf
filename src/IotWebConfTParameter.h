@@ -79,7 +79,11 @@ public:
   {
   }
 
-  ValueType& getValue() { return this->_value; }
+  /**
+   * value() can be used to get the value, but it can also
+   * be used set it like this: p.value() = newValue
+   */
+  ValueType& value() { return this->_value; }
   ValueType& operator*() { return this->_value; }
 
 protected:
@@ -478,7 +482,7 @@ public:
     ConfigItemBridge(id),
     BoolDataType::BoolDataType(id, defaultValue),
     InputParameter::InputParameter(id, label) { }
-  bool isChecked() { return this->getValue(); }
+  bool isChecked() { return this->value(); }
 
 protected:
   virtual const char* getInputType() override { return "checkbox"; }
@@ -689,6 +693,40 @@ protected:
   virtual const char* getInputType() override { return "number"; }
 };
 
+template <typename ValueType, int base = 10>
+class UIntTParameter :
+  public virtual UnsignedIntDataType<ValueType, base>,
+  public PrimitiveInputParameter<ValueType>
+{
+public:
+  UIntTParameter(const char* id, const char* label, ValueType defaultValue) :
+    ConfigItemBridge(id),
+    SignedIntDataType<ValueType, base>::SignedIntDataType(id, defaultValue),
+    PrimitiveInputParameter<ValueType>::PrimitiveInputParameter(id, label) { }
+
+  // TODO: somehow organize these methods into common parent.
+  virtual ValueType getMin() override
+  {
+    return PrimitiveDataType<ValueType>::getMin();
+  }
+  virtual ValueType getMax() override
+  {
+    return PrimitiveDataType<ValueType>::getMax();
+  }
+
+  virtual bool isMinDefined() override
+  {
+    return PrimitiveDataType<ValueType>::isMinDefined();
+  }
+  virtual bool isMaxDefined() override
+  {
+    return PrimitiveDataType<ValueType>::isMaxDefined();
+  }
+
+protected:
+  virtual const char* getInputType() override { return "number"; }
+};
+
 class FloatTParameter :
   public FloatDataType,
   public PrimitiveInputParameter<float>
@@ -822,7 +860,7 @@ protected:
 //      oitem.replace("{n}", "?");
 //    }
       if ((hasValueFromPost && (valueFromPost == optionValue)) ||
-        (strncmp(this->getValue(), optionValue, len) == 0))
+        (strncmp(this->value(), optionValue, len) == 0))
       {
         // -- Value from previous submit
         oitem.replace("{s}", " selected");
