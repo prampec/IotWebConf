@@ -1,7 +1,7 @@
 # IotWebConf [![Build Status](https://travis-ci.org/prampec/IotWebConf.svg?branch=master)](https://travis-ci.org/prampec/IotWebConf)
 
 ## Upgrading to v3.0.0
-Lately version 3.0.0 is released. This release in backward compatible with
+Lately version 3.0.0 is released. This release is not backward compatible with
 older versions, and some modification have to be done on existing codes.
 **Please visit [Migration Guide](doc/MigrationGuide-v3.0.0.md) for
  details!**
@@ -20,7 +20,7 @@ Also visit experimental [Discord server](https://discord.gg/GR3uQeD).
 
   - Manages WiFi connection settings,
   - Provides a config portal user interface,
-  - You can extend the configuration with your own property items, that are stored automatically,
+  - You can extend the configuration with your own sophisticated propery structure, that is stored automatically,
   - Option to configure multiple WiFi connections. (Try next when the
    last used one is just not available.)
   - HTML customization,
