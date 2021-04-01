@@ -63,9 +63,10 @@ have configured for "AP password". The user name is "admin".
 
 ## IotWebConf vs. WiFiManager
 tzapu's WiFiManager is a great library. The features of IotWebConf may appear very similar to WiFiManager. However, IotWebConf tries to be different.
-  - WiFiManager does not manage your custom properties. IotWebConf stores your configuration in "EEPROM".
-  - WiFiManager does not do validation. IotWebConf allow you to validate your property changes made in the config portal.
-  - With WiFiManager you cannot use both startup and on-demand configuration. With IotWebConf the config portal remains available via the connected local WiFi.
+  - WiFiManager does not allow you to configure **mutiple WiFi** connections. In IotWebConf there is a way to define more connections: if one is not available, the next is tried automatically.
+  - WiFiManager does not manage your **custom properties**. IotWebConf stores your configuration in "EEPROM".
+  - WiFiManager does not do **validation**. IotWebConf allow you to validate your property changes made in the config portal.
+  - With WiFiManager you cannot use both startup and **on-demand configuration**. With IotWebConf the config portal remains available via the connected local WiFi.
   - WiFiManager provides list of available networks, and an information page, while these features are cool, IotWebConf tries to keep the code simple. So these features are not (yet) provided by IotWebConf.
   - IotWebConf is fitted for more advanced users. You can keep control of the web server setup, configuration item input field behavior, and validation.
 
