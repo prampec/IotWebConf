@@ -136,6 +136,16 @@ example ```IotWebConf11AdvancedRuntime```!
     iotWebConf.saveConfig();
 ```
 
+Here is list of some of the system parameter-acccessors, please consult
+IotWebConf.h for further details.
+- getSystemParameterGroup()
+- getThingNameParameter()
+- getApPasswordParameter()
+- getWifiParameterGroup()
+- getWifiSsidParameter()
+- getWifiPasswordParameter()
+- getApTimeoutParameter()
+
 ## Use custom style
 You can provide your own custom HTML template by updating default
 HTML format provider. For this you should utilize the
