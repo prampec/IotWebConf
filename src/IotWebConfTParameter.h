@@ -128,12 +128,12 @@ using DataType<char[len], const char*>::DataType;
   CharArrayDataType(const char* id, const char* defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     DataType<char[len], const char*>::DataType(id, defaultValue) { };
-
-protected:
   virtual void applyDefaultValue() override
   {
     strncpy(this->_value, this->_defaultValue, len);
   }
+
+protected:
   virtual bool update(String newValue, bool validateOnly) override
   {
     if (newValue.length() + 1 > len)
@@ -187,12 +187,12 @@ using DataType<ValueType>::DataType;
   void setMax(ValueType val) { this->_max = val; this->_maxDefined = true; }
   void setMin(ValueType val) { this->_min = val; this->_minDefined = true; }
 
-protected:
   virtual void applyDefaultValue() override
   {
     this->_value = this->_defaultValue;
   }
 
+protected:
   virtual bool update(String newValue, bool validateOnly) override
   {
     errno = 0;

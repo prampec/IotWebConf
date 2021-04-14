@@ -125,10 +125,10 @@ public:
   ParameterGroup(const char* id, const char* label = NULL);
   void addItem(ConfigItem* configItem);
   const char *label;
+  void applyDefaultValue() override;
 
 protected:
   int getStorageSize() override;
-  void applyDefaultValue() override;
   void storeValue(std::function<void(
     SerializationData* serializationData)> doStore) override;
   void loadValue(std::function<void(
@@ -186,11 +186,11 @@ public:
   const char* errorMessage;
 
   int getLength() { return this->_length; }
+  void applyDefaultValue() override;
 
 protected:
   // Overrides
   int getStorageSize() override;
-  void applyDefaultValue() override;
   void storeValue(std::function<void(SerializationData* serializationData)> doStore) override;
   void loadValue(std::function<void(SerializationData* serializationData)> doLoad) override;
   virtual void update(WebRequestWrapper* webRequestWrapper) override;
