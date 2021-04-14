@@ -463,8 +463,8 @@ public:
    * By default IotWebConf will continue startup in WiFi mode, when no configuration request arrived
    * in AP mode. With this method holding the AP mode can be forced.
    * Further more, instant AP mode can forced even when we are currently in WiFi mode.
-   *   @value - When parameter is TRUE AP mode is forced/entered.
-   *     When value is FALSE normal operation will continue.
+   *   @value - When TRUE, AP mode is forced/entered.
+   *     When FALSE, AP mode is released, normal operation will continue.
    */
   void forceApMode(bool value);
 

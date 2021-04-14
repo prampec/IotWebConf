@@ -647,6 +647,11 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         this->blinkInternal(300, 50);
       }
+      if ((oldState == IOTWEBCONF_STATE_CONNECTING) ||
+        (oldState == IOTWEBCONF_STATE_ONLINE))
+      {
+        WiFi.disconnect(true);
+      }
       setupAp();
       if (this->_updateServerSetupFunction != NULL)
       {
@@ -923,7 +928,6 @@ void IotWebConf::forceApMode(bool doForce)
     if (this->_state != IOTWEBCONF_STATE_AP_MODE)
     {
       IOTWEBCONF_DEBUG_LINE(F("Start forcing AP mode"));
-      WiFi.disconnect(true);
       this->changeState(IOTWEBCONF_STATE_AP_MODE);
     }
   }
@@ -940,7 +944,6 @@ void IotWebConf::forceApMode(bool doForce)
         IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
         this->changeState(IOTWEBCONF_STATE_CONNECTING);
       }
-
     }
   }
 }
