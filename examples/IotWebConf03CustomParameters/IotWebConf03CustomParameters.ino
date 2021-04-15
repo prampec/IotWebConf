@@ -70,7 +70,7 @@ static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 // -- You can also use namespace formats e.g.: iotwebconf::TextParameter
 IotWebConfTextParameter stringParam = IotWebConfTextParameter("String param", "stringParam", stringParamValue, STRING_LEN);
-IotWebConfParameterGroup group1 = IotWebConfParameterGroup("group1", "");
+IotWebConfParameterGroup group1 = IotWebConfParameterGroup("group1", "Custom Group 1");
 IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "20", "1..100", "min='1' max='100' step='1'");
 // -- We can add a legend to the separator
 IotWebConfParameterGroup group2 = IotWebConfParameterGroup("c_factor", "Calibration factor");
