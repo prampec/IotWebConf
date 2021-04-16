@@ -194,7 +194,7 @@ protected:
   void storeValue(std::function<void(SerializationData* serializationData)> doStore) override;
   void loadValue(std::function<void(SerializationData* serializationData)> doLoad) override;
   virtual void update(WebRequestWrapper* webRequestWrapper) override;
-  virtual void update(String newValue);
+  virtual void update(String newValue) = 0;
   void clearErrorMessage() override;
 
 private:
