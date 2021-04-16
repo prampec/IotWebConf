@@ -100,7 +100,7 @@ bool IotWebConf::init()
 #endif
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
   MDNS.begin(this->_thingName);
-  MDNS.addService("http", "tcp", 80);
+  MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
 #endif
 
   return validConfig;
@@ -472,10 +472,12 @@ bool IotWebConf::handleCaptivePortal(WebRequestWrapper* webRequestWrapper)
     Serial.print("Request for ");
     Serial.print(host);
     Serial.print(" redirected to ");
-    Serial.println(webRequestWrapper->localIP());
+    Serial.print(webRequestWrapper->localIP());
+    Serial.print(":");
+    Serial.println(webRequestWrapper->localPort());
 #endif
     webRequestWrapper->sendHeader(
-      "Location", String("http://") + toStringIp(webRequestWrapper->localIP()), true);
+      "Location", String("http://") + toStringIp(webRequestWrapper->localIP()) + ":" + webRequestWrapper->localPort(), true);
     webRequestWrapper->send(302, "text/plain", ""); // Empty content inhibits Content-length header so we have to close the socket ourselves.
     webRequestWrapper->stop(); // Stop is needed because we sent no content length
     return true;
@@ -489,7 +491,7 @@ bool IotWebConf::isIp(String str)
   for (size_t i = 0; i < str.length(); i++)
   {
     int c = str.charAt(i);
-    if (c != '.' && (c < '0' || c > '9'))
+    if (c != '.' && c != ':' && (c < '0' || c > '9'))
     {
       return false;
     }

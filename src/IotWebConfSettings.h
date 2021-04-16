@@ -41,8 +41,9 @@
 
 // -- mDNS should allow you to connect to this device with a hostname provided
 // by the device. E.g. mything.local
+// (This is not very likely to work, and MDNS is not very well documented.)
 #ifndef IOTWEBCONF_CONFIG_DONT_USE_MDNS
-# define IOTWEBCONF_CONFIG_USE_MDNS
+# define IOTWEBCONF_CONFIG_USE_MDNS 80
 #endif
 
 // -- Logs progress information to Serial if enabled.

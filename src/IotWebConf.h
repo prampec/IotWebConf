@@ -104,6 +104,7 @@ public:
 
   const String hostHeader() const override { return this->_server->hostHeader(); };
   IPAddress localIP() override { return this->_server->client().localIP(); };
+  uint16_t localPort() override { return this->_server->client().localPort(); };
   const String uri() const { return this->_server->uri(); };
   bool authenticate(const char * username, const char * password) override
     { return this->_server->authenticate(username, password); };
