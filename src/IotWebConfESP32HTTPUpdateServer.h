@@ -37,7 +37,7 @@ class HTTPUpdateServer
     HTTPUpdateServer(bool serial_debug=false)
     {
         _serial_output = serial_debug;
-        _server = NULL;
+        _server = nullptr;
         _username = emptyString;
         _password = emptyString;
         _authenticated = false;

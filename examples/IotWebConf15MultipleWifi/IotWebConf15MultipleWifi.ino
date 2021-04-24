@@ -126,7 +126,7 @@ void handleRoot()
 
 /*
   ActionGroup* group = &actionGroup1;
-  while(group != NULL)
+  while(group != nullptr)
   {
     if (group->isActive())
     {

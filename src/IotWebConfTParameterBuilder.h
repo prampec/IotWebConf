@@ -91,7 +91,7 @@ protected:
   ValueType _min;
   ValueType _max;
   ValueType _step = 0;
-  const char* _placeholder = NULL;
+  const char* _placeholder = nullptr;
 };
 
 template <typename ValueType, int base>

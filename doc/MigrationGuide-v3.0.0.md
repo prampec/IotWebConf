@@ -142,7 +142,7 @@ IotWebConfSeparator separator1 =
   IotWebConfSeparator();
 IotWebConfParameter intParam =
   IotWebConfParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "number",
-    "1..100", NULL, "min='1' max='100' step='1'");
+    "1..100", nullptr, "min='1' max='100' step='1'");
 
 ...
 

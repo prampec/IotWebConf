@@ -176,7 +176,7 @@ bool IotWebConf::loadConfig()
 void IotWebConf::saveConfig()
 {
   int size = this->initConfig();
-  if (this->_configSavingCallback != NULL)
+  if (this->_configSavingCallback != nullptr)
   {
     this->_configSavingCallback(size);
   }
@@ -200,7 +200,7 @@ void IotWebConf::saveConfig()
 
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
-  if (this->_configSavedCallback != NULL)
+  if (this->_configSavedCallback != nullptr)
   {
     this->_configSavedCallback();
   }
@@ -320,7 +320,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 
     content = htmlFormatProvider->getFormEnd();
 
-    if (this->_updatePath != NULL)
+    if (this->_updatePath != nullptr)
     {
       String pitem = htmlFormatProvider->getUpdate();
       pitem.replace("{u}", this->_updatePath);
@@ -395,7 +395,7 @@ bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
 
   // -- Call external validator.
   bool valid = true;
-  if (this->_formValidator != NULL)
+  if (this->_formValidator != nullptr)
   {
     valid = this->_formValidator(webRequestWrapper);
   }
@@ -655,7 +655,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
         WiFi.disconnect(true);
       }
       setupAp();
-      if (this->_updateServerSetupFunction != NULL)
+      if (this->_updateServerSetupFunction != nullptr)
       {
         this->_updateServerSetupFunction(this->_updatePath);
       }
@@ -696,7 +696,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         stopAp();
       }
-      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServerSetupFunction != NULL))
+      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServerSetupFunction != nullptr))
       {
         // We've skipped AP mode, so update server needs to be set up now.
         this->_updateServerSetupFunction(this->_updatePath);
@@ -721,14 +721,14 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       break;
     case IOTWEBCONF_STATE_ONLINE:
       this->blinkInternal(8000, 2);
-      if (this->_updateServerUpdateCredentialsFunction != NULL)
+      if (this->_updateServerUpdateCredentialsFunction != nullptr)
       {
         this->_updateServerUpdateCredentialsFunction(
             IOTWEBCONF_ADMIN_USER_NAME, this->_apPassword);
       }
       this->_webServerWrapper->begin();
       IOTWEBCONF_DEBUG_LINE(F("Accepting connection"));
-      if (this->_wifiConnectionCallback != NULL)
+      if (this->_wifiConnectionCallback != nullptr)
       {
         this->_wifiConnectionCallback();
       }
@@ -789,7 +789,7 @@ bool IotWebConf::checkWifiConnection()
       IOTWEBCONF_DEBUG_LINE(F("Giving up."));
       WiFi.disconnect(true);
       WifiAuthInfo* newWifiAuthInfo = _wifiConnectionFailureHandler();
-      if (newWifiAuthInfo != NULL)
+      if (newWifiAuthInfo != nullptr)
       {
         // -- Try connecting with another connection info.
         this->_wifiAuthInfo.ssid = newWifiAuthInfo->ssid;
@@ -960,7 +960,7 @@ void IotWebConf::connectWifi(const char* ssid, const char* password)
 }
 WifiAuthInfo* IotWebConf::handleConnectWifiFailure()
 {
-  return NULL;
+  return nullptr;
 }
 
 } // end namespace

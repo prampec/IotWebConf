@@ -23,17 +23,17 @@ ParameterGroup::ParameterGroup(
 
 void ParameterGroup::addItem(ConfigItem* configItem)
 {
-  if (configItem->_parentItem != NULL)
+  if (configItem->_parentItem != nullptr)
   {
     return; // Item must not be added two times.
   }
-  if (this->_firstItem == NULL)
+  if (this->_firstItem == nullptr)
   {
     this->_firstItem = configItem;
     return;
   }
   ConfigItem* current = this->_firstItem;
-  while (current->_nextItem != NULL)
+  while (current->_nextItem != nullptr)
   {
     current = current->_nextItem;
   }
@@ -45,7 +45,7 @@ int ParameterGroup::getStorageSize()
 {
   int size = 0;
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     size += current->getStorageSize();
     current = current->_nextItem;
@@ -55,7 +55,7 @@ int ParameterGroup::getStorageSize()
 void ParameterGroup::applyDefaultValue()
 {
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     current->applyDefaultValue();
     current = current->_nextItem;
@@ -66,7 +66,7 @@ void ParameterGroup::storeValue(
   std::function<void(SerializationData* serializationData)> doStore)
 {
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     current->storeValue(doStore);
     current = current->_nextItem;
@@ -76,7 +76,7 @@ void ParameterGroup::loadValue(
   std::function<void(SerializationData* serializationData)> doLoad)
 {
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     current->loadValue(doLoad);
     current = current->_nextItem;
@@ -86,7 +86,7 @@ void ParameterGroup::loadValue(
 void ParameterGroup::renderHtml(
   bool dataArrived, WebRequestWrapper* webRequestWrapper)
 {
-    if (this->label != NULL)
+    if (this->label != nullptr)
     {
       String content = getStartTemplate();
       content.replace("{b}", this->label);
@@ -94,7 +94,7 @@ void ParameterGroup::renderHtml(
       webRequestWrapper->sendContent(content);
     }
     ConfigItem* current = this->_firstItem;
-    while (current != NULL)
+    while (current != nullptr)
     {
       if (current->visible)
       {
@@ -102,7 +102,7 @@ void ParameterGroup::renderHtml(
       }
       current = current->_nextItem;
     }
-    if (this->label != NULL)
+    if (this->label != nullptr)
     {
       String content = getEndTemplate();
       content.replace("{b}", this->label);
@@ -113,7 +113,7 @@ void ParameterGroup::renderHtml(
 void ParameterGroup::update(WebRequestWrapper* webRequestWrapper)
 {
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     current->update(webRequestWrapper);
     current = current->_nextItem;
@@ -122,7 +122,7 @@ void ParameterGroup::update(WebRequestWrapper* webRequestWrapper)
 void ParameterGroup::clearErrorMessage()
 {
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
     current->clearErrorMessage();
     current = current->_nextItem;
@@ -158,9 +158,9 @@ void ParameterGroup::debugTo(Stream* out)
     });
 
   ConfigItem* current = this->_firstItem;
-  while (current != NULL)
+  while (current != nullptr)
   {
-    if (current->_nextItem == NULL)
+    if (current->_nextItem == nullptr)
     {
       out->print("\\-- ");
     }
@@ -169,7 +169,7 @@ void ParameterGroup::debugTo(Stream* out)
       out->print("|-- ");
     }
     ownItem = true;
-    lastItem = (current->_nextItem == NULL);
+    lastItem = (current->_nextItem == nullptr);
     current->debugTo(&stream);
     current = current->_nextItem;
   }
@@ -187,7 +187,7 @@ Parameter::Parameter(
   this->_length = length;
   this->defaultValue = defaultValue;
 
-  this->errorMessage = NULL;
+  this->errorMessage = nullptr;
 }
 int Parameter::getStorageSize()
 {
@@ -195,7 +195,7 @@ int Parameter::getStorageSize()
 }
 void Parameter::applyDefaultValue()
 {
-  if (defaultValue != NULL)
+  if (defaultValue != nullptr)
   {
     strncpy(this->valueBuffer, this->defaultValue, this->getLength());
   }
@@ -230,7 +230,7 @@ void Parameter::update(WebRequestWrapper* webRequestWrapper)
 }
 void Parameter::clearErrorMessage()
 {
-    this->errorMessage = NULL;
+    this->errorMessage = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -271,7 +271,7 @@ String TextParameter::renderHtml(
   pitem.replace("{b}", current->label);
   pitem.replace("{t}", type);
   pitem.replace("{i}", current->getId());
-  pitem.replace("{p}", current->placeholder == NULL ? "" : current->placeholder);
+  pitem.replace("{p}", current->placeholder == nullptr ? "" : current->placeholder);
   snprintf(parLength, 5, "%d", current->getLength()-1);
   pitem.replace("{l}", parLength);
   if (hasValueFromPost)
@@ -285,13 +285,13 @@ String TextParameter::renderHtml(
     pitem.replace("{v}", current->valueBuffer);
   }
   pitem.replace(
-      "{c}", current->customHtml == NULL ? "" : current->customHtml);
+      "{c}", current->customHtml == nullptr ? "" : current->customHtml);
   pitem.replace(
       "{s}",
-      current->errorMessage == NULL ? "" : "de"); // Div style class.
+      current->errorMessage == nullptr ? "" : "de"); // Div style class.
   pitem.replace(
       "{e}",
-      current->errorMessage == NULL ? "" : current->errorMessage);
+      current->errorMessage == nullptr ? "" : current->errorMessage);
 
   return pitem;
 }
@@ -401,8 +401,8 @@ void PasswordParameter::update(String newValue)
 CheckboxParameter::CheckboxParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     bool defaultValue)
-  : TextParameter(label, id, valueBuffer, length, defaultValue ? "selected" : NULL,
-  NULL, NULL)
+  : TextParameter(label, id, valueBuffer, length, defaultValue ? "selected" : nullptr,
+  nullptr, nullptr)
 {
 }
 
@@ -432,7 +432,7 @@ String CheckboxParameter::renderHtml(
   }
   else
   {
-    this->customHtml = NULL;
+    this->customHtml = nullptr;
   }
   
   
@@ -460,7 +460,7 @@ OptionsParameter::OptionsParameter(
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
     const char* defaultValue)
   : TextParameter(label, id, valueBuffer, length, defaultValue,
-  NULL, NULL)
+  nullptr, nullptr)
 {
   this->_optionValues = optionValues;
   this->_optionNames = optionNames;
@@ -521,13 +521,13 @@ String SelectParameter::renderHtml(
   pitem.replace("{b}", current->label);
   pitem.replace("{i}", current->getId());
   pitem.replace(
-      "{c}", current->customHtml == NULL ? "" : current->customHtml);
+      "{c}", current->customHtml == nullptr ? "" : current->customHtml);
   pitem.replace(
       "{s}",
-      current->errorMessage == NULL ? "" : "de"); // Div style class.
+      current->errorMessage == nullptr ? "" : "de"); // Div style class.
   pitem.replace(
       "{e}",
-      current->errorMessage == NULL ? "" : current->errorMessage);
+      current->errorMessage == nullptr ? "" : current->errorMessage);
   pitem.replace("{o}", options);
 
   return pitem;
