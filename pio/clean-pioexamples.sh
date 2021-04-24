@@ -2,8 +2,8 @@
 #
 # This script will remove created PlatformIO compatible folder structure.
 # Files are mostly references to original files, and the original files
-#   will not be deleted. So generaly said it safe to run this script.
-#   platformio.ini files will be removed alog with any additonal added
+#   will not be deleted. So generally said it safe to run this script.
+#   platformio.ini files will be removed alog with any additional added
 #   files.
 #
 cd ../examples-pio || exit 1

@@ -18,7 +18,7 @@
  *   Further more we set up a push button. If push button is detected
  *   to be pressed at boot time, the thing will use the initial
  *   password for accepting connections in Access Point mode. This
- *   is usefull e.g. when custom password was lost.
+ *   is useful e.g. when custom password was lost.
  *   (See previous examples for more details!)
  * 
  * Hardware setup for this example:

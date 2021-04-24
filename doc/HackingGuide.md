@@ -52,7 +52,7 @@ build_flags =
 ```
 
 **Note:** You must not use ```#define IOTWEBCONF_CONFIG_START 20```, or
-simmilar defines in your .ino file (e.g. before the includes). It will eventually
+similar defines in your .ino file (e.g. before the includes). It will eventually
 just not work, as all .cpp files are compiled separately for each other.
 Thus, you must use the ```-D``` compiler flag for the job.
 
@@ -164,7 +164,7 @@ some special HTML form item. But eventually you can change the whole
 behaviour of your parameter handling. E.g. by overriding ```storeValue()```
 and ```loadValue()``` you can basically convert your internal data format
 to whatever you like. The [Typed parameters](#typed-parameters-experimental)
-approach is just an excelent example for this option.
+approach is just an excellent example for this option.
 
 You can also override ParameterGroup class in case you need some special
 group appearance.

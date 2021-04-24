@@ -81,7 +81,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
-// -- Connected ouput pin. See "Note on relay pin"!
+// -- Connected output pin. See "Note on relay pin"!
 #define RELAY_PIN D5
 
 #define MQTT_TOPIC_PREFIX "/devices/"
