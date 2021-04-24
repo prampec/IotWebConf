@@ -1,0 +1,55 @@
+name: PlatformIO CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        example: [
+            IotWebConf01Minimal,
+            IotWebConf02StatusAndReset,
+            IotWebConf03CustomParameters,
+            IotWebConf03TypedParameters,
+            IotWebConf04UpdateServer,
+            IotWebConf05Callbacks,
+            IotWebConf06MqttApp,
+            IotWebConf07MqttRelay,
+            IotWebConf08WebRelay,
+            IotWebConf09CustomConnection,
+            IotWebConf10CustomHtml,
+            IotWebConf11AdvancedRuntime,
+            IotWebConf12CustomParameterType,
+            IotWebConf13OptionalGroup,
+            IotWebConf14GroupChain,
+            IotWebConf15MultipleWifi,
+          ]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
+    - name: Cache PlatformIO
+      uses: actions/cache@v2
+      with:
+        path: ~/.platformio
+        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+    - name: Set up Python
+      uses: actions/setup-python@v2
+    - name: Install PlatformIO
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade platformio
+    - name: Run PlatformIO all Boards
+      run: platformio ci --lib=. --board=d1_mini --board=widora-air
+      env:
+        PLATFORMIO_CI_SRC: examples/${{ matrix.example }}/${{ matrix.example }}.ino
+
