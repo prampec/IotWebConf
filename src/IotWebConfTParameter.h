@@ -267,7 +267,7 @@ using DataType<ValueType>::DataType;
 protected:
   virtual ValueType fromString(String stringValue)
   {
-    return (ValueType)strtoimax(stringValue.c_str(), NULL, base);
+    return (ValueType)strtoimax(stringValue.c_str(), nullptr, base);
   }
 };
 
@@ -283,7 +283,7 @@ using DataType<ValueType>::DataType;
 protected:
   virtual ValueType fromString(String stringValue)
   {
-    return (ValueType)strtoumax(stringValue.c_str(), NULL, base);
+    return (ValueType)strtoumax(stringValue.c_str(), nullptr, base);
   }
 };
 
@@ -328,7 +328,7 @@ using DataType<double>::DataType;
 protected:
   virtual double fromString(String stringValue)
   {
-    return strtod(stringValue.c_str(), NULL);
+    return strtod(stringValue.c_str(), nullptr);
   }
 };
 
@@ -384,14 +384,14 @@ public:
    * This variable is meant to store a value that is displayed in an empty
    *   (not filled) field.
    */
-  const char* placeholder = NULL;
+  const char* placeholder = nullptr;
   virtual void setPlaceholder(const char* placeholder) { this->placeholder = placeholder; }
 
   /**
    * Usually this variable is used when rendering the form input field
    *   so one can customize the rendered outcome of this particular item.
    */
-  const char* customHtml = NULL;
+  const char* customHtml = nullptr;
 
   /**
    * Used when rendering the input field. Is is overridden by different
@@ -399,15 +399,15 @@ public:
    */
   virtual String getCustomHtml()
   {
-    return String(customHtml == NULL ? "" : customHtml);
+    return String(customHtml == nullptr ? "" : customHtml);
   }
 
-  const char* errorMessage = NULL;
+  const char* errorMessage = nullptr;
 
 protected:
   void clearErrorMessage() override
   {
-    this->errorMessage = NULL;
+    this->errorMessage = nullptr;
   }
 
   virtual String renderHtml(
@@ -419,7 +419,7 @@ protected:
     pitem.replace("{t}", this->getInputType());
     pitem.replace("{i}", this->getId());
     pitem.replace(
-      "{p}", this->placeholder == NULL ? "" : this->placeholder);
+      "{p}", this->placeholder == nullptr ? "" : this->placeholder);
     int length = this->getInputLength();
     if (length > 0)
     {
@@ -445,10 +445,10 @@ protected:
     pitem.replace("{c}", this->getCustomHtml());
     pitem.replace(
         "{s}",
-        this->errorMessage == NULL ? "" : "de"); // Div style class.
+        this->errorMessage == nullptr ? "" : "de"); // Div style class.
     pitem.replace(
         "{e}",
-        this->errorMessage == NULL ? "" : this->errorMessage);
+        this->errorMessage == nullptr ? "" : this->errorMessage);
 
     return pitem;
   }
@@ -529,7 +529,7 @@ protected:
     }
     else
     {
-      this->customHtml = NULL;
+      this->customHtml = nullptr;
     }
     
     return InputParameter::renderHtml(dataArrived, true, String("selected"));
@@ -879,13 +879,13 @@ protected:
     pitem.replace("{b}", this->label);
     pitem.replace("{i}", this->getId());
     pitem.replace(
-        "{c}", this->customHtml == NULL ? "" : this->customHtml);
+        "{c}", this->customHtml == nullptr ? "" : this->customHtml);
     pitem.replace(
         "{s}",
-        this->errorMessage == NULL ? "" : "de"); // Div style class.
+        this->errorMessage == nullptr ? "" : "de"); // Div style class.
     pitem.replace(
         "{e}",
-        this->errorMessage == NULL ? "" : this->errorMessage);
+        this->errorMessage == nullptr ? "" : this->errorMessage);
     pitem.replace("{o}", options);
 
     return pitem;

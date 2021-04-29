@@ -31,7 +31,7 @@ public:
   virtual String arg(const String name);
   virtual void sendHeader(const String& name, const String& value, bool first = false);
   virtual void setContentLength(const size_t contentLength);
-  virtual void send(int code, const char* content_type = NULL, const String& content = String(""));
+  virtual void send(int code, const char* content_type = nullptr, const String& content = String(""));
   virtual void sendContent(const String& content);
   virtual void stop();
 };

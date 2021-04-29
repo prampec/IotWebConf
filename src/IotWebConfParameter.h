@@ -114,15 +114,15 @@ protected:
 
 private:
   const char* _id = 0;
-  ConfigItem* _parentItem = NULL;
-  ConfigItem* _nextItem = NULL;
+  ConfigItem* _parentItem = nullptr;
+  ConfigItem* _nextItem = nullptr;
   friend class ParameterGroup; // Allow ParameterGroup to access _nextItem.
 };
 
 class ParameterGroup : public ConfigItem
 {
 public:
-  ParameterGroup(const char* id, const char* label = NULL);
+  ParameterGroup(const char* id, const char* label = nullptr);
   void addItem(ConfigItem* configItem);
   const char *label;
   void applyDefaultValue() override;
@@ -148,7 +148,7 @@ protected:
    */
   virtual String getEndTemplate() { return FPSTR(IOTWEBCONF_HTML_FORM_GROUP_END); };
 
-  ConfigItem* _firstItem = NULL;
+  ConfigItem* _firstItem = nullptr;
   ConfigItem* getNextItemOf(ConfigItem* parent) { return parent->_nextItem; };
 
   friend class IotWebConf; // Allow IotWebConf to access protected members.
@@ -178,7 +178,7 @@ public:
    */
   Parameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    const char* defaultValue = NULL);
+    const char* defaultValue = nullptr);
 
   const char* label;
   char* valueBuffer;
@@ -219,9 +219,9 @@ public:
    */
   TextParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    const char* defaultValue = NULL,
-    const char* placeholder = NULL,
-    const char* customHtml = NULL);
+    const char* defaultValue = nullptr,
+    const char* placeholder = nullptr,
+    const char* customHtml = nullptr);
 
   /**
    * This variable is meant to store a value that is displayed in an empty
@@ -277,8 +277,8 @@ public:
    */
   PasswordParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    const char* defaultValue = NULL,
-    const char* placeholder = NULL,
+    const char* defaultValue = nullptr,
+    const char* placeholder = nullptr,
     const char* customHtml = "ondblclick=\"pw(this.id)\"");
 
 protected:
@@ -308,9 +308,9 @@ public:
    */
   NumberParameter(
     const char* label, const char* id, char* valueBuffer, int length,
-    const char* defaultValue = NULL,
-    const char* placeholder = NULL,
-    const char* customHtml = NULL);
+    const char* defaultValue = nullptr,
+    const char* placeholder = nullptr,
+    const char* customHtml = nullptr);
 
 protected:
   // Overrides
@@ -375,7 +375,7 @@ public:
   OptionsParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t nameLength,
-    const char* defaultValue = NULL);
+    const char* defaultValue = nullptr);
 
 protected:
   const char* _optionValues;
@@ -404,7 +404,7 @@ public:
   SelectParameter(
     const char* label, const char* id, char* valueBuffer, int length,
     const char* optionValues, const char* optionNames, size_t optionCount, size_t namesLenth,
-    const char* defaultValue = NULL);
+    const char* defaultValue = nullptr);
 
 protected:
   // Overrides

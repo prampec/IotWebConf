@@ -107,8 +107,8 @@ protected:
   virtual String getEndTemplate() override;
 
 protected:
-  ChainedParameterGroup* _prevGroup = NULL;
-  ChainedParameterGroup* _nextGroup = NULL;
+  ChainedParameterGroup* _prevGroup = nullptr;
+  ChainedParameterGroup* _nextGroup = nullptr;
 };
 
 }

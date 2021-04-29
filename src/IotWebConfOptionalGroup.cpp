@@ -64,7 +64,7 @@ void OptionalParameterGroup::loadValue(
 void OptionalParameterGroup::renderHtml(
   bool dataArrived, WebRequestWrapper* webRequestWrapper)
 {
-    if (this->label != NULL)
+    if (this->label != nullptr)
     {
       String content = getStartTemplate();
       content.replace("{b}", this->label);
@@ -83,7 +83,7 @@ void OptionalParameterGroup::renderHtml(
       webRequestWrapper->sendContent(content);
     }
     ConfigItem* current = this->_firstItem;
-    while (current != NULL)
+    while (current != nullptr)
     {
       if (current->visible)
       {
@@ -91,7 +91,7 @@ void OptionalParameterGroup::renderHtml(
       }
       current = this->getNextItemOf(current);
     }
-    if (this->label != NULL)
+    if (this->label != nullptr)
     {
       String content = getEndTemplate();
       content.replace("{b}", this->label);
@@ -131,7 +131,7 @@ String ChainedParameterGroup::getStartTemplate()
 {
   String result = OptionalParameterGroup::getStartTemplate();
 
-  if ((this->_prevGroup != NULL) && (!this->_prevGroup->isActive()))
+  if ((this->_prevGroup != nullptr) && (!this->_prevGroup->isActive()))
   {
     result.replace("{cb}", "hide");
   }
@@ -141,7 +141,7 @@ String ChainedParameterGroup::getStartTemplate()
 String ChainedParameterGroup::getEndTemplate()
 {
   String result;
-  if (this->_nextGroup == NULL)
+  if (this->_nextGroup == nullptr)
   {
     result = OptionalParameterGroup::getEndTemplate();
   }

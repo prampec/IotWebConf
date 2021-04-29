@@ -116,7 +116,7 @@ public:
     { this->_server->sendHeader(name, value, first); };
   void setContentLength(const size_t contentLength) override
     { this->_server->setContentLength(contentLength); };
-  void send(int code, const char* content_type = NULL, const String& content = String("")) override
+  void send(int code, const char* content_type = nullptr, const String& content = String("")) override
     { this->_server->send(code, content_type, content); };
   void sendContent(const String& content) override { this->_server->sendContent(content); };
   void stop() override { this->_server->client().stop(); };
@@ -143,7 +143,7 @@ private:
 class WifiParameterGroup : public ParameterGroup
 {
 public:
-  WifiParameterGroup(const char* id, const char* label = NULL) : ParameterGroup(id, label)
+  WifiParameterGroup(const char* id, const char* label = nullptr) : ParameterGroup(id, label)
   {
     this->addItem(&this->wifiSsidParameter);
     this->addItem(&this->wifiPasswordParameter);
@@ -322,10 +322,10 @@ public:
   /**
    * With this method you can specify your custom WiFi timeout handler.
    * This handler can manage what should happen, when WiFi connection timed out.
-   * By default the handler implementation returns with NULL, as seen on reference implementation
+   * By default the handler implementation returns with nullptr, as seen on reference implementation
    * IotWebConf::handleConnectWifiFailure(). This means we need to fall back to AP mode.
    * If it method returns with a (new) WiFi settings, it is used as a next try.
-   * Note, that in case once you have returned with NULL, you might also want to
+   * Note, that in case once you have returned with nullptr, you might also want to
    * resetWifiAuthInfo(), that sets the auth info used for the next time to the
    * one set up in the admin portal.
    * Note, that this feature is provided because of the option of providing multiple
@@ -532,19 +532,19 @@ public:
   }
 
 private:
-  const char* _initialApPassword = NULL;
+  const char* _initialApPassword = nullptr;
   const char* _configVersion;
   DNSServer* _dnsServer;
   WebServerWrapper* _webServerWrapper;
   StandardWebServerWrapper _standardWebServerWrapper = StandardWebServerWrapper();
   std::function<void(const char* _updatePath)>
-    _updateServerSetupFunction = NULL;
+    _updateServerSetupFunction = nullptr;
   std::function<void(const char* userName, char* password)>
-    _updateServerUpdateCredentialsFunction = NULL;
+    _updateServerUpdateCredentialsFunction = nullptr;
   int _configPin = -1;
   int _statusPin = -1;
   int _statusOnLevel = LOW;
-  const char* _updatePath = NULL;
+  const char* _updatePath = nullptr;
   bool _forceDefaultPassword = false;
   bool _skipApStartup = false;
   bool _forceApMode = false;
@@ -558,7 +558,7 @@ private:
   PasswordParameter _apPasswordParameter =
     PasswordParameter("AP password", "iwcApPassword", this->_apPassword, IOTWEBCONF_PASSWORD_LEN);
   NumberParameter _apTimeoutParameter =
-    NumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS, NULL, "min='1' max='600'");
+    NumberParameter("Startup delay (seconds)", "iwcApTimeout", this->_apTimeoutStr, IOTWEBCONF_WORD_LEN, IOTWEBCONF_DEFAULT_AP_MODE_TIMEOUT_SECS, nullptr, "min='1' max='600'");
   char _thingName[IOTWEBCONF_WORD_LEN];
   char _apPassword[IOTWEBCONF_PASSWORD_LEN];
   char _apTimeoutStr[IOTWEBCONF_WORD_LEN];
@@ -569,10 +569,10 @@ private:
   byte _state = IOTWEBCONF_STATE_BOOT;
   unsigned long _apStartTimeMs = 0;
   byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
-  std::function<void()> _wifiConnectionCallback = NULL;
-  std::function<void(int)> _configSavingCallback = NULL;
-  std::function<void()> _configSavedCallback = NULL;
-  std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = NULL;
+  std::function<void()> _wifiConnectionCallback = nullptr;
+  std::function<void(int)> _configSavingCallback = nullptr;
+  std::function<void()> _configSavedCallback = nullptr;
+  std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = nullptr;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);
   std::function<void(const char*, const char*)> _wifiConnectionHandler =

@@ -35,7 +35,7 @@ void MultipleWifiAddition::init()
 {
   // -- Add parameter groups.
   ChainedWifiParameterGroup* set = this->_firstSet;
-  while(set != NULL)
+  while(set != nullptr)
   {
     this->_iotWebConf->addSystemParameter(set);
     set = (ChainedWifiParameterGroup*)set->getNext();
@@ -57,11 +57,11 @@ void MultipleWifiAddition::init()
         WifiAuthInfo* result;
         while (true)
         {
-          if (this->_currentSet == NULL)
+          if (this->_currentSet == nullptr)
           {
             this->_currentSet = this->_firstSet;
             this->_iotWebConf->resetWifiAuthInfo();
-            result = NULL;
+            result = nullptr;
             break;
           }
           else
@@ -90,7 +90,7 @@ bool MultipleWifiAddition::formValidator(
   ChainedWifiParameterGroup* set = this->_firstSet;
   bool valid = true;
 
-  while(set != NULL)
+  while(set != nullptr)
   {
     if (set->isActive())
     {

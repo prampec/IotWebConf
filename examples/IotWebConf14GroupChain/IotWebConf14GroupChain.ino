@@ -169,7 +169,7 @@ void handleRoot()
   s += ".</div>";
 
   ActionGroup* group = &actionGroup1;
-  while(group != NULL)
+  while(group != nullptr)
   {
     if (group->isActive())
     {
