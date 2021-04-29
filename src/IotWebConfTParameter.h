@@ -394,7 +394,7 @@ public:
   const char* customHtml = NULL;
 
   /**
-   * Used when rendering the input field. Is is overriden by different
+   * Used when rendering the input field. Is is overridden by different
    *   implementations.
    */
   virtual String getCustomHtml()

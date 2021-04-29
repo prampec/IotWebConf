@@ -98,7 +98,7 @@ public:
   virtual void update(WebRequestWrapper* webRequestWrapper) = 0;
 
   /**
-   * Before validating the form post, it is required to clear previos error messages.
+   * Before validating the form post, it is required to clear previous error messages.
    */
   virtual void clearErrorMessage() = 0;
 

@@ -134,7 +134,7 @@ void ParameterGroup::debugTo(Stream* out)
   out->print(this->getId());
   out->println(']');
 
-  // -- Here is some overcomplicated logic to have nice debug ouput.
+  // -- Here is some overcomplicated logic to have nice debug output.
   bool ownItem = false;
   bool lastItem = false;
   PrefixStreamWrapper stream =
