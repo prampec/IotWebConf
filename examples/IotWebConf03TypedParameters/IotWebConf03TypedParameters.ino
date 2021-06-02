@@ -64,21 +64,28 @@ static const char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
 iotwebconf::TextTParameter<STRING_LEN> stringParam =
   iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("stringParam").
-  label("String param").build();
+  label("String param").
+  defaultValue("").
+  build();
 iotwebconf::ParameterGroup group1 = iotwebconf::ParameterGroup("group1", "");
 iotwebconf::IntTParameter<int16_t> intParam =
   iotwebconf::Builder<iotwebconf::IntTParameter<int16_t>>("intParam").
   label("Int param").
   defaultValue(30).
-  min(1).max(100).
-  step(1).placeholder("1..100").build();
+  min(1).
+  max(100).
+  step(1).
+  placeholder("1..100").
+  build();
 // -- We can add a legend to the separator
 iotwebconf::ParameterGroup group2 = iotwebconf::ParameterGroup("c_factor", "Calibration factor");
 iotwebconf::FloatTParameter floatParam =
    iotwebconf::Builder<iotwebconf::FloatTParameter>("floatParam").
    label("Float param").
    defaultValue(0.0).
-   step(0.1).placeholder("e.g. 23.4").build();
+   step(0.1).
+   placeholder("e.g. 23.4").
+   build();
 iotwebconf::CheckboxTParameter checkboxParam =
    iotwebconf::Builder<iotwebconf::CheckboxTParameter>("checkParam").
    label("Check param").
@@ -91,6 +98,7 @@ iotwebconf::SelectTParameter<STRING_LEN> chooserParam =
    optionNames((const char*)chooserNames).
    optionCount(sizeof(chooserValues) / STRING_LEN).
    nameLength(STRING_LEN).
+   defaultValue("blue").
    build();
 
 
