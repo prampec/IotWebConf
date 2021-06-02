@@ -38,7 +38,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 #define NUMBER_LEN 32
 
 // -- Configuration specific key. The value should be modified if config structure was changed.
-#define CONFIG_VERSION "dem3"
+#define CONFIG_VERSION "dem4"
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
 //      password to buld an AP. (E.g. in case of lost password)
@@ -100,7 +100,21 @@ iotwebconf::SelectTParameter<STRING_LEN> chooserParam =
    nameLength(STRING_LEN).
    defaultValue("blue").
    build();
-
+iotwebconf::ColorTParameter colorParam =
+   iotwebconf::Builder<iotwebconf::ColorTParameter>("colorParam").
+   label("Choose color").
+   defaultValue("#FFDD88").
+   build();
+iotwebconf::DateTParameter dateParam =
+   iotwebconf::Builder<iotwebconf::DateTParameter>("dateParam").
+   label("Select date").
+   defaultValue("").
+   build();
+iotwebconf::TimeTParameter timeParam =
+   iotwebconf::Builder<iotwebconf::TimeTParameter>("timeParam").
+   label("Select time").
+   defaultValue("").
+   build();
 
 void setup() 
 {
@@ -112,6 +126,9 @@ void setup()
   group2.addItem(&floatParam);
   group2.addItem(&checkboxParam);
   group2.addItem(&chooserParam);
+  group2.addItem(&colorParam);
+  group2.addItem(&dateParam);
+  group2.addItem(&timeParam);
 
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
@@ -163,6 +180,15 @@ void handleRoot()
   s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
   s += chooserParam.value();
+  s += "<li>Color selected: <div style='background-color:";
+  s += colorParam.value();
+  s += "';> sample </div> (";
+  s += colorParam.value();
+  s += ")";
+  s += "<li>Date value: ";
+  s += dateParam.value();
+  s += "<li>Time value: ";
+  s += timeParam.value();
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";

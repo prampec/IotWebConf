@@ -895,6 +895,60 @@ private:
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Color chooser.
+ */
+class ColorTParameter : public CharArrayDataType<8>, public InputParameter
+{
+public:
+using CharArrayDataType<8>::CharArrayDataType;
+  ColorTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<8>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "color"; }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Date chooser.
+ */
+class DateTParameter : public CharArrayDataType<11>, public InputParameter
+{
+public:
+using CharArrayDataType<11>::CharArrayDataType;
+  DateTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<11>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "date"; }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Time chooser.
+ */
+class TimeTParameter : public CharArrayDataType<6>, public InputParameter
+{
+public:
+using CharArrayDataType<6>::CharArrayDataType;
+  TimeTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<6>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "time"; }
+};
+
 } // end namespace
 
 #include <IotWebConfTParameterBuilder.h>
