@@ -691,7 +691,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
 #endif
       break;
     case IOTWEBCONF_STATE_CONNECTING:
-      if ((oldState == IOTWEBCONF_STATE_AP_MODE) ||
+      if ((oldState == IOTWEBCONF_STATE_BOOT) ||
+          (oldState == IOTWEBCONF_STATE_AP_MODE) ||
           (oldState == IOTWEBCONF_STATE_NOT_CONFIGURED))
       {
         stopAp();
