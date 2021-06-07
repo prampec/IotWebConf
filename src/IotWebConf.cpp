@@ -716,6 +716,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       Serial.println(this->_wifiConnectionTimeoutMs);
 #endif
       this->_wifiConnectionStart = millis();
+      WiFi.mode(WIFI_STA);
       this->_wifiConnectionHandler(
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
@@ -863,7 +864,7 @@ void IotWebConf::setupAp()
 void IotWebConf::stopAp()
 {
   WiFi.softAPdisconnect(true);
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_OFF);
 }
 
 ////////////////////////////////////////////////////////////////////
