@@ -264,7 +264,7 @@ String TextParameter::renderHtml(
   const char* type, bool hasValueFromPost, String valueFromPost)
 {
   TextParameter* current = this;
-  char parLength[5];
+  char parLength[11];
 
   String pitem = getHtmlTemplate();
 
@@ -272,7 +272,7 @@ String TextParameter::renderHtml(
   pitem.replace("{t}", type);
   pitem.replace("{i}", current->getId());
   pitem.replace("{p}", current->placeholder == nullptr ? "" : current->placeholder);
-  snprintf(parLength, 5, "%d", current->getLength()-1);
+  snprintf(parLength, 11, "%d", current->getLength()-1);
   pitem.replace("{l}", parLength);
   if (hasValueFromPost)
   {
