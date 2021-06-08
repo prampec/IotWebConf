@@ -259,7 +259,6 @@ template <typename ValueType, int base = 10>
 class SignedIntDataType : public PrimitiveDataType<ValueType>
 {
 public:
-using DataType<ValueType>::DataType;
   SignedIntDataType(const char* id, ValueType defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
@@ -290,7 +289,6 @@ protected:
 class BoolDataType : public PrimitiveDataType<bool>
 {
 public:
-using DataType<bool>::DataType;
   BoolDataType(const char* id, bool defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<bool>::PrimitiveDataType(id, defaultValue) { };
@@ -305,7 +303,6 @@ protected:
 class FloatDataType : public PrimitiveDataType<float>
 {
 public:
-using DataType<float>::DataType;
   FloatDataType(const char* id, float defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<float>::PrimitiveDataType(id, defaultValue) { };
@@ -320,7 +317,6 @@ protected:
 class DoubleDataType : public PrimitiveDataType<double>
 {
 public:
-using DataType<double>::DataType;
   DoubleDataType(const char* id, double defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<double>::PrimitiveDataType(id, defaultValue) { };
@@ -423,8 +419,8 @@ protected:
     int length = this->getInputLength();
     if (length > 0)
     {
-      char parLength[5];
-      snprintf(parLength, 5, "%d", length);
+      char parLength[11];
+      snprintf(parLength, 11, "%d", length);
       String maxLength = String("maxlength=") + parLength;
       pitem.replace("{l}", maxLength);
     }

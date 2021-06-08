@@ -1,4 +1,4 @@
-# IotWebConf [![Build Status](https://travis-ci.org/prampec/IotWebConf.svg?branch=master)](https://travis-ci.org/prampec/IotWebConf)
+# IotWebConf [![Build Status](https://github.com/prampec/IotWebConf/workflows/PlatformIO%20CI/badge.svg?branch=master)](https://github.com/prampec/IotWebConf/actions/workflows/test.platformio.yml)
 
 ## Upgrading to v3.0.0
 Lately version 3.0.0 is released. This release is not backward compatible with
