@@ -1,0 +1,56 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "examples-pio/IotWebConf01Minimal"
+		},
+		{
+			"path": "examples-pio/IotWebConf02StatusAndReset"
+		},
+		{
+			"path": "examples-pio/IotWebConf03CustomParameters"
+		},
+        {
+            "path": "examples-pio/IotWebConf03TypedParameters"
+        },
+		{
+			"path": "examples-pio/IotWebConf04UpdateServer"
+		},
+		{
+			"path": "examples-pio/IotWebConf05Callbacks"
+		},
+		{
+			"path": "examples-pio/IotWebConf06MqttApp"
+		},
+		{
+			"path": "examples-pio/IotWebConf07MqttRelay"
+		},
+		{
+			"path": "examples-pio/IotWebConf08WebRelay"
+		},
+		{
+			"path": "examples-pio/IotWebConf09CustomConnection"
+		},
+		{
+			"path": "examples-pio/IotWebConf10CustomHtml"
+		},
+		{
+			"path": "examples-pio/IotWebConf11AdvancedRuntime"
+		},
+		{
+			"path": "examples-pio/IotWebConf12CustomParameterType"
+		},
+		{
+			"path": "examples-pio/IotWebConf13OptionalGroup"
+		},
+		{
+			"path": "examples-pio/IotWebConf14GroupChain"
+		},
+		{
+			"path": "examples-pio/IotWebConf15MultipleWifi"
+		},
+	],
+	"settings": {}
+}

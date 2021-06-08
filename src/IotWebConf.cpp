@@ -271,7 +271,7 @@ void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
 
 void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 {
-  if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  if (this->_state == OnLine)
   {
     // -- Authenticate
     if (!webRequestWrapper->authenticate(
@@ -372,7 +372,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
       page += F("You must provide the local wifi settings to continue. Return "
                 "to <a href=''>configuration page</a>.");
     }
-    else if (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
+    else if (this->_state == NotConfigured)
     {
       page += F("Please disconnect from WiFi AP to continue!");
     }
@@ -529,10 +529,10 @@ void IotWebConf::doLoop()
 {
   doBlink();
   yield(); // -- Yield should not be necessary, but cannot hurt either.
-  if (this->_state == IOTWEBCONF_STATE_BOOT)
+  if (this->_state == Boot)
   {
     // -- After boot, fall immediately to AP mode.
-    byte startupState = IOTWEBCONF_STATE_AP_MODE;
+    NetworkState startupState = ApMode;
     if (this->_skipApStartup)
     {
       if (mustStayInApMode())
@@ -545,14 +545,14 @@ void IotWebConf::doLoop()
       {
         // -- Startup state can be WiFi, if it is requested and also possible.
         IOTWEBCONF_DEBUG_LINE(F("SkipApStartup mode was applied"));
-        startupState = IOTWEBCONF_STATE_CONNECTING;
+        startupState = Connecting;
       }
     }
     this->changeState(startupState);
   }
   else if (
-      (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED) ||
-      (this->_state == IOTWEBCONF_STATE_AP_MODE))
+      (this->_state == NotConfigured) ||
+      (this->_state == ApMode))
   {
     // -- We must only leave the AP mode, when no slaves are connected.
     // -- Other than that AP mode has a timeout. E.g. after boot, or when retry
@@ -562,15 +562,15 @@ void IotWebConf::doLoop()
     this->_dnsServer->processNextRequest();
     this->_webServerWrapper->handleClient();
   }
-  else if (this->_state == IOTWEBCONF_STATE_CONNECTING)
+  else if (this->_state == Connecting)
   {
     if (checkWifiConnection())
     {
-      this->changeState(IOTWEBCONF_STATE_ONLINE);
+      this->changeState(OnLine);
       return;
     }
   }
-  else if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  else if (this->_state == OnLine)
   {
     // -- In server mode we provide web interface. And check whether it is time
     // to run the client.
@@ -578,7 +578,7 @@ void IotWebConf::doLoop()
     if (WiFi.status() != WL_CONNECTED)
     {
       IOTWEBCONF_DEBUG_LINE(F("Not connected. Try reconnect..."));
-      this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      this->changeState(Connecting);
       return;
     }
   }
@@ -587,11 +587,11 @@ void IotWebConf::doLoop()
 /**
  * What happens, when a state changed...
  */
-void IotWebConf::changeState(byte newState)
+void IotWebConf::changeState(NetworkState newState)
 {
   switch (newState)
   {
-    case IOTWEBCONF_STATE_AP_MODE:
+    case ApMode:
     {
       // -- In AP mode we must override the default AP password. Otherwise we stay
       // in STATE_NOT_CONFIGURED.
@@ -607,7 +607,7 @@ void IotWebConf::changeState(byte newState)
           Serial.println("AP password was not set in configuration");
         }
 #endif
-        newState = IOTWEBCONF_STATE_NOT_CONFIGURED;
+        newState = NotConfigured;
       }
       break;
     }
@@ -620,7 +620,7 @@ void IotWebConf::changeState(byte newState)
   Serial.print(" to ");
   Serial.println(newState);
 #endif
-  byte oldState = this->_state;
+  NetworkState oldState = this->_state;
   this->_state = newState;
   this->stateChanged(oldState, newState);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
@@ -634,14 +634,14 @@ void IotWebConf::changeState(byte newState)
 /**
  * What happens, when a state changed...
  */
-void IotWebConf::stateChanged(byte oldState, byte newState)
+void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
 {
 //  updateOutput();
   switch (newState)
   {
-    case IOTWEBCONF_STATE_AP_MODE:
-    case IOTWEBCONF_STATE_NOT_CONFIGURED:
-      if (newState == IOTWEBCONF_STATE_AP_MODE)
+    case ApMode:
+    case NotConfigured:
+      if (newState == ApMode)
       {
         this->blinkInternal(300, 90);
       }
@@ -649,8 +649,8 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         this->blinkInternal(300, 50);
       }
-      if ((oldState == IOTWEBCONF_STATE_CONNECTING) ||
-        (oldState == IOTWEBCONF_STATE_ONLINE))
+      if ((oldState == Connecting) ||
+        (oldState == OnLine))
       {
         WiFi.disconnect(true);
       }
@@ -660,7 +660,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
         this->_updateServerSetupFunction(this->_updatePath);
       }
       this->_webServerWrapper->begin();
-      this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
+      this->_apConnectionState = NoConnections;
       this->_apStartTimeMs = millis();
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       if (mustStayInApMode())
@@ -690,13 +690,13 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       }
 #endif
       break;
-    case IOTWEBCONF_STATE_CONNECTING:
-      if ((oldState == IOTWEBCONF_STATE_AP_MODE) ||
-          (oldState == IOTWEBCONF_STATE_NOT_CONFIGURED))
+    case Connecting:
+      if ((oldState == ApMode) ||
+          (oldState == NotConfigured))
       {
         stopAp();
       }
-      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServerSetupFunction != nullptr))
+      if ((oldState == Boot) && (this->_updateServerSetupFunction != nullptr))
       {
         // We've skipped AP mode, so update server needs to be set up now.
         this->_updateServerSetupFunction(this->_updatePath);
@@ -720,7 +720,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       this->_wifiConnectionHandler(
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
-    case IOTWEBCONF_STATE_ONLINE:
+    case OnLine:
       this->blinkInternal(8000, 2);
       if (this->_updateServerUpdateCredentialsFunction != nullptr)
       {
@@ -744,11 +744,11 @@ void IotWebConf::checkApTimeout()
   if ( !mustStayInApMode() )
   {
     // -- Only move on, when we have a valid WifF and AP configured.
-    if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC) ||
+    if ((this->_apConnectionState == Disconnected) ||
         (((millis() - this->_apStartTimeMs) > this->_apTimeoutMs) &&
-         (this->_apConnectionStatus != IOTWEBCONF_AP_CONNECTION_STATE_C)))
+         (this->_apConnectionState != HasConnection)))
     {
-      this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      this->changeState(Connecting);
     }
   }
 }
@@ -760,17 +760,17 @@ void IotWebConf::checkApTimeout()
  */
 void IotWebConf::checkConnection()
 {
-  if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_NC) &&
+  if ((this->_apConnectionState == NoConnections) &&
       (WiFi.softAPgetStationNum() > 0))
   {
-    this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_C;
+    this->_apConnectionState = HasConnection;
     IOTWEBCONF_DEBUG_LINE(F("Connection to AP."));
   }
   else if (
-      (this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_C) &&
+      (this->_apConnectionState == HasConnection) &&
       (WiFi.softAPgetStationNum() == 0))
   {
-    this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_DC;
+    this->_apConnectionState = Disconnected;
     IOTWEBCONF_DEBUG_LINE(F("Disconnected from AP."));
     if (this->_forceDefaultPassword)
     {
@@ -795,11 +795,11 @@ bool IotWebConf::checkWifiConnection()
         // -- Try connecting with another connection info.
         this->_wifiAuthInfo.ssid = newWifiAuthInfo->ssid;
         this->_wifiAuthInfo.password = newWifiAuthInfo->password;
-        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+        this->changeState(Connecting);
       }
       else
       {
-        this->changeState(IOTWEBCONF_STATE_AP_MODE);
+        this->changeState(ApMode);
       }
     }
     return false;
@@ -823,7 +823,7 @@ void IotWebConf::setupAp()
   Serial.print("Setting up AP: ");
   Serial.println(this->_thingName);
 #endif
-  if (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
+  if (this->_state == NotConfigured)
   {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.print("With default password: ");
@@ -928,15 +928,15 @@ void IotWebConf::forceApMode(bool doForce)
   this->_forceApMode = doForce;
   if (doForce)
   {
-    if (this->_state != IOTWEBCONF_STATE_AP_MODE)
+    if (this->_state != ApMode)
     {
       IOTWEBCONF_DEBUG_LINE(F("Start forcing AP mode"));
-      this->changeState(IOTWEBCONF_STATE_AP_MODE);
+      this->changeState(ApMode);
     }
   }
   else
   {
-    if (this->_state == IOTWEBCONF_STATE_AP_MODE)
+    if (this->_state == ApMode)
     {
       if (this->mustStayInApMode())
       {
@@ -945,7 +945,7 @@ void IotWebConf::forceApMode(bool doForce)
       else
       {
         IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
-        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+        this->changeState(Connecting);
       }
     }
   }
