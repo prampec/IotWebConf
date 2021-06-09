@@ -533,7 +533,11 @@ void IotWebConf::doLoop()
   {
     // -- After boot, fall immediately to AP mode.
     NetworkState startupState = ApMode;
-    if (this->_skipApStartup)
+    if (this->_startupOffLine)
+    {
+      startupState = OffLine;
+    }
+    else if (this->_skipApStartup)
     {
       if (mustStayInApMode())
       {
@@ -639,6 +643,11 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
 //  updateOutput();
   switch (newState)
   {
+    case OffLine:
+      WiFi.disconnect(true);
+      WiFi.mode(WIFI_OFF);
+      this->blinkInternal(22000, 6);
+      break;
     case ApMode:
     case NotConfigured:
       if (newState == ApMode)
@@ -750,6 +759,23 @@ void IotWebConf::checkApTimeout()
     {
       this->changeState(Connecting);
     }
+  }
+}
+
+void IotWebConf::goOnLine(bool apMode)
+{
+  if (this->_state != OffLine)
+  {
+    IOTWEBCONF_DEBUG_LINE(F("Requested OnLine mode, but was not offline."));
+    return;
+  }
+  if (apMode || mustStayInApMode())
+  {
+    this->changeState(ApMode);
+  }
+  else
+  {
+    this->changeState(Connecting);
   }
 }
 

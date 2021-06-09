@@ -65,7 +65,8 @@ enum NetworkState
   NotConfigured,
   ApMode,
   Connecting,
-  OnLine
+  OnLine,
+  OffLine
 };
 
 class IotWebConf;
@@ -455,6 +456,11 @@ public:
   };
 
   /**
+   * 
+   */
+  void startupOffLine() { this->_startupOffLine = true; }
+
+  /**
    * By default IotWebConf starts up in AP mode. Calling this method before the init will force IotWebConf
    * to connect immediately to the configured WiFi network.
    * Note, this method only takes effect, when WiFi mode is enabled, thus when a valid WiFi connection is
@@ -470,6 +476,21 @@ public:
    *     When FALSE, AP mode is released, normal operation will continue.
    */
   void forceApMode(bool value);
+
+  /**
+   *
+   */
+  void goOffLine() { this->changeState(OffLine); }
+
+  /**
+   *
+   */
+  void goOnLine(bool apMode = true);
+
+  /**
+   *
+   */
+  unsigned long getApStartTimeMs() { return this->_apStartTimeMs; }
 
   /**
    * Get internal parameters, for manual handling.
@@ -548,6 +569,7 @@ private:
   int _statusOnLevel = LOW;
   const char* _updatePath = nullptr;
   bool _forceDefaultPassword = false;
+  bool _startupOffLine = false;
   bool _skipApStartup = false;
   bool _forceApMode = false;
   ParameterGroup _allParameters = ParameterGroup("iwcAll");
