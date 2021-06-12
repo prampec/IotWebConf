@@ -46,6 +46,8 @@ You can find the default password in the sources. :)
 
 IotWebConf saves configuration in the "EEPROM". You can extend the config portal with your custom configuration items. Those items will be also maintained by IotWebConf.
 
+Visit [Users Manual](doc/UsersManual.md) for detailed description!
+
 ## Use cases
   1. **You turn on your IoT the first time** - It turns into AP (access point) mode, and waits for you on the 192.168.4.1 address with a web interface to set up your local network (and other configurations). For the first time a default password is used when you connect to the AP. When you connect to the AP, your device will likely automatically pop up the portal page. (We call this a Captive Portal.) When configuration is done, you must leave the AP. The device detects that no one is connected, and continues with normal operation.
   1. **WiFi configuration is changed, e.g. the Thing is moved to another location** - When the Thing cannot connect to the configured WiFi, it falls back to AP mode, and waits for you to change the network configuration. When no configuration was made, then it keeps trying to connect with the already configured settings. The Thing will not switch off the AP while anyone is connected to it, so you must leave the AP when finished with the configuration.
@@ -59,6 +61,7 @@ you have typed in. (Double-tap again to hide revealed text.)
   - When accessing the config portal via connected WiFi network a dialog
 with user-name and password will pop up. The password is the one you
 have configured for "AP password". The user name is "admin".
+  - Consult [Users Manual](doc/UsersManual.md) for more details!
 
 
 ## IotWebConf vs. WiFiManager
