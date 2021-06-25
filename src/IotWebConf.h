@@ -497,6 +497,10 @@ public:
    * Normally you don't need to access these parameters directly.
    * Note, that changing valueBuffer of these parameters should be followed by saveConfig()!
    */
+  ParameterGroup* getRootParameterGroup()
+  {
+    return &this->_allParameters;
+  };
   ParameterGroup* getSystemParameterGroup()
   {
     return &this->_systemParameters;
