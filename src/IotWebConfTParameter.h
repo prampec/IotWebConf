@@ -274,7 +274,6 @@ template <typename ValueType, int base = 10>
 class UnsignedIntDataType : public PrimitiveDataType<ValueType>
 {
 public:
-using DataType<ValueType>::DataType;
   UnsignedIntDataType(const char* id, ValueType defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
@@ -697,7 +696,7 @@ class UIntTParameter :
 public:
   UIntTParameter(const char* id, const char* label, ValueType defaultValue) :
     ConfigItemBridge(id),
-    SignedIntDataType<ValueType, base>::SignedIntDataType(id, defaultValue),
+    UnsignedIntDataType<ValueType, base>::UnsignedIntDataType(id, defaultValue),
     PrimitiveInputParameter<ValueType>::PrimitiveInputParameter(id, label) { }
 
   // TODO: somehow organize these methods into common parent.

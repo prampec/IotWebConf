@@ -103,6 +103,15 @@ public:
     PrimitiveBuilder<ValueType, IntTParameter<ValueType, base>>(id) { };
 };
 
+template <typename ValueType, int base>
+class Builder<UIntTParameter<ValueType, base>> :
+  public PrimitiveBuilder<ValueType, UIntTParameter<ValueType, base>>
+{
+public:
+  Builder<UIntTParameter<ValueType, base>>(const char* id) :
+    PrimitiveBuilder<ValueType, UIntTParameter<ValueType, base>>(id) { };
+};
+
 template <>
 class Builder<FloatTParameter> :
   public PrimitiveBuilder<float, FloatTParameter>
