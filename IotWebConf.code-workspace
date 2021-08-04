@@ -4,56 +4,61 @@
 			"path": "."
 		},
 		{
-			"path": "examples-pio/IotWebConf01Minimal"
+			"path": "../IotWebConf-examples/IotWebConf01Minimal"
 		},
 		{
-			"path": "examples-pio/IotWebConf02StatusAndReset"
+			"path": "../IotWebConf-examples/IotWebConf02StatusAndReset"
 		},
 		{
-			"path": "examples-pio/IotWebConf03CustomParameters"
-		},
-        {
-            "path": "examples-pio/IotWebConf03TypedParameters"
-        },
-		{
-			"path": "examples-pio/IotWebConf04UpdateServer"
+			"path": "../IotWebConf-examples/IotWebConf03CustomParameters"
 		},
 		{
-			"path": "examples-pio/IotWebConf05Callbacks"
+			"path": "../IotWebConf-examples/IotWebConf03TypedParameters"
 		},
 		{
-			"path": "examples-pio/IotWebConf06MqttApp"
+			"path": "../IotWebConf-examples/IotWebConf04UpdateServer"
 		},
 		{
-			"path": "examples-pio/IotWebConf07MqttRelay"
+			"path": "../IotWebConf-examples/IotWebConf05Callbacks"
 		},
 		{
-			"path": "examples-pio/IotWebConf08WebRelay"
+			"path": "../IotWebConf-examples/IotWebConf06MqttApp"
 		},
 		{
-			"path": "examples-pio/IotWebConf09CustomConnection"
+			"path": "../IotWebConf-examples/IotWebConf07MqttRelay"
 		},
 		{
-			"path": "examples-pio/IotWebConf10CustomHtml"
+			"path": "../IotWebConf-examples/IotWebConf08WebRelay"
 		},
 		{
-			"path": "examples-pio/IotWebConf11AdvancedRuntime"
+			"path": "../IotWebConf-examples/IotWebConf09CustomConnection"
 		},
 		{
-			"path": "examples-pio/IotWebConf12CustomParameterType"
+			"path": "../IotWebConf-examples/IotWebConf10CustomHtml"
 		},
 		{
-			"path": "examples-pio/IotWebConf13OptionalGroup"
+			"path": "../IotWebConf-examples/IotWebConf11AdvancedRuntime"
 		},
 		{
-			"path": "examples-pio/IotWebConf14GroupChain"
+			"path": "../IotWebConf-examples/IotWebConf12CustomParameterType"
 		},
 		{
-			"path": "examples-pio/IotWebConf15MultipleWifi"
+			"path": "../IotWebConf-examples/IotWebConf13OptionalGroup"
 		},
 		{
-			"path": "examples-pio/IotWebConf16OffLineMode"
+			"path": "../IotWebConf-examples/IotWebConf14GroupChain"
 		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf15MultipleWifi"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf16OffLineMode"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf17JsonConfig"
+		}
 	],
-	"settings": {}
+	"settings": {
+		"workbench.tree.indent": 16
+	}
 }

@@ -175,6 +175,33 @@ void ParameterGroup::debugTo(Stream* out)
   }
 }
 
+#ifdef IOTWEBCONF_ENABLE_JSON
+void ParameterGroup::loadFromJson(JsonObject jsonObject)
+{
+  if (jsonObject.containsKey(this->getId()))
+  {
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(F("Applying values from JSON for groupId: "));
+  Serial.println(this->getId());
+#endif
+    JsonObject myObject = jsonObject[this->getId()];
+    ConfigItem* current = this->_firstItem;
+    while (current != nullptr)
+    {
+      current->loadFromJson(myObject);
+      current = current->_nextItem;
+    }
+  }
+  else
+  {
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+    Serial.print(F("Group data not found in JSON. Skipping groupId: "));
+    Serial.println(this->getId());
+#endif
+  }
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 
 Parameter::Parameter(
@@ -232,6 +259,28 @@ void Parameter::clearErrorMessage()
 {
     this->errorMessage = nullptr;
 }
+#ifdef IOTWEBCONF_ENABLE_JSON
+void Parameter::loadFromJson(JsonObject jsonObject)
+{
+  if (jsonObject.containsKey(this->getId()))
+  {
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(F("Applying value from JSON for parameterId: "));
+  Serial.println(this->getId());
+#endif
+    const char* value = jsonObject[this->getId()];
+    this->update(String(value));
+  }
+  else
+  {
+#ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+  Serial.print(F("No value found in JSON for parameterId: "));
+  Serial.println(this->getId());
+#endif
+  }
+}
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
