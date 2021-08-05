@@ -35,6 +35,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 #define STRING_LEN 128
 #define NUMBER_LEN 32
+#define JSON_FILE_MAX_SIZE 512
 
 // -- Configuration specific key. The value should be modified if config structure was changed.
 #define CONFIG_VERSION "dem2"
@@ -180,7 +181,7 @@ void readConfigFile()
   if (configFile)
   {
     Serial.println(F("Reading config file"));
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<JSON_FILE_MAX_SIZE> doc;
 
     DeserializationError error = deserializeJson(doc, configFile);
     configFile.close();
