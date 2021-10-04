@@ -18,7 +18,8 @@ Using this example:
 
 Preparing configuration file:
   You can find a "config.json" file in the "data" subfolder
-  containing the example values. Your project must contains
+  containing the example values. For CheckboxParameter you either
+  want to set "" or "selected" as value. Your project must contains
   this "data" folder. Use PlatformIOs "Build file system image"
   and "Upload file system image" to upload the config.json to the
   flash area. The file is deleted after it has been processed, so
