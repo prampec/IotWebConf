@@ -145,6 +145,7 @@ bool IotWebConf::loadConfig()
   EEPROM.begin(
     IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
 
+  bool result;
   if (this->testConfigVersion())
   {
     int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
@@ -157,7 +158,7 @@ bool IotWebConf::loadConfig()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     this->_allParameters.debugTo(&Serial);
 #endif
-    return true;
+    result = true;
   }
   else
   {
@@ -167,10 +168,11 @@ bool IotWebConf::loadConfig()
     this->_allParameters.debugTo(&Serial);
 #endif
 
-    return false;
+    result = false;
   }
 
   EEPROM.end();
+  return result;
 }
 
 void IotWebConf::saveConfig()
