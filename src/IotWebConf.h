@@ -607,7 +607,8 @@ private:
   std::function<void()> _wifiConnectionCallback = nullptr;
   std::function<void(int)> _configSavingCallback = nullptr;
   std::function<void()> _configSavedCallback = nullptr;
-  std::function<void(byte oldState, byte newState)> _stateChangedCallback = nullptr;
+  std::function<void(NetworkState oldState, NetworkState newState)>
+    _stateChangedCallback = nullptr;
   std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = nullptr;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);
