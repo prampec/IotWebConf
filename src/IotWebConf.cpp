@@ -258,7 +258,8 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setStateChangedCallback(std::function<void(byte oldState, byte newState)> func)
+void IotWebConf::setStateChangedCallback(std::function<void(
+  NetworkState oldState, NetworkState newState)> func)
 {
   this->_stateChangedCallback = func;
 }

@@ -295,9 +295,10 @@ public:
 
   /**
    * Specify a callback method, that will be called when ever the state is changed.
-   * See IOTWEBCONF_STATE_* for possible values
+   * See NetworkState enum for possible values
    */
-  void setStateChangedCallback(std::function<void(byte oldState, byte newState)> func);
+  void setStateChangedCallback(std::function<void(
+    NetworkState oldState, NetworkState newState)> func);
 
   /**
    * Specify a callback method, that will be called when form validation is required.
