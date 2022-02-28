@@ -419,7 +419,7 @@ protected:
     if (length > 0)
     {
       char parLength[11];
-      snprintf(parLength, 11, "%d", length);
+      snprintf(parLength, 11, "%d", length - 1); // To allow "\0" at the end of the string.
       String maxLength = String("maxlength=") + parLength;
       pitem.replace("{l}", maxLength);
     }
