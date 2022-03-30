@@ -21,9 +21,9 @@
  *   
  *   This example starts an MQTT client with the configured
  *   connection settings.
- *   Will receives messages appears in channel "/devices/[thingName]/action"
+ *   Will receives messages appears in channel "devices/[thingName]/action"
  *   with payload ON/OFF, and reports current state in channel
- *   "/devices/[thingName]/status" (ON/OFF). Where the thingName can be
+ *   "devices/[thingName]/status" (ON/OFF). Where the thingName can be
  *   configured in the portal. A relay will be switched on/off
  *   corresponding to the received action. The relay can be also controlled
  *   by the push button.
@@ -84,7 +84,7 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 // -- Connected output pin. See "Note on relay pin"!
 #define RELAY_PIN D5
 
-#define MQTT_TOPIC_PREFIX "/devices/"
+#define MQTT_TOPIC_PREFIX "devices/"
 
 // -- Ignore/limit status changes more frequent than the value below (milliseconds).
 #define ACTION_FEQ_LIMIT 7000
