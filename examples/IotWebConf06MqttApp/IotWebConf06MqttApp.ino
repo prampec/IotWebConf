@@ -21,8 +21,8 @@
  *   
  *   This example starts an MQTT client with the configured
  *   connection settings.
- *   Will post the status changes of the D2 pin in channel "/test/status".
- *   Receives messages appears in channel "/test/action", and writes them to serial.
+ *   Will post the status changes of the D2 pin in channel "test/status".
+ *   Receives messages appears in channel "test/action", and writes them to serial.
  *   This example also provides the firmware update option.
  *   (See previous examples for more details!)
  * 
@@ -160,9 +160,9 @@ void loop()
   {
     pinState = 1 - pinState; // invert pin state as it is changed
     lastReport = now;
-    Serial.print("Sending on MQTT channel '/test/status' :");
+    Serial.print("Sending on MQTT channel 'test/status' :");
     Serial.println(pinState == LOW ? "ON" : "OFF");
-    mqttClient.publish("/test/status", pinState == LOW ? "ON" : "OFF");
+    mqttClient.publish("test/status", pinState == LOW ? "ON" : "OFF");
   }
 }
 
@@ -229,7 +229,7 @@ bool connectMqtt() {
   }
   Serial.println("Connected!");
 
-  mqttClient.subscribe("/test/action");
+  mqttClient.subscribe("test/action");
   return true;
 }
 
@@ -242,7 +242,7 @@ bool connectMqtt() {
   }
   Serial.println("Connected!");
 
-  mqttClient.subscribe("/test/action");
+  mqttClient.subscribe("test/action");
   return true;
 }
 */
