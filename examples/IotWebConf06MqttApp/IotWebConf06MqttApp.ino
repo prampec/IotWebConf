@@ -182,6 +182,7 @@ void handleRoot()
   s += "<ul>";
   s += "<li>MQTT server: ";
   s += mqttServerValue;
+  s += "</li>";
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
