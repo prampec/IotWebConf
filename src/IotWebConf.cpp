@@ -93,11 +93,6 @@ bool IotWebConf::init()
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
   // -- Setup mdns
-#ifdef ESP8266
-  WiFi.hostname(this->_thingName);
-#elif defined(ESP32)
-  WiFi.setHostname(this->_thingName);
-#endif
 #ifdef IOTWEBCONF_CONFIG_USE_MDNS
   MDNS.begin(this->_thingName);
   MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
@@ -728,6 +723,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
 #endif
       this->_wifiConnectionStart = millis();
       WiFi.mode(WIFI_STA);
+      WiFi.setHostname(this->_thingName); // Hostname needs to be set right before WiFi.begin
       this->_wifiConnectionHandler(
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
