@@ -573,6 +573,12 @@ void IotWebConf::doLoop()
   }
   else if (this->_state == OnLine)
   {
+    // Required for mDNS to work on ESP8266
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+# ifdef ESP8266
+    MDNS.update();
+# endif
+#endif
     // -- In server mode we provide web interface. And check whether it is time
     // to run the client.
     this->_webServerWrapper->handleClient();
