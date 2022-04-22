@@ -728,8 +728,14 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       Serial.println(this->_wifiConnectionTimeoutMs);
 #endif
       this->_wifiConnectionStart = millis();
+      // The order of WiFi.mode and WiFi.setHostname matters based on the platform
+#ifdef ESP8266
       WiFi.mode(WIFI_STA);
-      WiFi.setHostname(this->_thingName); // Hostname needs to be set right before WiFi.begin
+      WiFi.setHostname(this->_thingName);
+#elif defined(ESP32)
+      WiFi.setHostname(this->_thingName);
+      WiFi.mode(WIFI_STA);
+#endif
       this->_wifiConnectionHandler(
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
