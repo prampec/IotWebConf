@@ -294,6 +294,13 @@ public:
   void setConfigSavedCallback(std::function<void()> func);
 
   /**
+   * Specify a callback method, that will be called when ever the state is changed.
+   * See NetworkState enum for possible values
+   */
+  void setStateChangedCallback(std::function<void(
+    NetworkState oldState, NetworkState newState)> func);
+
+  /**
    * Specify a callback method, that will be called when form validation is required.
    * If the method will return false, the configuration will not be saved.
    * Should be called before init()!
@@ -600,6 +607,8 @@ private:
   std::function<void()> _wifiConnectionCallback = nullptr;
   std::function<void(int)> _configSavingCallback = nullptr;
   std::function<void()> _configSavedCallback = nullptr;
+  std::function<void(NetworkState oldState, NetworkState newState)>
+    _stateChangedCallback = nullptr;
   std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = nullptr;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);

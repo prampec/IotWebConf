@@ -247,6 +247,12 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
+void IotWebConf::setStateChangedCallback(std::function<void(
+  NetworkState oldState, NetworkState newState)> func)
+{
+  this->_stateChangedCallback = func;
+}
+
 void IotWebConf::setFormValidator(
   std::function<bool(WebRequestWrapper* webRequestWrapper)> func)
 {
@@ -624,6 +630,10 @@ void IotWebConf::changeState(NetworkState newState)
   NetworkState oldState = this->_state;
   this->_state = newState;
   this->stateChanged(oldState, newState);
+  if (this->_stateChangedCallback != nullptr) 
+  {
+    this->_stateChangedCallback(oldState, newState);
+  }
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print("State changed from: ");
   Serial.print(oldState);
