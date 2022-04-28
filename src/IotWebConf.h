@@ -649,6 +649,7 @@ private:
   bool checkWifiConnection();
   void setupAp();
   void stopAp();
+  void endMDns(NetworkState oldState);
 
   static bool connectAp(const char* apName, const char* password);
   static void connectWifi(const char* ssid, const char* password);

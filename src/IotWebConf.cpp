@@ -92,12 +92,6 @@ bool IotWebConf::init()
   }
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
-  // -- Setup mdns
-#ifdef IOTWEBCONF_CONFIG_USE_MDNS
-  MDNS.begin(this->_thingName);
-  MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
-#endif
-
   return validConfig;
 }
 
@@ -639,6 +633,20 @@ void IotWebConf::changeState(NetworkState newState)
 }
 
 /**
+ * Cleanly stopping mDNS after network failure.
+ */
+void IotWebConf::endMDns(NetworkState oldState)
+{
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+  if (oldState == OnLine)
+  {
+    MDNS.end();
+    IOTWEBCONF_DEBUG_LINE(F("Deactivated mDNS until reconnected to WiFi."));
+  }
+#endif
+}
+
+/**
  * What happens, when a state changed...
  */
 void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
@@ -647,6 +655,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
   switch (newState)
   {
     case OffLine:
+      endMDns(oldState);
       WiFi.disconnect(true);
       WiFi.mode(WIFI_OFF);
       this->blinkInternal(22000, 6);
@@ -664,6 +673,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       if ((oldState == Connecting) ||
         (oldState == OnLine))
       {
+        endMDns(oldState);
         WiFi.disconnect(true);
       }
       setupAp();
@@ -713,6 +723,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
         // We've skipped AP mode, so update server needs to be set up now.
         this->_updateServerSetupFunction(this->_updatePath);
       }
+      endMDns(oldState);
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
@@ -740,6 +751,14 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
     case OnLine:
+      // -- Initialize mdns after network connection
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+      MDNS.begin(this->_thingName);
+      MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
+# ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+      Serial.printf("Active mDNS services: %d \n", MDNS.queryService("http", "tcp"));
+# endif
+#endif
       this->blinkInternal(8000, 2);
       if (this->_updateServerUpdateCredentialsFunction != nullptr)
       {
