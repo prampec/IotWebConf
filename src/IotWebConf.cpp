@@ -369,7 +369,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     }
     else
     {
-      page += F("Return to <a href='/'>home page</a>.");
+      page += F("Click <a href='/close'>here</a> to test your connection.");
     }
     page += htmlFormatProvider->getEnd();
 
