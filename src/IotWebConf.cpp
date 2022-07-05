@@ -352,7 +352,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 //    page += _customHeadElement;
     page += htmlFormatProvider->getHeadExtension();
     page += htmlFormatProvider->getHeadEnd();
-    page += "Configuration saved. ";
+    page += "<b>Configuration saved.</b> ";
     if (this->_apPassword[0] == '\0')
     {
       page += F("You must change the default AP password to continue. Return "
@@ -365,7 +365,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     }
     else if (this->_state == NotConfigured)
     {
-      page += F("Please disconnect from WiFi AP to continue!");
+      page += F("<a href='/close'>Click here to test your connection</a>.");
     }
     else
     {
