@@ -1,0 +1,22 @@
+{
+    "iwcAll": {
+        "iwcSys": {
+            "iwcThingName": "nameFromJSON",
+            "iwcApPassword": "smrtTHNG8266",
+            "iwcApTimeout": "40",
+            "iwcWifi0": {
+                "iwcWifiSsid": "myNet",
+                "iwcWifiPassword": "myNetPwd"
+            },
+            "stringParam": "Value from JSON"
+        },
+        "iwcCustom": {
+            "c_factor": {
+                "checkParam": "",
+                "chooseParam": "blue"
+            }
+        },
+        "hidden": {
+        }
+    }
+}

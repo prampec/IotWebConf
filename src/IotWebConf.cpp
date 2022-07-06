@@ -92,17 +92,6 @@ bool IotWebConf::init()
   }
   this->_apTimeoutMs = atoi(this->_apTimeoutStr) * 1000;
 
-  // -- Setup mdns
-#ifdef ESP8266
-  WiFi.hostname(this->_thingName);
-#elif defined(ESP32)
-  WiFi.setHostname(this->_thingName);
-#endif
-#ifdef IOTWEBCONF_CONFIG_USE_MDNS
-  MDNS.begin(this->_thingName);
-  MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
-#endif
-
   return validConfig;
 }
 
@@ -145,6 +134,7 @@ bool IotWebConf::loadConfig()
   EEPROM.begin(
     IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH + size);
 
+  bool result;
   if (this->testConfigVersion())
   {
     int start = IOTWEBCONF_CONFIG_START + IOTWEBCONF_CONFIG_VERSION_LENGTH;
@@ -157,7 +147,7 @@ bool IotWebConf::loadConfig()
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     this->_allParameters.debugTo(&Serial);
 #endif
-    return true;
+    result = true;
   }
   else
   {
@@ -167,10 +157,11 @@ bool IotWebConf::loadConfig()
     this->_allParameters.debugTo(&Serial);
 #endif
 
-    return false;
+    result = false;
   }
 
   EEPROM.end();
+  return result;
 }
 
 void IotWebConf::saveConfig()
@@ -276,7 +267,7 @@ void IotWebConf::setWifiConnectionTimeoutMs(unsigned long millis)
 
 void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 {
-  if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  if (this->_state == OnLine)
   {
     // -- Authenticate
     if (!webRequestWrapper->authenticate(
@@ -377,7 +368,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
       page += F("You must provide the local wifi settings to continue. Return "
                 "to <a href=''>configuration page</a>.");
     }
-    else if (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
+    else if (this->_state == NotConfigured)
     {
       page += F("Please disconnect from WiFi AP to continue!");
     }
@@ -534,11 +525,15 @@ void IotWebConf::doLoop()
 {
   doBlink();
   yield(); // -- Yield should not be necessary, but cannot hurt either.
-  if (this->_state == IOTWEBCONF_STATE_BOOT)
+  if (this->_state == Boot)
   {
     // -- After boot, fall immediately to AP mode.
-    byte startupState = IOTWEBCONF_STATE_AP_MODE;
-    if (this->_skipApStartup)
+    NetworkState startupState = ApMode;
+    if (this->_startupOffLine)
+    {
+      startupState = OffLine;
+    }
+    else if (this->_skipApStartup)
     {
       if (mustStayInApMode())
       {
@@ -550,14 +545,14 @@ void IotWebConf::doLoop()
       {
         // -- Startup state can be WiFi, if it is requested and also possible.
         IOTWEBCONF_DEBUG_LINE(F("SkipApStartup mode was applied"));
-        startupState = IOTWEBCONF_STATE_CONNECTING;
+        startupState = Connecting;
       }
     }
     this->changeState(startupState);
   }
   else if (
-      (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED) ||
-      (this->_state == IOTWEBCONF_STATE_AP_MODE))
+      (this->_state == NotConfigured) ||
+      (this->_state == ApMode))
   {
     // -- We must only leave the AP mode, when no slaves are connected.
     // -- Other than that AP mode has a timeout. E.g. after boot, or when retry
@@ -567,23 +562,29 @@ void IotWebConf::doLoop()
     this->_dnsServer->processNextRequest();
     this->_webServerWrapper->handleClient();
   }
-  else if (this->_state == IOTWEBCONF_STATE_CONNECTING)
+  else if (this->_state == Connecting)
   {
     if (checkWifiConnection())
     {
-      this->changeState(IOTWEBCONF_STATE_ONLINE);
+      this->changeState(OnLine);
       return;
     }
   }
-  else if (this->_state == IOTWEBCONF_STATE_ONLINE)
+  else if (this->_state == OnLine)
   {
+    // Required for mDNS to work on ESP8266
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+# ifdef ESP8266
+    MDNS.update();
+# endif
+#endif
     // -- In server mode we provide web interface. And check whether it is time
     // to run the client.
     this->_webServerWrapper->handleClient();
     if (WiFi.status() != WL_CONNECTED)
     {
       IOTWEBCONF_DEBUG_LINE(F("Not connected. Try reconnect..."));
-      this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      this->changeState(Connecting);
       return;
     }
   }
@@ -592,11 +593,11 @@ void IotWebConf::doLoop()
 /**
  * What happens, when a state changed...
  */
-void IotWebConf::changeState(byte newState)
+void IotWebConf::changeState(NetworkState newState)
 {
   switch (newState)
   {
-    case IOTWEBCONF_STATE_AP_MODE:
+    case ApMode:
     {
       // -- In AP mode we must override the default AP password. Otherwise we stay
       // in STATE_NOT_CONFIGURED.
@@ -612,7 +613,7 @@ void IotWebConf::changeState(byte newState)
           Serial.println("AP password was not set in configuration");
         }
 #endif
-        newState = IOTWEBCONF_STATE_NOT_CONFIGURED;
+        newState = NotConfigured;
       }
       break;
     }
@@ -625,7 +626,7 @@ void IotWebConf::changeState(byte newState)
   Serial.print(" to ");
   Serial.println(newState);
 #endif
-  byte oldState = this->_state;
+  NetworkState oldState = this->_state;
   this->_state = newState;
   this->stateChanged(oldState, newState);
   if (this->_stateChangedCallback != nullptr) 
@@ -641,16 +642,36 @@ void IotWebConf::changeState(byte newState)
 }
 
 /**
+ * Cleanly stopping mDNS after network failure.
+ */
+void IotWebConf::endMDns(NetworkState oldState)
+{
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+  if (oldState == OnLine)
+  {
+    MDNS.end();
+    IOTWEBCONF_DEBUG_LINE(F("Deactivated mDNS until reconnected to WiFi."));
+  }
+#endif
+}
+
+/**
  * What happens, when a state changed...
  */
-void IotWebConf::stateChanged(byte oldState, byte newState)
+void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
 {
 //  updateOutput();
   switch (newState)
   {
-    case IOTWEBCONF_STATE_AP_MODE:
-    case IOTWEBCONF_STATE_NOT_CONFIGURED:
-      if (newState == IOTWEBCONF_STATE_AP_MODE)
+    case OffLine:
+      endMDns(oldState);
+      WiFi.disconnect(true);
+      WiFi.mode(WIFI_OFF);
+      this->blinkInternal(22000, 6);
+      break;
+    case ApMode:
+    case NotConfigured:
+      if (newState == ApMode)
       {
         this->blinkInternal(300, 90);
       }
@@ -658,9 +679,10 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       {
         this->blinkInternal(300, 50);
       }
-      if ((oldState == IOTWEBCONF_STATE_CONNECTING) ||
-        (oldState == IOTWEBCONF_STATE_ONLINE))
+      if ((oldState == Connecting) ||
+        (oldState == OnLine))
       {
+        endMDns(oldState);
         WiFi.disconnect(true);
       }
       setupAp();
@@ -669,7 +691,7 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
         this->_updateServerSetupFunction(this->_updatePath);
       }
       this->_webServerWrapper->begin();
-      this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
+      this->_apConnectionState = NoConnections;
       this->_apStartTimeMs = millis();
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       if (mustStayInApMode())
@@ -699,17 +721,18 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       }
 #endif
       break;
-    case IOTWEBCONF_STATE_CONNECTING:
-      if ((oldState == IOTWEBCONF_STATE_AP_MODE) ||
-          (oldState == IOTWEBCONF_STATE_NOT_CONFIGURED))
+    case Connecting:
+      if ((oldState == ApMode) ||
+          (oldState == NotConfigured))
       {
         stopAp();
       }
-      if ((oldState == IOTWEBCONF_STATE_BOOT) && (this->_updateServerSetupFunction != nullptr))
+      if ((oldState == Boot) && (this->_updateServerSetupFunction != nullptr))
       {
         // We've skipped AP mode, so update server needs to be set up now.
         this->_updateServerSetupFunction(this->_updatePath);
       }
+      endMDns(oldState);
       this->blinkInternal(1000, 50);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
@@ -725,10 +748,26 @@ void IotWebConf::stateChanged(byte oldState, byte newState)
       Serial.println(this->_wifiConnectionTimeoutMs);
 #endif
       this->_wifiConnectionStart = millis();
+      // The order of WiFi.mode and WiFi.setHostname matters based on the platform
+#ifdef ESP8266
+      WiFi.mode(WIFI_STA);
+      WiFi.setHostname(this->_thingName);
+#elif defined(ESP32)
+      WiFi.setHostname(this->_thingName);
+      WiFi.mode(WIFI_STA);
+#endif
       this->_wifiConnectionHandler(
           this->_wifiAuthInfo.ssid, this->_wifiAuthInfo.password);
       break;
-    case IOTWEBCONF_STATE_ONLINE:
+    case OnLine:
+      // -- Initialize mdns after network connection
+#ifdef IOTWEBCONF_CONFIG_USE_MDNS
+      MDNS.begin(this->_thingName);
+      MDNS.addService("http", "tcp", IOTWEBCONF_CONFIG_USE_MDNS);
+# ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+      Serial.printf("Active mDNS services: %d \n", MDNS.queryService("http", "tcp"));
+# endif
+#endif
       this->blinkInternal(8000, 2);
       if (this->_updateServerUpdateCredentialsFunction != nullptr)
       {
@@ -752,12 +791,29 @@ void IotWebConf::checkApTimeout()
   if ( !mustStayInApMode() )
   {
     // -- Only move on, when we have a valid WifF and AP configured.
-    if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_DC) ||
+    if ((this->_apConnectionState == Disconnected) ||
         (((millis() - this->_apStartTimeMs) > this->_apTimeoutMs) &&
-         (this->_apConnectionStatus != IOTWEBCONF_AP_CONNECTION_STATE_C)))
+         (this->_apConnectionState != HasConnection)))
     {
-      this->changeState(IOTWEBCONF_STATE_CONNECTING);
+      this->changeState(Connecting);
     }
+  }
+}
+
+void IotWebConf::goOnLine(bool apMode)
+{
+  if (this->_state != OffLine)
+  {
+    IOTWEBCONF_DEBUG_LINE(F("Requested OnLine mode, but was not offline."));
+    return;
+  }
+  if (apMode || mustStayInApMode())
+  {
+    this->changeState(ApMode);
+  }
+  else
+  {
+    this->changeState(Connecting);
   }
 }
 
@@ -768,17 +824,17 @@ void IotWebConf::checkApTimeout()
  */
 void IotWebConf::checkConnection()
 {
-  if ((this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_NC) &&
+  if ((this->_apConnectionState == NoConnections) &&
       (WiFi.softAPgetStationNum() > 0))
   {
-    this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_C;
+    this->_apConnectionState = HasConnection;
     IOTWEBCONF_DEBUG_LINE(F("Connection to AP."));
   }
   else if (
-      (this->_apConnectionStatus == IOTWEBCONF_AP_CONNECTION_STATE_C) &&
+      (this->_apConnectionState == HasConnection) &&
       (WiFi.softAPgetStationNum() == 0))
   {
-    this->_apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_DC;
+    this->_apConnectionState = Disconnected;
     IOTWEBCONF_DEBUG_LINE(F("Disconnected from AP."));
     if (this->_forceDefaultPassword)
     {
@@ -803,11 +859,11 @@ bool IotWebConf::checkWifiConnection()
         // -- Try connecting with another connection info.
         this->_wifiAuthInfo.ssid = newWifiAuthInfo->ssid;
         this->_wifiAuthInfo.password = newWifiAuthInfo->password;
-        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+        this->changeState(Connecting);
       }
       else
       {
-        this->changeState(IOTWEBCONF_STATE_AP_MODE);
+        this->changeState(ApMode);
       }
     }
     return false;
@@ -831,7 +887,7 @@ void IotWebConf::setupAp()
   Serial.print("Setting up AP: ");
   Serial.println(this->_thingName);
 #endif
-  if (this->_state == IOTWEBCONF_STATE_NOT_CONFIGURED)
+  if (this->_state == NotConfigured)
   {
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.print("With default password: ");
@@ -872,7 +928,7 @@ void IotWebConf::setupAp()
 void IotWebConf::stopAp()
 {
   WiFi.softAPdisconnect(true);
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_OFF);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -936,15 +992,15 @@ void IotWebConf::forceApMode(bool doForce)
   this->_forceApMode = doForce;
   if (doForce)
   {
-    if (this->_state != IOTWEBCONF_STATE_AP_MODE)
+    if (this->_state != ApMode)
     {
       IOTWEBCONF_DEBUG_LINE(F("Start forcing AP mode"));
-      this->changeState(IOTWEBCONF_STATE_AP_MODE);
+      this->changeState(ApMode);
     }
   }
   else
   {
-    if (this->_state == IOTWEBCONF_STATE_AP_MODE)
+    if (this->_state == ApMode)
     {
       if (this->mustStayInApMode())
       {
@@ -953,7 +1009,7 @@ void IotWebConf::forceApMode(bool doForce)
       else
       {
         IOTWEBCONF_DEBUG_LINE(F("Stopping AP mode force."));
-        this->changeState(IOTWEBCONF_STATE_CONNECTING);
+        this->changeState(Connecting);
       }
     }
   }

@@ -45,26 +45,29 @@ const char IOTWEBCONF_HTML_END[] PROGMEM          = "</div></body></html>";
 const char IOTWEBCONF_HTML_UPDATE[] PROGMEM       = "<div style='padding-top:25px;'><a href='{u}'>Firmware update</a></div>\n";
 const char IOTWEBCONF_HTML_CONFIG_VER[] PROGMEM   = "<div style='font-size: .6em;'>Firmware config version '{v}'</div>\n";
 
-// -- State of the Thing
-#define IOTWEBCONF_STATE_BOOT 0
-#define IOTWEBCONF_STATE_NOT_CONFIGURED 1
-#define IOTWEBCONF_STATE_AP_MODE 2
-#define IOTWEBCONF_STATE_CONNECTING 3
-#define IOTWEBCONF_STATE_ONLINE 4
-
-// -- AP connection state
-// -- No connection on AP.
-#define IOTWEBCONF_AP_CONNECTION_STATE_NC 0
-// -- Has connection on AP.
-#define IOTWEBCONF_AP_CONNECTION_STATE_C 1
-// -- All previous connection on AP was disconnected.
-#define IOTWEBCONF_AP_CONNECTION_STATE_DC 2
-
 // -- User name on login.
 #define IOTWEBCONF_ADMIN_USER_NAME "admin"
 
 namespace iotwebconf
 {
+
+// -- AP connection state
+enum ApConnectionState
+{
+  NoConnections, // -- No connection on AP.
+  HasConnection, // -- Has connection on AP.
+  Disconnected // -- All previous connection on AP was disconnected.
+};
+
+enum NetworkState
+{
+  Boot,
+  NotConfigured,
+  ApMode,
+  Connecting,
+  OnLine,
+  OffLine
+};
 
 class IotWebConf;
 
@@ -424,9 +427,9 @@ public:
   bool isBlinkEnabled()  { return this->_blinkEnabled; }
 
   /**
-   * Return the current state, that will be a value from the IOTWEBCONF_STATE_* constants.
+   * Return the current state.
    */
-  byte getState() { return this->_state; };
+  NetworkState getState() { return this->_state; };
 
   /**
    * This method can be used to set the AP timeout directly without modifying the apTimeoutParameter.
@@ -459,6 +462,11 @@ public:
   };
 
   /**
+   * 
+   */
+  void startupOffLine() { this->_startupOffLine = true; }
+
+  /**
    * By default IotWebConf starts up in AP mode. Calling this method before the init will force IotWebConf
    * to connect immediately to the configured WiFi network.
    * Note, this method only takes effect, when WiFi mode is enabled, thus when a valid WiFi connection is
@@ -476,10 +484,29 @@ public:
   void forceApMode(bool value);
 
   /**
+   *
+   */
+  void goOffLine() { this->changeState(OffLine); }
+
+  /**
+   *
+   */
+  void goOnLine(bool apMode = true);
+
+  /**
+   *
+   */
+  unsigned long getApStartTimeMs() { return this->_apStartTimeMs; }
+
+  /**
    * Get internal parameters, for manual handling.
    * Normally you don't need to access these parameters directly.
    * Note, that changing valueBuffer of these parameters should be followed by saveConfig()!
    */
+  ParameterGroup* getRootParameterGroup()
+  {
+    return &this->_allParameters;
+  };
   ParameterGroup* getSystemParameterGroup()
   {
     return &this->_systemParameters;
@@ -552,6 +579,7 @@ private:
   int _statusOnLevel = LOW;
   const char* _updatePath = nullptr;
   bool _forceDefaultPassword = false;
+  bool _startupOffLine = false;
   bool _skipApStartup = false;
   bool _forceApMode = false;
   ParameterGroup _allParameters = ParameterGroup("iwcAll");
@@ -572,9 +600,9 @@ private:
   // TODO: Add to WifiParameterGroup
   unsigned long _wifiConnectionTimeoutMs =
       IOTWEBCONF_DEFAULT_WIFI_CONNECTION_TIMEOUT_MS;
-  byte _state = IOTWEBCONF_STATE_BOOT;
+  NetworkState _state = Boot;
   unsigned long _apStartTimeMs = 0;
-  byte _apConnectionStatus = IOTWEBCONF_AP_CONNECTION_STATE_NC;
+  ApConnectionState _apConnectionState = NoConnections;
   std::function<void()> _wifiConnectionCallback = nullptr;
   std::function<void(int)> _configSavingCallback = nullptr;
   std::function<void()> _configSavedCallback = nullptr;
@@ -607,8 +635,8 @@ private:
 
   bool validateForm(WebRequestWrapper* webRequestWrapper);
 
-  void changeState(byte newState);
-  void stateChanged(byte oldState, byte newState);
+  void changeState(NetworkState newState);
+  void stateChanged(NetworkState oldState, NetworkState newState);
   bool mustUseDefaultPassword()
   {
     return this->_forceDefaultPassword || (this->_apPassword[0] == '\0');
@@ -628,6 +656,7 @@ private:
   bool checkWifiConnection();
   void setupAp();
   void stopAp();
+  void endMDns(NetworkState oldState);
 
   static bool connectAp(const char* apName, const char* password);
   static void connectWifi(const char* ssid, const char* password);

@@ -21,8 +21,8 @@
  *   
  *   This example starts an MQTT client with the configured
  *   connection settings.
- *   Will post the status changes of the D2 pin in channel "/test/status".
- *   Receives messages appears in channel "/test/action", and writes them to serial.
+ *   Will post the status changes of the D2 pin in channel "test/status".
+ *   Receives messages appears in channel "test/action", and writes them to serial.
  *   This example also provides the firmware update option.
  *   (See previous examples for more details!)
  * 
@@ -142,7 +142,7 @@ void loop()
       needMqttConnect = false;
     }
   }
-  else if ((iotWebConf.getState() == IOTWEBCONF_STATE_ONLINE) && (!mqttClient.connected()))
+  else if ((iotWebConf.getState() == iotwebconf::OnLine) && (!mqttClient .connected()))
   {
     Serial.println("MQTT reconnect");
     connectMqtt();
@@ -160,9 +160,9 @@ void loop()
   {
     pinState = 1 - pinState; // invert pin state as it is changed
     lastReport = now;
-    Serial.print("Sending on MQTT channel '/test/status' :");
+    Serial.print("Sending on MQTT channel 'test/status' :");
     Serial.println(pinState == LOW ? "ON" : "OFF");
-    mqttClient.publish("/test/status", pinState == LOW ? "ON" : "OFF");
+    mqttClient.publish("test/status", pinState == LOW ? "ON" : "OFF");
   }
 }
 
@@ -182,6 +182,7 @@ void handleRoot()
   s += "<ul>";
   s += "<li>MQTT server: ";
   s += mqttServerValue;
+  s += "</li>";
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
@@ -229,7 +230,7 @@ bool connectMqtt() {
   }
   Serial.println("Connected!");
 
-  mqttClient.subscribe("/test/action");
+  mqttClient.subscribe("test/action");
   return true;
 }
 
@@ -242,7 +243,7 @@ bool connectMqtt() {
   }
   Serial.println("Connected!");
 
-  mqttClient.subscribe("/test/action");
+  mqttClient.subscribe("test/action");
   return true;
 }
 */

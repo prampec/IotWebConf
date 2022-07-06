@@ -17,6 +17,10 @@
 #include <IotWebConfSettings.h>
 #include <IotWebConfWebServerWrapper.h>
 
+#ifdef IOTWEBCONF_ENABLE_JSON
+# include <ArduinoJson.h>
+#endif
+
 const char IOTWEBCONF_HTML_FORM_GROUP_START[] PROGMEM =
   "<fieldset id='{i}'><legend>{b}</legend>\n";
 const char IOTWEBCONF_HTML_FORM_GROUP_END[] PROGMEM =
@@ -109,6 +113,13 @@ public:
    */
   virtual void debugTo(Stream* out) = 0;
 
+#ifdef IOTWEBCONF_ENABLE_JSON
+  /**
+   * 
+   */
+  virtual void loadFromJson(JsonObject jsonObject) = 0;
+#endif
+
 protected:
   ConfigItem(const char* id) { this->_id = id; };
 
@@ -126,6 +137,9 @@ public:
   void addItem(ConfigItem* configItem);
   const char *label;
   void applyDefaultValue() override;
+#ifdef IOTWEBCONF_ENABLE_JSON
+  virtual void loadFromJson(JsonObject jsonObject) override;
+#endif
 
 protected:
   int getStorageSize() override;
@@ -187,6 +201,9 @@ public:
 
   int getLength() { return this->_length; }
   void applyDefaultValue() override;
+#ifdef IOTWEBCONF_ENABLE_JSON
+  virtual void loadFromJson(JsonObject jsonObject) override;
+#endif
 
 protected:
   // Overrides

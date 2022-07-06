@@ -6,9 +6,19 @@
 #   platformio.ini files will be removed alog with any additional added
 #   files.
 #
-cd ../examples-pio || exit 1
+baseDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )"
+examplespio="../IotWebConf-examples"
+target="${baseDir}/${examplespio}"
+
+echo "Removing contents of ${target}"
+cd ${target} || exit 1
 
 for example in IotWebConf*; do
-  echo "Removing pio example ${example}"
+  echo " - ${example}"
+  rm -rf ${example}/.pio
+  rm -rf ${example}/lib
   rm -rf ${example} || exit $?
 done
+
+cd ..
+rmdir ${target}

@@ -6,24 +6,31 @@
 #   folder.
 # The output of this script can be added to the workspace of Visual Studio Code.
 #
-conf=`pwd`
-examplespio="examples-pio"
-target=`pwd`"/../${examplespio}"
+baseDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. &> /dev/null && pwd )"
+examplespio="../IotWebConf-examples"
+target="${baseDir}/${examplespio}"
 test -e ${target} || mkdir ${target}
 
-cd ../examples
+cd ${baseDir}/examples
 for example in IotWebConf*; do
-  if [ ! -e "$target/$example" ]; then
+  if [ ! -e "${target}/$example" ]; then
     mkdir "$target/$example"
-    mkdir "$target/$example/src"
-    mkdir "$target/$example/lib"
-    if [ -e "$example/pio/platformio.ini" ]; then
-      cp "$example/pio/platformio.ini" "$target/$example/platformio.ini"
+    if [ -e "$example/platformio.ini" ]; then
+      for f in ${baseDir}/examples/$example/*; do
+        fb="$(basename -- $f)"
+        ln -s "${baseDir}/examples/$example/$fb" "$target/$example/"
+      done
     else
-      cp "$conf/platformio-template.ini" "$target/$example/platformio.ini"
+      mkdir "$target/$example/src"
+      if [ -e "$example/pio/platformio.ini" ]; then
+        cp -R "$example/pio/"* "$target/$example/"
+      else
+        cp "${baseDir}/pio/platformio-template.ini" "$target/$example/platformio.ini"
+      fi
+      ln -s "${baseDir}/examples/$example/$example.ino" "$target/$example/src/main.cpp"
     fi
-    ln -s "../../../examples/$example/$example.ino" "$target/$example/src/main.cpp"
-    ln -s "../../.." "$target/$example/lib/IotWebConf"
+    mkdir "$target/$example/lib"
+    ln -s "${baseDir}" "$target/$example/lib/IotWebConf"
     echo "		{"
     echo "			\"path\": \"${examplespio}/$example\""
     echo "		},"

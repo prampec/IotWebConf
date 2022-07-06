@@ -259,7 +259,6 @@ template <typename ValueType, int base = 10>
 class SignedIntDataType : public PrimitiveDataType<ValueType>
 {
 public:
-using DataType<ValueType>::DataType;
   SignedIntDataType(const char* id, ValueType defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
@@ -275,7 +274,6 @@ template <typename ValueType, int base = 10>
 class UnsignedIntDataType : public PrimitiveDataType<ValueType>
 {
 public:
-using DataType<ValueType>::DataType;
   UnsignedIntDataType(const char* id, ValueType defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<ValueType>::PrimitiveDataType(id, defaultValue) { };
@@ -290,7 +288,6 @@ protected:
 class BoolDataType : public PrimitiveDataType<bool>
 {
 public:
-using DataType<bool>::DataType;
   BoolDataType(const char* id, bool defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<bool>::PrimitiveDataType(id, defaultValue) { };
@@ -305,7 +302,6 @@ protected:
 class FloatDataType : public PrimitiveDataType<float>
 {
 public:
-using DataType<float>::DataType;
   FloatDataType(const char* id, float defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<float>::PrimitiveDataType(id, defaultValue) { };
@@ -320,7 +316,6 @@ protected:
 class DoubleDataType : public PrimitiveDataType<double>
 {
 public:
-using DataType<double>::DataType;
   DoubleDataType(const char* id, double defaultValue) :
     ConfigItemBridge::ConfigItemBridge(id),
     PrimitiveDataType<double>::PrimitiveDataType(id, defaultValue) { };
@@ -423,8 +418,8 @@ protected:
     int length = this->getInputLength();
     if (length > 0)
     {
-      char parLength[5];
-      snprintf(parLength, 5, "%d", length);
+      char parLength[11];
+      snprintf(parLength, 11, "%d", length - 1); // To allow "\0" at the end of the string.
       String maxLength = String("maxlength=") + parLength;
       pitem.replace("{l}", maxLength);
     }
@@ -701,7 +696,7 @@ class UIntTParameter :
 public:
   UIntTParameter(const char* id, const char* label, ValueType defaultValue) :
     ConfigItemBridge(id),
-    SignedIntDataType<ValueType, base>::SignedIntDataType(id, defaultValue),
+    UnsignedIntDataType<ValueType, base>::UnsignedIntDataType(id, defaultValue),
     PrimitiveInputParameter<ValueType>::PrimitiveInputParameter(id, label) { }
 
   // TODO: somehow organize these methods into common parent.
@@ -894,6 +889,60 @@ protected:
 private:
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Color chooser.
+ */
+class ColorTParameter : public CharArrayDataType<8>, public InputParameter
+{
+public:
+using CharArrayDataType<8>::CharArrayDataType;
+  ColorTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<8>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "color"; }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Date chooser.
+ */
+class DateTParameter : public CharArrayDataType<11>, public InputParameter
+{
+public:
+using CharArrayDataType<11>::CharArrayDataType;
+  DateTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<11>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "date"; }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Time chooser.
+ */
+class TimeTParameter : public CharArrayDataType<6>, public InputParameter
+{
+public:
+using CharArrayDataType<6>::CharArrayDataType;
+  TimeTParameter(const char* id, const char* label, const char* defaultValue) :
+    ConfigItemBridge(id),
+    CharArrayDataType<6>::CharArrayDataType(id, defaultValue),
+    InputParameter::InputParameter(id, label) { }
+
+protected:
+  virtual const char* getInputType() override { return "time"; }
+};
 
 } // end namespace
 

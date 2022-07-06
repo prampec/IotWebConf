@@ -1,32 +1,31 @@
 /**
- * IotWebConf03TypedParameters.ino -- IotWebConf is an ESP8266/ESP32
+ * IotWebConf17JsonConfig.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
  *   https://github.com/prampec/IotWebConf 
  *
- * Copyright (C) 2020 Balazs Kelemen <prampec+arduino@gmail.com>
+ * Copyright (C) 2021 Balazs Kelemen <prampec+arduino@gmail.com>
  *
  * This software may be modified and distributed under the terms
  * of the MIT license.  See the LICENSE file for details.
  */
 
 /**
- * Example: Custom parameters
- * Description:
- *   Typed Parameters are a new approach to store/handle parameter data.
- *   This part of the software is very experimental, and certainly
- *   not recommended for beginners.
- *   The goal of this particular example is to compare the original
- *   approach of IotWebConf03CustomParameters to this new typed
- *   parameters, as both examples should work the same.
- *
- * Hardware setup for this example:
- *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
- *   - [Optional] A push button is attached to pin D2, the other leg of the
- *     button should be attached to GND.
+ * Please read description in README.txt!
  */
 
 #include <IotWebConf.h>
-#include <IotWebConfTParameter.h>
+#include <IotWebConfUsing.h> // This loads aliases for easier class names.
+#ifndef ESP32
+# include <LittleFS.h>
+#else
+# include <LITTLEFS.h>
+# define LittleFS LITTLEFS
+#endif
+#include <ArduinoJson.h>
+
+#ifndef IOTWEBCONF_ENABLE_JSON
+# error platformio.ini must contain "build_flags = -DIOTWEBCONF_ENABLE_JSON"
+#endif
 
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
@@ -36,9 +35,10 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 
 #define STRING_LEN 128
 #define NUMBER_LEN 32
+#define JSON_FILE_MAX_SIZE 512
 
 // -- Configuration specific key. The value should be modified if config structure was changed.
-#define CONFIG_VERSION "dem4"
+#define CONFIG_VERSION "dem2"
 
 // -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
 //      password to buld an AP. (E.g. in case of lost password)
@@ -49,8 +49,12 @@ const char wifiInitialApPassword[] = "smrtTHNG8266";
 //      when connected to the Wifi it will turn off (kept HIGH).
 #define STATUS_PIN LED_BUILTIN
 
+// -- File name on the filesystem containing the configuration in JSON format.
+#define CONFIG_FILE_NAME "config.json"
+
 // -- Method declarations.
 void handleRoot();
+void readConfigFile();
 // -- Callback methods.
 void configSaved();
 bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
@@ -58,63 +62,25 @@ bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper);
 DNSServer dnsServer;
 WebServer server(80);
 
-static const char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
-static const char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
+char stringParamValue[STRING_LEN];
+char intParamValue[NUMBER_LEN];
+char floatParamValue[NUMBER_LEN];
+char checkboxParamValue[STRING_LEN];
+char chooserParamValue[STRING_LEN];
+
+static char chooserValues[][STRING_LEN] = { "red", "blue", "darkYellow" };
+static char chooserNames[][STRING_LEN] = { "Red", "Blue", "Dark yellow" };
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword, CONFIG_VERSION);
-iotwebconf::TextTParameter<STRING_LEN> stringParam =
-  iotwebconf::Builder<iotwebconf::TextTParameter<STRING_LEN>>("stringParam").
-  label("String param").
-  defaultValue("").
-  build();
-iotwebconf::ParameterGroup group1 = iotwebconf::ParameterGroup("group1", "");
-iotwebconf::IntTParameter<int16_t> intParam =
-  iotwebconf::Builder<iotwebconf::IntTParameter<int16_t>>("intParam").
-  label("Int param").
-  defaultValue(30).
-  min(1).
-  max(100).
-  step(1).
-  placeholder("1..100").
-  build();
+// -- You can also use namespace formats e.g.: iotwebconf::TextParameter
+IotWebConfTextParameter stringParam = IotWebConfTextParameter("String param", "stringParam", stringParamValue, STRING_LEN);
+IotWebConfParameterGroup group1 = IotWebConfParameterGroup("group1", "");
+IotWebConfNumberParameter intParam = IotWebConfNumberParameter("Int param", "intParam", intParamValue, NUMBER_LEN, "20", "1..100", "min='1' max='100' step='1'");
 // -- We can add a legend to the separator
-iotwebconf::ParameterGroup group2 = iotwebconf::ParameterGroup("c_factor", "Calibration factor");
-iotwebconf::FloatTParameter floatParam =
-   iotwebconf::Builder<iotwebconf::FloatTParameter>("floatParam").
-   label("Float param").
-   defaultValue(0.0).
-   step(0.1).
-   placeholder("e.g. 23.4").
-   build();
-iotwebconf::CheckboxTParameter checkboxParam =
-   iotwebconf::Builder<iotwebconf::CheckboxTParameter>("checkParam").
-   label("Check param").
-   defaultValue(true).
-   build();
-iotwebconf::SelectTParameter<STRING_LEN> chooserParam =
-   iotwebconf::Builder<iotwebconf::SelectTParameter<STRING_LEN>>("chooseParam").
-   label("Choose param").
-   optionValues((const char*)chooserValues).
-   optionNames((const char*)chooserNames).
-   optionCount(sizeof(chooserValues) / STRING_LEN).
-   nameLength(STRING_LEN).
-   defaultValue("blue").
-   build();
-iotwebconf::ColorTParameter colorParam =
-   iotwebconf::Builder<iotwebconf::ColorTParameter>("colorParam").
-   label("Choose color").
-   defaultValue("#FFDD88").
-   build();
-iotwebconf::DateTParameter dateParam =
-   iotwebconf::Builder<iotwebconf::DateTParameter>("dateParam").
-   label("Select date").
-   defaultValue("").
-   build();
-iotwebconf::TimeTParameter timeParam =
-   iotwebconf::Builder<iotwebconf::TimeTParameter>("timeParam").
-   label("Select time").
-   defaultValue("").
-   build();
+IotWebConfParameterGroup group2 = IotWebConfParameterGroup("c_factor", "Calibration factor");
+IotWebConfNumberParameter floatParam = IotWebConfNumberParameter("Float param", "floatParam", floatParamValue, NUMBER_LEN,  nullptr, "e.g. 23.4", "step='0.1'");
+IotWebConfCheckboxParameter checkboxParam = IotWebConfCheckboxParameter("Check param", "checkParam", checkboxParamValue, STRING_LEN,  true);
+IotWebConfSelectParameter chooserParam = IotWebConfSelectParameter("Choose param", "chooseParam", chooserParamValue, STRING_LEN, (char*)chooserValues, (char*)chooserNames, sizeof(chooserValues) / STRING_LEN, STRING_LEN);
 
 void setup() 
 {
@@ -126,9 +92,6 @@ void setup()
   group2.addItem(&floatParam);
   group2.addItem(&checkboxParam);
   group2.addItem(&chooserParam);
-  group2.addItem(&colorParam);
-  group2.addItem(&dateParam);
-  group2.addItem(&timeParam);
 
   iotWebConf.setStatusPin(STATUS_PIN);
   iotWebConf.setConfigPin(CONFIG_PIN);
@@ -140,7 +103,10 @@ void setup()
   iotWebConf.getApTimeoutParameter()->visible = true;
 
   // -- Initializing the configuration.
-  iotWebConf.init();
+  bool validConfig = iotWebConf.init();
+  // -- Reading the config file. You might want to limit this when
+  //     no there is no validConfig in the EEPROM.
+  readConfigFile();
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);
@@ -168,27 +134,18 @@ void handleRoot()
     return;
   }
   String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
-  s += "<title>IotWebConf 03 Custom Parameters</title></head><body>Hello world!";
+  s += "<title>IotWebConf 17 Json Config</title></head><body>Hello world!";
   s += "<ul>";
   s += "<li>String param value: ";
-  s += stringParam.value();
+  s += stringParamValue;
   s += "<li>Int param value: ";
-  s += intParam.value();
+  s += atoi(intParamValue);
   s += "<li>Float param value: ";
-  s += floatParam.value();
+  s += atof(floatParamValue);
   s += "<li>CheckBox selected: ";
-  s += checkboxParam.isChecked();
+//  s += checkboxParam.isChecked();
   s += "<li>Option selected: ";
-  s += chooserParam.value();
-  s += "<li>Color selected: <div style='background-color:";
-  s += colorParam.value();
-  s += "';> sample </div> (";
-  s += colorParam.value();
-  s += ")";
-  s += "<li>Date value: ";
-  s += dateParam.value();
-  s += "<li>Time value: ";
-  s += timeParam.value();
+  s += chooserParamValue;
   s += "</ul>";
   s += "Go to <a href='config'>configure page</a> to change values.";
   s += "</body></html>\n";
@@ -215,5 +172,39 @@ bool formValidator(iotwebconf::WebRequestWrapper* webRequestWrapper)
   }
 */
   return valid;
+}
+
+void readConfigFile()
+{
+  LittleFS.begin();
+  File configFile = LittleFS.open(CONFIG_FILE_NAME, "r");
+  if (configFile)
+  {
+    Serial.println(F("Reading config file"));
+    StaticJsonDocument<JSON_FILE_MAX_SIZE> doc;
+
+    DeserializationError error = deserializeJson(doc, configFile);
+    configFile.close();
+
+    if (error)
+    {
+      Serial.println(F("Failed to read file, using default configuration"));
+      return;
+    }
+    JsonObject documentRoot = doc.as<JsonObject>();
+
+    // -- Apply JSON configuration.
+    iotWebConf.getRootParameterGroup()->loadFromJson(documentRoot);
+    iotWebConf.saveConfig();
+
+    // -- Remove file after finished loading it.
+    LittleFS.remove(CONFIG_FILE_NAME);
+  }
+  else
+  {
+    Serial.println(F("Config file not found, skipping."));
+  }
+  
+  LittleFS.end();
 }
 

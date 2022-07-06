@@ -1,0 +1,64 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf01Minimal"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf02StatusAndReset"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf03CustomParameters"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf03TypedParameters"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf04UpdateServer"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf05Callbacks"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf06MqttApp"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf07MqttRelay"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf08WebRelay"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf09CustomConnection"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf10CustomHtml"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf11AdvancedRuntime"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf12CustomParameterType"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf13OptionalGroup"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf14GroupChain"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf15MultipleWifi"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf16OffLineMode"
+		},
+		{
+			"path": "../IotWebConf-examples/IotWebConf17JsonConfig"
+		}
+	],
+	"settings": {
+		"workbench.tree.indent": 16
+	}
+}
