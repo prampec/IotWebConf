@@ -400,17 +400,17 @@ bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
     valid = false;
   }
   l = webRequestWrapper->arg(this->_apPasswordParameter.getId()).length();
-  if ((0 < l) && (l < 8))
+  if ((0 < l) && (l < 1))
   {
     this->_apPasswordParameter.errorMessage =
-        "Password length must be at least 8 characters.";
+        "Password can not be empty";
     valid = false;
   }
   l = webRequestWrapper->arg(this->_wifiParameters.wifiPasswordParameter.getId()).length();
-  if ((0 < l) && (l < 8))
+  if ((0 < l) && (l < 1))
   {
     this->_wifiParameters.wifiPasswordParameter.errorMessage =
-        "Password length must be at least 8 characters.";
+        "Password can not be empty";
     valid = false;
   }
 

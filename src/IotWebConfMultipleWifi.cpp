@@ -96,9 +96,9 @@ bool MultipleWifiAddition::formValidator(
     {
       PasswordParameter* pwdParam = &set->wifiPasswordParameter;
       int l = webRequestWrapper->arg(pwdParam->getId()).length();
-      if ((0 < l) && (l < 8))
+      if ((0 < l) && (l < 1))
       {
-        pwdParam->errorMessage = "Password length must be at least 8 characters.";
+        pwdParam->errorMessage = "Password can not be empty.";
         valid = false;
       }
     }
