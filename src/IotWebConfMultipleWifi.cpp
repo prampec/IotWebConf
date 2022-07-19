@@ -87,26 +87,7 @@ void MultipleWifiAddition::init()
 bool MultipleWifiAddition::formValidator(
   WebRequestWrapper* webRequestWrapper)
 {
-  ChainedWifiParameterGroup* set = this->_firstSet;
-  bool valid = true;
-
-  while(set != nullptr)
-  {
-    if (set->isActive())
-    {
-      PasswordParameter* pwdParam = &set->wifiPasswordParameter;
-      int l = webRequestWrapper->arg(pwdParam->getId()).length();
-      if ((0 < l) && (l < 1))
-      {
-        pwdParam->errorMessage = "Password can not be empty.";
-        valid = false;
-      }
-    }
-
-    set = (ChainedWifiParameterGroup*)set->getNext();
-  }
-
-  return valid;
+  return true;
 };
 
 }

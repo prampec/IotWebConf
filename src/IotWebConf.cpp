@@ -399,20 +399,6 @@ bool IotWebConf::validateForm(WebRequestWrapper* webRequestWrapper)
         "Give a name with at least 3 characters.";
     valid = false;
   }
-  l = webRequestWrapper->arg(this->_apPasswordParameter.getId()).length();
-  if ((0 < l) && (l < 1))
-  {
-    this->_apPasswordParameter.errorMessage =
-        "Password can not be empty";
-    valid = false;
-  }
-  l = webRequestWrapper->arg(this->_wifiParameters.wifiPasswordParameter.getId()).length();
-  if ((0 < l) && (l < 1))
-  {
-    this->_wifiParameters.wifiPasswordParameter.errorMessage =
-        "Password can not be empty";
-    valid = false;
-  }
 
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
   Serial.print(F("Form validation result is: "));
