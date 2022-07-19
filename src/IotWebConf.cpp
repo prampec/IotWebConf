@@ -352,25 +352,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 //    page += _customHeadElement;
     page += htmlFormatProvider->getHeadExtension();
     page += htmlFormatProvider->getHeadEnd();
-    page += "<b>Configuration saved.</b> ";
-    if (this->_apPassword[0] == '\0')
-    {
-      page += F("You must change the default AP password to continue. Return "
-                "to <a href=''>configuration page</a>.");
-    }
-    else if (this->_wifiParameters._wifiSsid[0] == '\0')
-    {
-      page += F("You must provide the local wifi settings to continue. Return "
-                "to <a href=''>configuration page</a>.");
-    }
-    else if (this->_state == NotConfigured)
-    {
-      page += F("<a href='/close'>Click here to test your connection</a>.");
-    }
-    else
-    {
-      page += F("<a href='/close'>Click here to test your connection</a>.");
-    }
+    page += htmlFormatProvider->getFormSaved();
     page += htmlFormatProvider->getEnd();
 
     webRequestWrapper->sendHeader("Content-Length", String(page.length()));
