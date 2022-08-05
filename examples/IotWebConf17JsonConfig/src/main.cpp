@@ -15,12 +15,7 @@
 
 #include <IotWebConf.h>
 #include <IotWebConfUsing.h> // This loads aliases for easier class names.
-#ifndef ESP32
-# include <LittleFS.h>
-#else
-# include <LITTLEFS.h>
-# define LittleFS LITTLEFS
-#endif
+#include <LittleFS.h>
 #include <ArduinoJson.h>
 
 #ifndef IOTWEBCONF_ENABLE_JSON
