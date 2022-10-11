@@ -503,6 +503,11 @@ void IotWebConf::doLoop()
         IOTWEBCONF_DEBUG_LINE(
             F("SkipApStartup is requested, but either no WiFi was set up, or "
               "configButton was pressed."));
+        //IOTWEBCONF_DEBUG_LINE(this->_wifiParameters._wifiSsid[0] == '\0');
+        //IOTWEBCONF_DEBUG_LINE(this->_forceDefaultPassword);
+        //IOTWEBCONF_DEBUG_LINE(this->_apPassword[0] == '\0');
+        //IOTWEBCONF_DEBUG_LINE(this->_forceApMode);
+
       }
       else
       {
