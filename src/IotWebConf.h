@@ -567,6 +567,8 @@ public:
   {
     return this->htmlFormatProvider;
   }
+  void stopAp();
+
 
 private:
   const char* _initialApPassword = nullptr;
@@ -659,7 +661,6 @@ private:
   void checkConnection();
   bool checkWifiConnection();
   void setupAp();
-  void stopAp();
   void endMDns(NetworkState oldState);
 
   static bool connectAp(const char* apName, const char* password);
