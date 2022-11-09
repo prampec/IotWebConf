@@ -424,6 +424,11 @@ public:
    * Return the current state.
    */
   NetworkState getState() { return this->_state; };
+  
+  /**
+   * Return the AP connection state to check if there are some user connected
+   */
+  ApConnectionState getApConnectionState () { return this->_apConnectionState; };
 
   /**
    * This method can be used to set the AP timeout directly without modifying the apTimeoutParameter.
