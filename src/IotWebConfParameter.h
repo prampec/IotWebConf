@@ -437,7 +437,7 @@ private:
 /**
  * Date parameter is an option parameter, that rendered as HTML Date picker.
  */
-class DateParameter : public iotwebconf::TextParameter {
+class DateParameter : public TextParameter {
 public:
   /**
    * (See TextParameter for arguments!)
@@ -465,7 +465,7 @@ private:
 /**
  * Time parameter is an option parameter, that rendered as HTML time picker.
  */
-class TimeParameter : public iotwebconf::TextParameter {
+class TimeParameter : public TextParameter {
 public:
   /**
    * (See TextParameter for arguments!)
