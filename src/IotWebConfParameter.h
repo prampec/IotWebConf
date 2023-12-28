@@ -432,6 +432,62 @@ private:
   friend class IotWebConf;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Date parameter is an option parameter, that rendered as HTML Date picker.
+ */
+class DateParameter : public iotwebconf::TextParameter {
+public:
+  /**
+   * (See TextParameter for arguments!)
+   */
+  DateParameter(
+      const char* label, const char* id, char* valueBuffer, int length,
+      const char* defaultValue = nullptr)
+      : iotwebconf::TextParameter(
+            label, id, valueBuffer, length, defaultValue, nullptr, nullptr) {
+  }
+
+protected:
+  virtual String renderHtml(
+      bool dataArrived, bool hasValueFromPost, String valueFromPost) override
+  {
+    return TextParameter::renderHtml("date", hasValueFromPost, valueFromPost);
+  };
+
+private:
+  friend class IotWebConf;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Time parameter is an option parameter, that rendered as HTML time picker.
+ */
+class TimeParameter : public iotwebconf::TextParameter {
+public:
+  /**
+   * (See TextParameter for arguments!)
+   */
+  TimeParameter(
+      const char* label, const char* id, char* valueBuffer, int length,
+      const char* defaultValue = nullptr)
+      : iotwebconf::TextParameter(
+            label, id, valueBuffer, length, defaultValue, nullptr, nullptr) {
+  }
+
+protected:
+  virtual String renderHtml(
+      bool dataArrived, bool hasValueFromPost, String valueFromPost) override
+  {
+    return TextParameter::renderHtml("time", hasValueFromPost, valueFromPost);
+  };
+
+private:
+  friend class IotWebConf;
+};
+
 /**
  * This class is here just to make some nice indents on debug output
  *   for group tree.
