@@ -684,6 +684,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       this->_webServerWrapper->begin();
       this->_apConnectionState = NoConnections;
       this->_apStartTimeMs = millis();
+      this->_apLastConnectedTimeMs = millis();
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       if (mustStayInApMode())
       {
@@ -826,6 +827,7 @@ void IotWebConf::checkConnection()
       (WiFi.softAPgetStationNum() == 0))
   {
     this->_apConnectionState = Disconnected;
+    this->_apLastConnectedTimeMs = millis();
     IOTWEBCONF_DEBUG_LINE(F("Disconnected from AP."));
     if (this->_forceDefaultPassword)
     {

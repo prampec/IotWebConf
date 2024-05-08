@@ -1,7 +1,7 @@
 /**
  * IotWebConf16OffLineMode.ino -- IotWebConf is an ESP8266/ESP32
  *   non blocking WiFi/AP web configuration library for Arduino.
- *   https://github.com/prampec/IotWebConf 
+ *   https://github.com/prampec/IotWebConf
  *
  * Copyright (C) 2021 Balazs Kelemen <prampec+arduino@gmail.com>
  *
@@ -20,7 +20,7 @@
  *   AP mode again for one minute, but goes back to off-line
  *   if initial configuration is not done again.
  *   (See previous examples for more details!)
- * 
+ *
  * Hardware setup for this example:
  *   - An LED is attached to LED_BUILTIN pin with setup On=LOW.
  *     This is hopefully already attached by default.
@@ -33,10 +33,12 @@
 // -- Initial name of the Thing. Used e.g. as SSID of the own Access Point.
 const char thingName[] = "testThing";
 
-// -- Initial password to connect to the Thing, when it creates an own Access Point.
+// -- Initial password to connect to the Thing, when it creates an own Access
+// Point.
 const char wifiInitialApPassword[] = "smrtTHNG8266";
 
-// -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the initial
+// -- When CONFIG_PIN is pulled to ground on startup, the Thing will use the
+// initial
 //      password to build an AP. (E.g. in case of lost password)
 #define CONFIG_PIN D2
 
@@ -57,7 +59,7 @@ WebServer server(80);
 
 IotWebConf iotWebConf(thingName, &dnsServer, &server, wifiInitialApPassword);
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
   Serial.println();
@@ -70,13 +72,13 @@ void setup()
 
   // -- Set up required URL handlers on the web server.
   server.on("/", handleRoot);
-  server.on("/config", []{ iotWebConf.handleConfig(); });
-  server.onNotFound([](){ iotWebConf.handleNotFound(); });
+  server.on("/config", [] { iotWebConf.handleConfig(); });
+  server.onNotFound([]() { iotWebConf.handleNotFound(); });
 
   Serial.println("Ready.");
 }
 
-void loop() 
+void loop()
 {
   // -- doLoop should be called as frequently as possible.
   iotWebConf.doLoop();
@@ -84,7 +86,8 @@ void loop()
   if (iotWebConf.getState() == iotwebconf::NotConfigured)
   {
     unsigned long now = millis();
-    if (OFF_LINE_AFTER_MS < (now - iotWebConf.getApStartTimeMs()))
+    if ((OFF_LINE_AFTER_MS < (now - iotWebConf.getApLastConnectionTimeMs())) &&
+        iotWebConf.getConnectionState() != iotwebconf::HasConnection)
     {
       iotWebConf.goOffLine();
       Serial.println(F("Gone off-line. Press button to return AP mode."));
@@ -113,11 +116,12 @@ void handleRoot()
     // -- Captive portal request were already served.
     return;
   }
-  String s = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
+  String s =
+      "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"viewport\" "
+      "content=\"width=device-width, initial-scale=1, user-scalable=no\"/>";
   s += "<title>IotWebConf 16 OffLine</title></head><body>";
   s += "Go to <a href='config'>configure page</a> to change settings.";
   s += "</body></html>\n";
 
   server.send(200, "text/html", s);
 }
-
