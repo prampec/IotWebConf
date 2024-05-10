@@ -410,3 +410,5 @@ examples-pio
 *.sln.iml
 *.heic
 
+/IotWebConf.sln
+/IotWebConf.vcxitems
