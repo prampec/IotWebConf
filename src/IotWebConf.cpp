@@ -302,21 +302,15 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
 
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
     Serial.println("Rendering parameters:");
-    //this->_systemParameters.debugTo(&Serial);
-    //this->_customParameterGroups.debugTo(&Serial);
+    this->_systemParameters.debugTo(&Serial);
+    this->_customParameterGroups.debugTo(&Serial);
 #endif
-    Serial.println("=========================Add parameters to the form");
-
-
     // -- Add parameters to the form
     this->_systemParameters.renderHtml(dataArrived, webRequestWrapper);
-    Serial.println("=========================_systemParameters");
     this->_customParameterGroups.renderHtml(dataArrived, webRequestWrapper);
-    Serial.println("=========================_customParameterGroups");
 
     content = htmlFormatProvider->getFormEnd();
 
-    Serial.println("=========================updatePath");
     if (this->_updatePath != nullptr)
     {
       String pitem = htmlFormatProvider->getUpdate();
@@ -325,7 +319,6 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     }
 
     // -- Fill config version string;
-    Serial.println("=========================Fill config version string");
     {
       String pitem = htmlFormatProvider->getConfigVer();
       pitem.replace("{v}", this->_configVersion);
