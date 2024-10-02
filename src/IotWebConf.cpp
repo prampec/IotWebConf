@@ -301,9 +301,9 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     webRequestWrapper->sendContent(content);
 
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
-    Serial.println("Rendering parameters:");
-    this->_systemParameters.debugTo(&Serial);
-    this->_customParameterGroups.debugTo(&Serial);
+    //Serial.println("Rendering parameters:");
+    //this->_systemParameters.debugTo(&Serial);
+    //this->_customParameterGroups.debugTo(&Serial);
 #endif
     // -- Add parameters to the form
     this->_systemParameters.renderHtml(dataArrived, webRequestWrapper);
