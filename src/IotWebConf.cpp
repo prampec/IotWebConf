@@ -247,10 +247,9 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setConfigSavedPage(std::function<bool(WebRequestWrapper* webRequestWrapper)> func){
+void IotWebConf::setConfigSavedPage(std::function<void(WebRequestWrapper* webRequestWrapper)> func){
   this->_configSavedPage = func;
 }
-
 
 void IotWebConf::setFormValidator(
   std::function<bool(WebRequestWrapper* webRequestWrapper)> func)
