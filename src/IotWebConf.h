@@ -293,6 +293,8 @@ public:
    */
   void setConfigSavedCallback(std::function<void()> func);
 
+  void setConfigSavedPage(std::function<bool(WebRequestWrapper* webRequestWrapper)> func);
+
   /**
    * Specify a callback method, that will be called when form validation is required.
    * If the method will return false, the configuration will not be saved.
@@ -600,6 +602,7 @@ private:
   std::function<void()> _wifiConnectionCallback = nullptr;
   std::function<void(int)> _configSavingCallback = nullptr;
   std::function<void()> _configSavedCallback = nullptr;
+  std::function<bool(WebRequestWrapper* webRequestWrapper)> _configSavedPage = nullptr;
   std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = nullptr;
   std::function<void(const char*, const char*)> _apConnectionHandler =
       &(IotWebConf::connectAp);

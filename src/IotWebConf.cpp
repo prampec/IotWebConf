@@ -247,6 +247,11 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
+void IotWebConf::setConfigSavedPage(std::function<bool(WebRequestWrapper* webRequestWrapper)> func){
+  this->_configSavedPage = func;
+}
+
+
 void IotWebConf::setFormValidator(
   std::function<bool(WebRequestWrapper* webRequestWrapper)> func)
 {
@@ -369,7 +374,12 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     }
     else
     {
-      page += F("Return to <a href='/'>home page</a>.");
+      if (this->_configSavedPage != nullptr){
+        this->_configSavedPage(webRequestWrapper);
+        return;
+      } else {
+        page += F("Return to <a href='/'>home page</a>.");
+	  }
     }
     page += htmlFormatProvider->getEnd();
 
