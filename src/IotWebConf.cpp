@@ -247,7 +247,27 @@ void IotWebConf::setConfigSavedCallback(std::function<void()> func)
   this->_configSavedCallback = func;
 }
 
-void IotWebConf::setConfigSavedPage(std::function<void(WebRequestWrapper* webRequestWrapper)> func){
+void IotWebConf::setConfigAPPasswordMissingPage(
+    std::function<void(WebRequestWrapper* webRequestWrapper)> func)
+{
+  this->_configAPPasswordMissingPage = func;
+}
+
+void IotWebConf::setConfigSSIDNotConfiguredPage(
+    std::function<void(WebRequestWrapper* webRequestWrapper)> func)
+{
+  this->_configSSIDNotConfiguredPage = func;
+}
+
+void IotWebConf::setConfigNotConfiguredPage(
+    std::function<void(WebRequestWrapper* webRequestWrapper)> func)
+{
+  this->_configNotConfiguredPage = func;
+}
+
+void IotWebConf::setConfigSavedPage(
+    std::function<void(WebRequestWrapper* webRequestWrapper)> func)
+{
   this->_configSavedPage = func;
 }
 
@@ -359,26 +379,45 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     page += "Configuration saved. ";
     if (this->_apPassword[0] == '\0')
     {
-      page += F("You must change the default AP password to continue. Return "
-                "to <a href=''>configuration page</a>.");
+      if (this->_configAPPasswordMissingPage != nullptr)
+      {
+        this->_configAPPasswordMissingPage(webRequestWrapper);
+        return;
+      }
+      else
+      {
+        page += F("You must change the default AP password to continue. Return "
+                  "to <a href=''>configuration page</a>.");
+      }
     }
-    else if (this->_wifiParameters._wifiSsid[0] == '\0')
-    {
-      page += F("You must provide the local wifi settings to continue. Return "
-                "to <a href=''>configuration page</a>.");
+    else if (this->_wifiParameters._wifiSsid[0] == '\0') {
+      if (this->_configSSIDNotConfiguredPage != nullptr)
+      {
+        this->_configSSIDNotConfiguredPage(webRequestWrapper);
+        return;
+      }
+      else
+      {
+        page += F("You must provide the local wifi settings to continue. "
+                  "Return to <a href=''>configuration page</a>.");
+      }
     }
-    else if (this->_state == NotConfigured)
-    {
-      page += F("Please disconnect from WiFi AP to continue!");
-    }
-    else
+    else if (this->_state == NotConfigured) {
+      if (this->_configNotConfiguredPage != nullptr)
+      {
+        this->_configNotConfiguredPage(webRequestWrapper);
+        return;
+      } else {
+        page += F("Please disconnect from WiFi AP to continue!");
+      }
+    } 
+    else 
     {
       if (this->_configSavedPage != nullptr){
         this->_configSavedPage(webRequestWrapper);
         return;
-      } else {
-        page += F("Return to <a href='/'>home page</a>.");
-	  }
+      }
+      page += F("Return to <a href='/'>home page</a>.");
     }
     page += htmlFormatProvider->getEnd();
 

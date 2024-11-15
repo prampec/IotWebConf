@@ -293,6 +293,15 @@ public:
    */
   void setConfigSavedCallback(std::function<void()> func);
 
+  void setConfigAPPasswordMissingPage(
+      std::function<void(WebRequestWrapper* webRequestWrapper)> func);
+
+  void setConfigSSIDNotConfiguredPage(
+      std::function<void(WebRequestWrapper* webRequestWrapper)> func);
+
+  void setConfigNotConfiguredPage(
+      std::function<void(WebRequestWrapper* webRequestWrapper)> func);
+
   /**
    * Sets a custom function that will be called when the configuration page is
    * saved. This function can be used to perform custom actions after the
@@ -609,6 +618,9 @@ private:
   std::function<void()> _wifiConnectionCallback = nullptr;
   std::function<void(int)> _configSavingCallback = nullptr;
   std::function<void()> _configSavedCallback = nullptr;
+  std::function<void(WebRequestWrapper* webRequestWrapper)> _configSSIDNotConfiguredPage = nullptr;
+  std::function<void(WebRequestWrapper* webRequestWrapper)> _configAPPasswordMissingPage = nullptr;
+  std::function<void(WebRequestWrapper* webRequestWrapper)> _configNotConfiguredPage = nullptr;
   std::function<void(WebRequestWrapper* webRequestWrapper)> _configSavedPage = nullptr;
   std::function<bool(WebRequestWrapper* webRequestWrapper)> _formValidator = nullptr;
   std::function<void(const char*, const char*)> _apConnectionHandler =
