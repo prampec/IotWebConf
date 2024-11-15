@@ -314,7 +314,7 @@ void IotWebConf::handleConfig(WebRequestWrapper* webRequestWrapper)
     webRequestWrapper->send(200, "text/html; charset=UTF-8", "");
 
     String content = htmlFormatProvider->getHead();
-    content.replace("{v}", "Config ESP");
+    content.replace("{v}", String("Config ") + this->getThingName());
     content += htmlFormatProvider->getScript();
     content += htmlFormatProvider->getStyle();
     content += htmlFormatProvider->getHeadExtension();
