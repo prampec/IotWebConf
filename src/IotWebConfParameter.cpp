@@ -337,7 +337,7 @@ String TextParameter::renderHtml(
       "{c}", current->customHtml == nullptr ? "" : current->customHtml);
   pitem.replace(
       "{s}",
-      current->errorMessage == nullptr ? "" : "de"); // Div style class.
+      current->errorMessage == nullptr ? current->getId() : "de"); // Div style class.
   pitem.replace(
       "{e}",
       current->errorMessage == nullptr ? "" : current->errorMessage);

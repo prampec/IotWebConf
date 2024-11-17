@@ -152,14 +152,45 @@ class HTTPUpdateServer
     String _password;
     bool _authenticated;
     String _updaterError;
-    const char* serverIndex PROGMEM =
-R"(<html><body><form method='POST' action='' enctype='multipart/form-data'>
-                  <input type='file' name='update'>
-                  <input type='submit' value='Update'>
-               </form>
-         </body></html>)";
-  const char* successResponse PROGMEM =
-"<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! Rebooting...\n";
+    const char* serverIndex PROGMEM =R"(
+        <!DOCTYPE html>
+        <html lang=\"en\"><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>
+        <style> 
+	        .de{background-color:#ffaaaa;} 
+            .em{font-size:0.8em;color:#bb0000;padding-bottom:0px;} 
+            .c{text-align: center;} 
+            div,input,select{padding:5px;font-size:1em;} 
+            input{width:95%;} select{width:100%} 
+            input[type=checkbox]{width:auto;scale:1.5;margin:10px;} 
+            body{text-align: center;font-family:verdana;} 
+            button{border:0;border-radius:0.3rem;background-color:#16A1E7;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;} 
+            fieldset{border-radius:0.3rem;margin: 0px;}
+        </style> 
+        </head><body> 
+            <table border="0" align="center"> 
+                <tbody><tr><td> 
+            </head><body>
+                <table border=0 align=center width=50%>
+                    <tr><td>
+                        <form method = "POST" action="" enctype = "multipart/form-data">
+                            <fieldset style="border: 1px solid">
+                                <legend>Firmware update</legend>
+                                <input type="file" name="update" id="updateFile" style="width: 500px"><br>
+                                <button type="submit">Update</button>
+
+                            </fieldset>
+                        </form>
+                    </td></td>
+                </table>
+                <table border=0 align=center>
+                    <tr><td align=left>Go to <a href = 'config'>configure page</a> to change configuration.</td></tr>
+                    <tr><td align=left>Go to <a href='/'>main page</a>.</td></tr>
+		        </table>
+	        </body></html>  
+    )";
+    const char* successResponse PROGMEM =
+        "<META http-equiv=\"refresh\" content=\"15;URL=/\">Update Success! "
+        "Rebooting...\n";
 };
 
 /////////////////////////////////////////////////////////////////////////////////
