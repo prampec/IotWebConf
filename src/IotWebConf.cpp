@@ -658,17 +658,17 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       endMDns(oldState);
       WiFi.disconnect(true);
       WiFi.mode(WIFI_OFF);
-      this->blinkInternal(22000, 6);
+      this->blinkInternal(22000, 1320);
       break;
     case ApMode:
     case NotConfigured:
       if (newState == ApMode)
       {
-        this->blinkInternal(300, 90);
+        this->blinkInternal(300, 270);
       }
       else
       {
-        this->blinkInternal(300, 50);
+        this->blinkInternal(300, 150);
       }
       if ((oldState == Connecting) ||
         (oldState == OnLine))
@@ -724,7 +724,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
         this->_updateServerSetupFunction(this->_updatePath);
       }
       endMDns(oldState);
-      this->blinkInternal(1000, 50);
+      this->blinkInternal(1000, 500);
 #ifdef IOTWEBCONF_DEBUG_TO_SERIAL
       Serial.print("Connecting to [");
       Serial.print(this->_wifiAuthInfo.ssid);
@@ -759,7 +759,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       Serial.printf("Active mDNS services: %d \n", MDNS.queryService("http", "tcp"));
 # endif
 #endif
-      this->blinkInternal(8000, 2);
+      this->blinkInternal(8000, 160);
       if (this->_updateServerUpdateCredentialsFunction != nullptr)
       {
         this->_updateServerUpdateCredentialsFunction(
@@ -949,9 +949,9 @@ void IotWebConf::stopCustomBlink()
   this->_blinkOffMs = this->_internalBlinkOffMs;
 }
 
-void IotWebConf::blinkInternal(unsigned long repeatMs, byte dutyCyclePercent)
+void IotWebConf::blinkInternal(unsigned long repeatMs, unsigned long onMs)
 {
-  this->blink(repeatMs, dutyCyclePercent);
+  this->fineBlink(onMs, repeatMs - onMs);
   this->_internalBlinkOnMs = this->_blinkOnMs;
   this->_internalBlinkOffMs = this->_blinkOffMs;
 }

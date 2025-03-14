@@ -642,7 +642,7 @@ private:
   bool isIp(String str);
   String toStringIp(IPAddress ip);
   void doBlink();
-  void blinkInternal(unsigned long repeatMs, byte dutyCyclePercent);
+  void blinkInternal(unsigned long repeatMs, unsigned long onMs);
 
   void checkApTimeout();
   void checkConnection();
