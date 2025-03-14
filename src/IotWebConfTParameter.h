@@ -53,6 +53,28 @@ public:
     out->println("'");
   }
 
+#ifdef IOTWEBCONF_ENABLE_JSON
+  void loadFromJson(JsonObject jsonObject)
+  {
+    if (jsonObject.containsKey(this->getId()))
+    {
+# ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+    Serial.print(F("Applying value from JSON for parameterId: "));
+    Serial.println(this->getId());
+# endif
+      const char* value = jsonObject[this->getId()];
+      this->update(String(value));
+    }
+    else
+    {
+# ifdef IOTWEBCONF_DEBUG_TO_SERIAL
+    Serial.print(F("No value found in JSON for parameterId: "));
+    Serial.println(this->getId());
+# endif
+    }
+  }
+#endif
+
 protected:
   ConfigItemBridge(const char* id) : ConfigItem(id) { }
   virtual int getInputLength() { return 0; };
