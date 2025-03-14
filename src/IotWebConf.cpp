@@ -742,7 +742,7 @@ void IotWebConf::stateChanged(NetworkState oldState, NetworkState newState)
       // The order of WiFi.mode and WiFi.setHostname matters based on the platform
 #ifdef ESP8266
       WiFi.mode(WIFI_STA);
-      WiFi.setHostname(this->_thingName);
+      WiFi.hostname(this->_thingName);
 #elif defined(ESP32)
       WiFi.setHostname(this->_thingName);
       WiFi.mode(WIFI_STA);
